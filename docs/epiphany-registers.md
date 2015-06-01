@@ -1,7 +1,7 @@
 # Epiphany Registers
 
 **Name** | **Synonym** | **Role in the Procedure Call Standard** | **Saved By**
---------------------------------------------------------------------------------
+---------|-------------|-----------------------------------------|-------------
 R0       | A1          | Argument/result/scratch register #1     | Caller saved
 R1       | A2          | Argument/result/scratch register #2     | Caller saved
 R2       | A3          | Argument/result/scratch register #3     | Caller saved
