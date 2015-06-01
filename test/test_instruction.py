@@ -49,3 +49,8 @@ def test_execute_add_immediate():
     assert state.rf[1] == 0b01010101010 + 5
     assert state.AZ == 0    
 
+def test_decode_nop():
+    instr = 0b0000000000000000000000110100010
+    name, _ = decode(instr)
+    assert name == "nop"
+
