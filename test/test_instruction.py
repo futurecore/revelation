@@ -18,6 +18,9 @@ def test_decode_add():
     instr = 0b00000000000010100100010000011111
     name, _ = decode(instr)
     assert name == "add32"
+    instr = 0b00000000010101010010000100011011
+    name, _ = decode(instr)
+    assert name == "add32"
     
 def test_execute_add():
     state = State(None, False, 0)
@@ -28,7 +31,7 @@ def test_execute_add():
     executefn(state, Instruction(instr, None))
     assert state.rf[2] == 12
     assert state.AZ == 0
-    
+
     
 def test_add_immediate_argument():
     #                             iiiiiiii      iii
@@ -36,3 +39,13 @@ def test_add_immediate_argument():
     assert instr.rd == 1
     assert instr.rn == 0
     assert instr.imm == 0b01010101010
+    
+def test_execute_add_immediate():
+    state = State(None, False, 0)
+    instr = 0b00000000010101010010000100011011
+    name, executefn = decode(instr)
+    state.rf[0] = 5
+    executefn(state, Instruction(instr, None))
+    assert state.rf[1] == 0b01010101010 + 5
+    assert state.AZ == 0    
+

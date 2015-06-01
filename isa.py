@@ -29,9 +29,15 @@ encodings = [
   # Arithmetic
   #---------------------------------------------------------------------
   ['add32', 'xxxxxxxxxxxx1010xxxxxxxxx0011111'],
+  ['add32', 'xxxxxxxxxxxxxxxxxxxxxxxxx0011011'], # with immediate
 ]
 
 
+def reg_or_imm(s, inst):
+    if inst.b2 == 1:
+        return s.rf[inst.rm]
+    else:
+        return inst.imm
 
 #-----------------------------------------------------------------------
 # add32
@@ -47,7 +53,7 @@ def execute_add32(s, inst):
     else { OV=0 }
     AVS = AVS | AV
     """
-    result = s.rf[inst.rn] + s.rf[inst.rm]
+    result = s.rf[inst.rn] + reg_or_imm(s, inst)
     s.rf[inst.rd] = trim_32(result)
     s.pc += 4
     s.AN = (result >> 31) & 1

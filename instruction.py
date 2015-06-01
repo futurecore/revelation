@@ -23,3 +23,6 @@ class Instruction(object):
     def imm(self):
         return ((self.bits >> 7) & 0x7) | ((self.bits >> 13) & (0xFF << 3))
 
+    @property
+    def b2(self):
+        return (self.bits >> 2) & 1
