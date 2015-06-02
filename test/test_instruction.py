@@ -2,6 +2,7 @@ from epiphany.instruction import Instruction
 from epiphany.isa import decode
 from epiphany.machine import State
 
+
 def test_add_register_arguments():
     instr = Instruction(0b00000000000010100100010000011111, "")
     assert instr.rd == 2
@@ -14,7 +15,7 @@ def test_add_register_arguments():
     assert instr.rm == 0 + 8
 
 
-def test_decode_add():
+def test_decode_add32():
     instr = 0b00000000000010100100010000011111
     name, _ = decode(instr)
     assert name == "add32"
@@ -22,7 +23,8 @@ def test_decode_add():
     name, _ = decode(instr)
     assert name == "add32"
 
-def test_execute_add():
+
+def test_execute_add32():
     state = State(None, False, 0)
     instr = 0b00000000000010100100010000011111
     name, executefn = decode(instr)
@@ -33,14 +35,15 @@ def test_execute_add():
     assert state.AZ == 0
 
 
-def test_add_immediate_argument():
+def test_add32_immediate_argument():
     #                             iiiiiiii      iii
     instr = Instruction(0b00000000010101010010000100011011, "")
     assert instr.rd == 1
     assert instr.rn == 0
     assert instr.imm == 0b01010101010
 
-def test_execute_add_immediate():
+
+def test_execute_add32_immediate():
     state = State(None, False, 0)
     instr = 0b00000000010101010010000100011011
     name, executefn = decode(instr)
@@ -49,12 +52,14 @@ def test_execute_add_immediate():
     assert state.rf[1] == 0b01010101010 + 5
     assert state.AZ == 0
 
-def test_decode_nop():
+
+def test_decode_nop16():
     instr = 0b0000000000000000000000110100010
     name, _ = decode(instr)
-    assert name == "nop"
+    assert name == "nop16"
 
-def test_execute_nop():
+
+def test_execute_nop16():
     state = State(None, False, 0)
     instr = 0b0000000000000000000000110100010
     name, executefn = decode(instr)
