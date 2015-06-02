@@ -12,29 +12,28 @@ def new_state():
 
 
 def test_add_register_arguments():
-    instr = Instruction(0b00000000000010100100010000011111, "")
+    instr = Instruction(opcode_factory.int_arith32('add', 2, 1, 0), "")
     assert instr.rd == 2
     assert instr.rn == 1
     assert instr.rm == 0
-
-    instr = Instruction(0b00100100100010100100010000011111, "")
+    instr = Instruction(opcode_factory.int_arith32('add', 10, 9, 8), "")
     assert instr.rd == 2 + 8
     assert instr.rn == 1 + 8
     assert instr.rm == 0 + 8
 
 
 def test_decode_add32():
-    instr = 0b00000000000010100100010000011111
+    instr = opcode_factory.int_arith32('add', 0, 0, 0)
     name, _ = decode(instr)
     assert name == "add32"
-    instr = 0b00000000010101010010000100011011
+    instr = opcode_factory.int_arith32('add', 1, 1, 1)
     name, _ = decode(instr)
     assert name == "add32"
 
 
 def test_execute_add32():
     state = new_state()
-    instr = 0b00000000000010100100010000011111
+    instr = opcode_factory.int_arith32('add', 2, 1, 0)
     name, executefn = decode(instr)
     state.rf[0] = 5
     state.rf[1] = 7
@@ -77,10 +76,10 @@ def test_execute_nop16():
 
 
 def test_decode_sub32():
-    instr = 0b00000000000010100100010000111111
+    instr = opcode_factory.int_arith32('sub', 0, 0, 0)
     name, _ = decode(instr)
     assert name == "sub32"
-    instr = 0b00000000010101010010000100111011
+    instr = opcode_factory.int_arith32('sub', 1, 1, 1)
     name, _ = decode(instr)
     assert name == "sub32"
 
@@ -94,7 +93,7 @@ def test_sub32_immediate_argument():
 
 def test_execute_sub32():
     state = new_state()
-    instr = 0b00000000000010100100010000111111
+    instr = opcode_factory.int_arith32('sub', 2, 1, 0)
     name, executefn = decode(instr)
     state.rf[0] = 5
     state.rf[1] = 7

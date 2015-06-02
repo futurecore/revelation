@@ -2,7 +2,6 @@ def nop16():
     return 0b0000000000000000000000110100010
 
 
-
 def int_arith32_immediate(name, rd, rn, imm):
     if name == 'add':
         opcode = 0b0011011
@@ -16,7 +15,7 @@ def int_arith32_immediate(name, rd, rn, imm):
     return instruction
 
 
-def int_arith32(name, rd, rm, rn):
+def int_arith32(name, rd, rn, rm):
     bits_16_20 = 0b1010
     if name == 'add':
         opcode = 0b0011111
@@ -24,4 +23,15 @@ def int_arith32(name, rd, rm, rn):
         opcode = 0b0111111
     else:
         raise NotImplementedError()
-    instruction = 'foobar'
+    instruction = (opcode | ((rm & 7) << 7) | ((rn & 7) << 10) |
+                   ((rd & 7) << 13) | (bits_16_20 << 16) |
+                   ((rm & 56) << 20) | ((rn & 56) << 23) | ((rd & 56) << 26))
+    return instruction
+
+
+def jr32(rn):
+    raise NotImplementedError()
+
+
+def bcond32(cond, imm):
+    raise NotImplementedError()
