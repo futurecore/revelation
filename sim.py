@@ -7,6 +7,9 @@ from epiphany.instruction import Instruction
 
 memory_size = 2**18  # 2^8 x 2^10 == 32kB.
 
+def new_memory():
+    return Memory(size=memory_size, byte_storage=False)
+
 
 class Epiphany(Sim):
 
@@ -23,7 +26,7 @@ class Epiphany(Sim):
         Assume 32bit instructions.
         TODO: 16bit instructions.
         """
-        mem = Memory(size=memory_size, byte_storage=False)
+        mem = new_memory()
         for i, data in enumerate(instructions):
             mem.write(i * 4, 4, data)
         self.state = State(mem, Debug(), reset_addr=0x0)

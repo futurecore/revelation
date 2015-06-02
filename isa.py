@@ -32,6 +32,10 @@ encodings = [
     ['add32', 'xxxxxxxxxxxxxxxxxxxxxxxxx0011011'], # with immediate
     ['sub32', 'xxxxxxxxxxxx1010xxxxxxxxx0111111'],
     ['sub32', 'xxxxxxxxxxxxxxxxxxxxxxxxx0111011'], # with immediate
+    #---------------------------------------------------------------------
+    # Jumps
+    #---------------------------------------------------------------------
+    ['jr32', 'xxxxxxxxxxxx0010xxxxxx0101001111']
 ]
 
 
@@ -96,6 +100,16 @@ def execute_sub32(s, inst):
     s.AV = overflow_from_sub(s.rf[inst.rn], s.rf[inst.rm], result)
     s.AVS = s.AVS | s.AV
     s.pc += 4
+
+
+#-----------------------------------------------------------------------
+# jr32 - jump.
+#-----------------------------------------------------------------------
+def execute_jr32(s, inst):
+    """
+    PC = RN;
+    """
+    s.pc = s.rf[inst.rn]
 
 
 #=======================================================================
