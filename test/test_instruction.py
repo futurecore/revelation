@@ -5,6 +5,7 @@ from epiphany.isa import decode, should_branch
 from epiphany.machine import State
 from epiphany.sim import new_memory
 
+import opcode_factory
 
 def new_state():
     return State(new_memory(), Debug())
@@ -44,8 +45,7 @@ def test_execute_add32():
 
 
 def test_decode_add32_immediate_argument():
-    #                             iiiiiiii      iii
-    instr = Instruction(0b00000000010101010010000100011011, "")
+    instr = Instruction(opcode_factory.int_arith32_immediate('add', 1, 0, 0b01010101010), "")
     assert instr.rd == 1
     assert instr.rn == 0
     assert instr.imm == 0b01010101010
@@ -53,7 +53,7 @@ def test_decode_add32_immediate_argument():
 
 def test_execute_add32_immediate():
     state = new_state()
-    instr = 0b00000000010101010010000100011011
+    instr = opcode_factory.int_arith32_immediate('add', 1, 0, 0b01010101010)
     name, executefn = decode(instr)
     state.rf[0] = 5
     executefn(state, Instruction(instr, None))
@@ -63,14 +63,13 @@ def test_execute_add32_immediate():
 
 
 def test_decode_nop16():
-    instr = 0b0000000000000000000000110100010
-    name, _ = decode(instr)
+    name, _ = decode(opcode_factory.nop16())
     assert name == "nop16"
 
 
 def test_execute_nop16():
     state = new_state()
-    instr = 0b0000000000000000000000110100010
+    instr = opcode_factory.nop16()
     name, executefn = decode(instr)
     save_pc = state.pc
     executefn(state, Instruction(instr, None))
@@ -87,8 +86,7 @@ def test_decode_sub32():
 
 
 def test_sub32_immediate_argument():
-    #                             iiiiiiii      iii
-    instr = Instruction(0b00000000010101010010000100111011, "")
+    instr = Instruction(opcode_factory.int_arith32_immediate('sub', 1, 0, 0b01010101010), "")
     assert instr.rd == 1
     assert instr.rn == 0
     assert instr.imm == 0b01010101010
@@ -109,8 +107,7 @@ def test_execute_sub32():
 
 def test_execute_sub32_immediate_zero_result():
     state = new_state()
-    #                 iiiiiiii      iii
-    instr = 0b00000000000000000010001010111011
+    instr = opcode_factory.int_arith32_immediate('sub', 1, 0, 0b00000000101)
     name, executefn = decode(instr)
     state.rf[0] = 5
     executefn(state, Instruction(instr, None))
@@ -124,7 +121,7 @@ def test_execute_sub32_immediate_zero_result():
 def test_execute_sub32_immediate():
     from pydgin.utils import trim_32
     state = new_state()
-    instr = 0b00000000010101010010000100111011
+    instr = opcode_factory.int_arith32_immediate('sub', 1, 0, 0b01010101010)
     name, executefn = decode(instr)
     state.rf[0] = 5
     executefn(state, Instruction(instr, None))

@@ -1,7 +1,9 @@
 from epiphany.sim import Epiphany
 
+import opcode_factory
+
 def test_single_inst_add32():
-    instructions = [0b00000000010101010010000100011011]
+    instructions = [opcode_factory.int_arith32_immediate('add', 1, 0, 0b01010101010)]
     epiphany = Epiphany()
     epiphany.init_test_state(instructions)
     epiphany.state.rf[0] = 0b01010101010
@@ -13,7 +15,7 @@ def test_single_inst_add32():
 
 def test_single_inst_sub32():
     from pydgin.utils import trim_32
-    instructions = [0b00000000010101010010000100111011]
+    instructions = [opcode_factory.int_arith32_immediate('sub', 1, 0, 0b01010101010)]
     epiphany = Epiphany()
     epiphany.init_test_state(instructions)
     epiphany.state.rf[0] = 5
@@ -27,10 +29,10 @@ def test_single_inst_sub32():
 
 def test_add32_sub32():
     from pydgin.utils import trim_32
-    instructions = [0b00000000010101010010000100011011, # ADD 0b01010101010
+    instructions = [opcode_factory.int_arith32_immediate('add', 1,0, 0b01010101010),
     # TODO: Add new instruction to move the result of instruction 1
     # TODO: to rf[0] before instruction 2 is executed.
-                    0b00000000010101010010000100111011, # SUB 0b01010101010
+                    opcode_factory.int_arith32_immediate('sub', 1, 0, 0b01010101010),
                     ]
     epiphany = Epiphany()
     epiphany.init_test_state(instructions)
@@ -45,10 +47,9 @@ def test_add32_sub32():
 
 def test_bcond32():#
     instructions = [
-                        #                 iiiiiiii      iii
-                         0b00000000000000000010001010111011, # SUB
+                        opcode_factory.int_arith32_immediate('sub', 1, 0, 0b00000000101),
                          0b00000000000000000000010000001000, # BEQ
-                         0b00000000010101010010000100011011, # ADD 0b01010101010
+                         opcode_factory.int_arith32_immediate('add', 1,0, 0b01010101010), # ADD 0b01010101010
                     ]
     epiphany = Epiphany()
     epiphany.init_test_state(instructions)
