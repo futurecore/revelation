@@ -36,4 +36,5 @@ def jr32(rn):
 
 
 def bcond32(cond, imm):
-    raise NotImplementedError()
+    opcode = 0b1000
+    return (opcode | (cond << 4) | (imm << 8))

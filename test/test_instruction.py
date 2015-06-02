@@ -143,7 +143,7 @@ def test_decode_execute_jr32():
 
 def test_decode_bcond32():
     state = new_state()
-    instr = 0b00000000000000100000000101001000
+    instr = opcode_factory.bcond32(0b0000, 0)
     name, executefn = decode(instr)
     state.rf[0] = 111
     executefn(state, Instruction(instr, None))

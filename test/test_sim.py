@@ -47,7 +47,7 @@ def test_add32_sub32():
 
 def test_bcond32():#
     instructions = [opcode_factory.int_arith32_immediate('sub', 1, 0, 0b00000000101),
-                    0b00000000000000000000010000001000, # BEQ
+                    opcode_factory.bcond32(0b0000, 0b000000000000000000000100),
                     opcode_factory.int_arith32_immediate('add', 1,0, 0b01010101010), # ADD 0b01010101010
                     ]
     epiphany = Epiphany()
