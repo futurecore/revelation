@@ -54,3 +54,11 @@ def test_decode_nop():
     name, _ = decode(instr)
     assert name == "nop"
 
+def test_execute_nop():
+    state = State(None, False, 0)
+    instr = 0b0000000000000000000000110100010
+    name, executefn = decode(instr)
+    save_pc = state.pc
+    executefn(state, Instruction(instr, None))
+    assert state.pc - save_pc == 2
+
