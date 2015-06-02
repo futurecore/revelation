@@ -7,11 +7,17 @@ from pydgin.storage import RegisterFile
 #-----------------------------------------------------------------------
 # State
 #-----------------------------------------------------------------------
-class State( object ):
+class State(object):
 #    _virtualizable_ = ['pc', 'ncycles', 'N', 'Z', 'C', 'V']
-    def __init__(self, memory, debug, reset_addr=0x400):
+    def __init__(self, memory, debug, reset_addr=0x0):
         self.pc       = reset_addr
         self.rf       = RegisterFile(constant_zero=False, num_regs=64)
+        self.mem      = memory
+
+        self.running   = True
+        self.debug     = debug
+        self.rf.debug  = debug
+        self.mem.debug = debug
 
         # current program status register (CPSR)
         self.AN    = 0b0      # Negative condition
@@ -23,11 +29,10 @@ class State( object ):
         # other registers
         self.status        = 0
         self.ncycles       = 0
+        self.stats_en      = False
 
         # marks if should be running, syscall_exit sets it false
-        self.ACTIVE        = True
+        self.running       = True
 
     def fetch_pc( self ):
         return self.pc
-
-
