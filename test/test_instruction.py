@@ -133,7 +133,7 @@ def test_execute_sub32_immediate():
 
 def test_decode_execute_jr32():
     state = new_state()
-    instr = 0b00000000000000100000000101001111
+    instr = opcode_factory.jr32(0)
     name, executefn = decode(instr)
     state.rf[0] = 111
     executefn(state, Instruction(instr, None))

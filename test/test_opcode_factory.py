@@ -1,4 +1,7 @@
-from opcode_factory import int_arith32_immediate, int_arith32
+from opcode_factory import (int_arith32_immediate,
+                            int_arith32,
+                            jr32,
+                            )
 
 def test_int_arith32_immediate():
     #                 iiiiiiii      iii
@@ -23,3 +26,9 @@ def test_int_arith32():
     rn = 1
     rm = 0
     assert int_arith32(name, rd, rn, rm) == instr
+
+
+def test_jr32():
+    instr = 0b00000000000000100000000101001111
+    rn = 0
+    assert jr32(rn) == instr

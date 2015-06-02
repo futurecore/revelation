@@ -30,7 +30,9 @@ def int_arith32(name, rd, rn, rm):
 
 
 def jr32(rn):
-    raise NotImplementedError()
+    opcode = 0b0101001111
+    bits_16_20 = 0b0010
+    return (opcode | ((rn & 7)) << 7) | (bits_16_20 << 16) | ((rn & 56) << 23)
 
 
 def bcond32(cond, imm):
