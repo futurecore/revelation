@@ -1,8 +1,7 @@
 from pydgin.debug import Debug
-from pydgin.storage import Memory
 
 from epiphany.instruction import Instruction
-from epiphany.isa import decode
+from epiphany.isa import decode, should_branch
 from epiphany.machine import State
 from epiphany.sim import new_memory
 
@@ -136,7 +135,7 @@ def test_execute_sub32_immediate():
     assert state.pc == 4
 
 
-def test_decode_jr32():
+def test_decode_execute_jr32():
     state = new_state()
     instr = 0b00000000000000100000000101001111
     name, executefn = decode(instr)
@@ -144,3 +143,20 @@ def test_decode_jr32():
     executefn(state, Instruction(instr, None))
     assert name == "jr32"
     assert state.pc == 111
+
+
+def test_decode_bcond32():
+    state = new_state()
+    instr = 0b00000000000000100000000101001000
+    name, executefn = decode(instr)
+    state.rf[0] = 111
+    executefn(state, Instruction(instr, None))
+    assert name == "bcond32"
+
+
+def test_should_branch():
+    state = new_state()
+    state.AZ = 1
+    assert should_branch(state, 0b0000)
+    state.AZ = 0
+    assert not should_branch(state, 0b0000)

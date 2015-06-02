@@ -25,4 +25,15 @@ class Instruction(object):
 
     @property
     def b2(self):
+        """Get bit 2 of an instruction.
+        """
         return (self.bits >> 2) & 1
+
+    @property
+    def bcond(self):
+        return (self.bits >> 4) & 15
+
+    @property
+    def bcond32_imm(self):
+        return self.bits >> 8
+

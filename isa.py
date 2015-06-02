@@ -24,18 +24,19 @@ from pydgin.misc import create_risc_decoder
 # Instruction Encodings
 #=======================================================================
 encodings = [
-    ['nop16',    'xxxxxxxxxxxxxxxxxxxxxx0110100010'],
+    ['nop16',   'xxxxxxxxxxxxxxxxxxxxxx0110100010'],
     #---------------------------------------------------------------------
     # Arithmetic
     #---------------------------------------------------------------------
-    ['add32', 'xxxxxxxxxxxx1010xxxxxxxxx0011111'],
-    ['add32', 'xxxxxxxxxxxxxxxxxxxxxxxxx0011011'], # with immediate
-    ['sub32', 'xxxxxxxxxxxx1010xxxxxxxxx0111111'],
-    ['sub32', 'xxxxxxxxxxxxxxxxxxxxxxxxx0111011'], # with immediate
+    ['add32',   'xxxxxxxxxxxx1010xxxxxxxxx0011111'],
+    ['add32',   'xxxxxxxxxxxxxxxxxxxxxxxxx0011011'], # with immediate
+    ['sub32',   'xxxxxxxxxxxx1010xxxxxxxxx0111111'],
+    ['sub32',   'xxxxxxxxxxxxxxxxxxxxxxxxx0111011'], # with immediate
     #---------------------------------------------------------------------
-    # Jumps
+    # Jumps and branch conditions
     #---------------------------------------------------------------------
-    ['jr32', 'xxxxxxxxxxxx0010xxxxxx0101001111']
+    ['bcond32', 'xxxxxxxxxxxxxxxxxxxxxxxxxxxx1000'],
+    ['jr32',    'xxxxxxxxxxxx0010xxxxxx0101001111']
 ]
 
 
@@ -110,6 +111,43 @@ def execute_jr32(s, inst):
     PC = RN;
     """
     s.pc = s.rf[inst.rn]
+
+
+#-----------------------------------------------------------------------
+# bcond32 - branch on condition.
+#-----------------------------------------------------------------------
+def should_branch(s, cond):
+    if cond == 0b0000:
+        return s.AZ
+    elif cond == 0b0001:
+        return ~s.AZ
+    elif cond == 0b0010:
+        return ~s.AZ & s.AC
+    elif cond == 0b0011:
+        return s.AC
+    elif cond == 0b0100:
+        return s.AZ | ~s.AC
+    elif cond == 0b0101:
+        return ~s.AC
+    elif cond == 0b0110:
+        return ~s.AZ & (s.AV == s.AN)
+    elif cond == 0b0111:
+        return s.AV == s.AN
+    elif cond == 0b1000:
+        return s.AV != s.AN
+    elif cond == 0b1001:
+        return s.AZ | (s.AV != s.AN)
+    else:
+        raise NotImplementedError() # Floating point condition.
+
+
+def execute_bcond32(s, inst):
+    cond = inst.bcond
+    imm = inst.bcond32_imm
+    if should_branch(s, cond):
+        s.pc += imm << 1
+    else:
+        s.pc += 4
 
 
 #=======================================================================
