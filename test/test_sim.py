@@ -41,3 +41,23 @@ def test_add32_sub32():
     assert epiphany.state.AN == 1  # Negative
     assert epiphany.state.AC == 1  # Borrow, take from utility function. CHECK THIS.
     assert epiphany.state.pc == 8
+
+
+def test_bcond32():#
+    instructions = [
+                        #                 iiiiiiii      iii
+                         0b00000000000000000010001010111011, # SUB
+                         0b00000000000000000000010000001000, # BEQ
+                         0b00000000010101010010000100011011, # ADD 0b01010101010
+                    ]
+    epiphany = Epiphany()
+    epiphany.init_test_state(instructions)
+    epiphany.state.rf[0] = 5
+    epiphany.run()
+    assert epiphany.state.pc == 12
+    assert epiphany.state.rf[1] == 0
+    epiphany.init_test_state(instructions)
+    epiphany.state.rf[0] = 8
+    epiphany.run()
+    assert epiphany.state.rf[1] == 8 + 0b01010101010
+    assert epiphany.state.pc == 12

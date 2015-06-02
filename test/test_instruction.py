@@ -160,3 +160,4 @@ def test_should_branch():
     assert should_branch(state, 0b0000)
     state.AZ = 0
     assert not should_branch(state, 0b0000)
+    # TODO: add more of these.
