@@ -21,6 +21,8 @@ def int_arith32(name, rd, rn, rm):
         opcode = 0b0011111
     elif name == 'sub':
         opcode = 0b0111111
+    elif name == 'and':
+        opcode = 0b1011111
     else:
         raise NotImplementedError()
     instruction = (opcode | ((rm & 7) << 7) | ((rn & 7) << 10) |

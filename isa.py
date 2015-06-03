@@ -33,6 +33,11 @@ encodings = [
     ['sub32',       'xxxxxxxxxxxx1010xxxxxxxxx0111111'],
     ['sub32',       'xxxxxxxxxxxxxxxxxxxxxxxxx0111011'],  # with immediate.
     #---------------------------------------------------------------------
+    # Bitwise arithmetic
+    #---------------------------------------------------------------------
+    ['bit1632',     'xxxxxxxxxxxxxxxxxxxxxxxxx1011111'],
+    ['bit1632',     'xxxxxxxxxxxxxxxxxxxxxxxxx1011010'],
+    #--------------------------------------------------------------------
     # Loads and stores
     #---------------------------------------------------------------------
     ['ldstrpmd32',  'xxxxxx1xxxxxxxxxxxxxxxxxxxxx1100'],  # LD or STR combined.
@@ -108,6 +113,25 @@ def execute_sub32(s, inst):
     s.AZ = trim_32(result) == 0b0
     s.AV = overflow_from_sub(s.rf[inst.rn], s.rf[inst.rm], result)
     s.AVS = s.AVS | s.AV
+    s.pc += 4
+
+
+#-----------------------------------------------------------------------
+# bit1632 - 16 or 32 bit bitwise arithmetic.
+#-----------------------------------------------------------------------
+def execute_bit1632(s, inst):
+    """RD = RN & RM
+    AN = RD[31]
+    AV = 0
+    AC = 0
+    If ( RD[31:0] == 0 ) { AZ=1 } else { AZ=0 }
+    """
+    result = s.rf[inst.rn] & s.rf[inst.rm]
+    s.rf[inst.rd] = trim_32(result)
+    s.AN = (result >> 31) & 1
+    s.AC = 0
+    s.AV = 0
+    s.AZ = trim_32(result) == 0
     s.pc += 4
 
 

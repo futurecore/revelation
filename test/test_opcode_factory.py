@@ -17,8 +17,10 @@ def test_int_arith32():
     #       0bdddnnnmmmxxx1010dddnnnmmm0111111
     instr = 0b00000000000010100100010000111111
     assert int_arith32('sub', 2, 1, 0) == instr
-
-
+    #       0bdddnnnmmmxxx1010dddnnnmmm1011111
+    instr = 0b00000000000010100100010001011111
+    assert int_arith32('and', 2, 1, 0) == instr
+#
 def test_jr32():
     #       0bxxxnnnxxxxxx0010xxxnnn0101011111
     instr = 0b00000000000000100000000101001111
