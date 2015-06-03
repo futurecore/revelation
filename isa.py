@@ -35,8 +35,10 @@ encodings = [
     #---------------------------------------------------------------------
     # Bitwise arithmetic
     #---------------------------------------------------------------------
-    ['bit1632',     'xxxxxxxxxxxxxxxxxxxxxxxxx1011111'],
-    ['bit1632',     'xxxxxxxxxxxxxxxxxxxxxxxxx1011010'],
+    ['bit1632',     'xxxxxxxxxxxxxxxxxxxxxxxxx1011111'],  # AND32
+    ['bit1632',     'xxxxxxxxxxxxxxxxxxxxxxxxx1011010'],  # AND16
+    ['bit1632',     'xxxxxxxxxxxxxxxxxxxxxxxxx1011111'],  # ORR32
+    ['bit1632',     'xxxxxxxxxxxxxxxxxxxxxxxxx1011010'],  # ORR16
     #--------------------------------------------------------------------
     # Loads and stores
     #---------------------------------------------------------------------
@@ -126,13 +128,15 @@ def execute_bit1632(s, inst):
     AC = 0
     If ( RD[31:0] == 0 ) { AZ=1 } else { AZ=0 }
     """
+    if not inst.bit2:
+        inst.bits &= 0xffff
     result = s.rf[inst.rn] & s.rf[inst.rm]
     s.rf[inst.rd] = trim_32(result)
     s.AN = (result >> 31) & 1
     s.AC = 0
     s.AV = 0
     s.AZ = trim_32(result) == 0
-    s.pc += 4
+    s.pc += 4 if inst.bit2 else 2
 
 
 #-----------------------------------------------------------------------

@@ -31,6 +31,23 @@ def int_arith32(name, rd, rn, rm):
     return instruction
 
 
+def int_arith16(name, rd, rn, rm):
+    assert rd <= 0b111
+    assert rn <= 0b111
+    assert rm <= 0b111
+    if name == 'add':
+        opcode = 0b0011010
+    elif name == 'sub':
+        opcode = 0b0111010
+    elif name == 'and':
+        opcode = 0b1011010
+    else:
+        raise NotImplementedError()
+    instruction = (opcode | ((rm & 7) << 7) |
+                   ((rn & 7) << 10) | ((rd & 7) << 13))
+    return instruction
+
+
 def jr32(rn):
     opcode = 0b0101001111
     bits_16_20 = 0b0010
