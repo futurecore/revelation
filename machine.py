@@ -12,7 +12,9 @@ DONT_CARE = 'x'
 #-----------------------------------------------------------------------
 class State(object):
 #    _virtualizable_ = ['pc', 'ncycles', 'N', 'Z', 'C', 'V']
-    def __init__(self, memory, debug, reset_addr=0x0):
+    possible_attributes = "AN AZ AC AV AVS BN BZ pc".split()
+
+    def __init__(self, memory, debug, reset_addr=0x0, **args):
         self.pc       = reset_addr
         self.rf       = RegisterFile(constant_zero=False, num_regs=64)
         self.mem      = memory
@@ -22,22 +24,29 @@ class State(object):
         self.rf.debug  = debug
         self.mem.debug = debug
 
-        # current program status register (CPSR)
-        self.AN    = 0b0      # Negative condition
-        self.AZ    = 0b0      # Zero condition
-        self.AC    = 0b0      # Carry condition
-        self.AV    = 0b0      # Overflow condition
-        self.AVS   = 0b0      # Sticky integer overflow flag
-        self.BN    = 0b0      # FP zero
-        self.BZ    = 0b0      # FP negative
+        for attr in self.possible_attributes:
+            if attr in args:
+                setattr(self, attr, args[attr])
+            else:
+                setattr(self, attr, 0b0)
+        for arg, value in args.items():
+            if arg.startswith("rf"):
+                index = int(arg[2:])
+                self.set_register(index, value)
 
         # other registers
-        self.status        = 0
-        self.ncycles       = 0
-        self.stats_en      = False
+        self.status   = 0
+        self.ncycles  = 0
+        self.stats_en = False
 
         # marks if should be running, syscall_exit sets it false
-        self.running       = True
+        self.running = True
+
+    def get_register(self, index):
+        return self.rf[index]
+
+    def set_register(self, index, value):
+        self.rf[index] = value
 
     def fetch_pc( self ):
         return self.pc
@@ -48,7 +57,7 @@ class StateChecker(object):
     __equals__ tests whether registers and flags of interest are equal to a
     given other state.
     """
-    possible_attributes = "AN AZ AC AV AVS pc".split()
+    possible_attributes = "AN AZ AC AV AVS BN BZ pc".split()
     def __init__(self, **args):
         self.interesting_state = []
         for attr in self.possible_attributes:
@@ -60,8 +69,6 @@ class StateChecker(object):
             if arg.startswith("rf"):
                 index = int(arg[2:])
                 self.expected_registers.append((index, value))
-
-        # TODO: Registers
 
     def check(self, state):
         for attr in self.possible_attributes:
