@@ -142,11 +142,8 @@ def test_decode_execute_jr32():
 
 
 def test_decode_bcond32():
-    state = new_state()
     instr = opcode_factory.bcond32(0b0000, 0)
     name, executefn = decode(instr)
-    state.rf[0] = 111
-    executefn(state, Instruction(instr, None))
     assert name == "bcond32"
 
 
@@ -157,3 +154,20 @@ def test_should_branch():
     state.AZ = 0
     assert not should_branch(state, 0b0000)
     # TODO: add more of these.
+
+
+def test_decode_movcond32():
+    instr = opcode_factory.movcond32(0b0000, 0, 0)
+    name, executefn = decode(instr)
+    assert name == "movcond32"
+
+
+def test_execute_movcond32():
+    state = new_state()
+    state.AZ = 1
+    instr = opcode_factory.movcond32(0b0000, 0, 1)
+    name, executefn = decode(instr)
+    assert name == "movcond32"
+    state.rf[1] = 111
+    executefn(state, Instruction(instr, None))
+    assert state.rf[0] == 111

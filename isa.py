@@ -24,19 +24,23 @@ from pydgin.misc import create_risc_decoder
 # Instruction Encodings
 #=======================================================================
 encodings = [
-    ['nop16',   'xxxxxxxxxxxxxxxxxxxxxx0110100010'],
+    ['nop16',     'xxxxxxxxxxxxxxxxxxxxxx0110100010'],
     #---------------------------------------------------------------------
     # Arithmetic
     #---------------------------------------------------------------------
-    ['add32',   'xxxxxxxxxxxx1010xxxxxxxxx0011111'],
-    ['add32',   'xxxxxxxxxxxxxxxxxxxxxxxxx0011011'], # with immediate
-    ['sub32',   'xxxxxxxxxxxx1010xxxxxxxxx0111111'],
-    ['sub32',   'xxxxxxxxxxxxxxxxxxxxxxxxx0111011'], # with immediate
+    ['add32',     'xxxxxxxxxxxx1010xxxxxxxxx0011111'],
+    ['add32',     'xxxxxxxxxxxxxxxxxxxxxxxxx0011011'], # with immediate
+    ['sub32',     'xxxxxxxxxxxx1010xxxxxxxxx0111111'],
+    ['sub32',     'xxxxxxxxxxxxxxxxxxxxxxxxx0111011'], # with immediate
     #---------------------------------------------------------------------
     # Jumps and branch conditions
     #---------------------------------------------------------------------
-    ['bcond32', 'xxxxxxxxxxxxxxxxxxxxxxxxxxxx1000'],
-    ['jr32',    'xxxxxxxxxxxx0010xxxxxx0101001111']
+    ['bcond32',   'xxxxxxxxxxxxxxxxxxxxxxxxxxxx1000'],
+    ['jr32',      'xxxxxxxxxxxx0010xxxxxx0101001111'],
+    #---------------------------------------------------------------------
+    # Move
+    #---------------------------------------------------------------------
+    ['movcond32', 'xxxxxxxxxxxx0010xxxxxx00xxxx1111'],
 ]
 
 
@@ -137,8 +141,21 @@ def should_branch(s, cond):
         return s.AV != s.AN
     elif cond == 0b1001:
         return s.AZ | (s.AV != s.AN)
+    elif cond == 0b1010:
+        return s.BZ
+    elif cond == 0b1011:
+        return ~s.BZ
+    elif cond == 0b1100:
+        return s.BN & ~s.BZ
+    elif cond == 0b1101:
+        return s.BN | s.BZ
+    elif cond == 0b1110:
+        return True
+    elif cond == 0b1111:
+        return True  # Branch and link
     else:
-        raise NotImplementedError() # Floating point condition.
+        raise ValueError('Invalid condition, should be unreachable: ' +
+                         str(bin(cond)))
 
 
 def execute_bcond32(s, inst):
@@ -148,6 +165,16 @@ def execute_bcond32(s, inst):
         s.pc += imm << 1
     else:
         s.pc += 4
+
+
+#-----------------------------------------------------------------------
+# movcond32 - move on condition.
+#-----------------------------------------------------------------------
+def execute_movcond32(s, inst):
+    rd = inst.rd
+    rn = inst.rn
+    if should_branch(s, inst.bcond):
+        s.rf[rd] = s.rf[rn]
 
 
 #=======================================================================

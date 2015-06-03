@@ -25,6 +25,8 @@ class State(object):
         self.AC    = 0b0      # Carry condition
         self.AV    = 0b0      # Overflow condition
         self.AVS   = 0b0      # Sticky integer overflow flag
+        self.BN    = 0b0      # FP zero
+        self.BZ    = 0b0      # FP negative
 
         # other registers
         self.status        = 0

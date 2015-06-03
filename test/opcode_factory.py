@@ -38,3 +38,12 @@ def jr32(rn):
 def bcond32(cond, imm):
     opcode = 0b1000
     return (opcode | (cond << 4) | (imm << 8))
+
+
+def movcond32(cond, rd, rn):
+    opcode = 0b1111
+    bits_16_20 = 0b0010
+    instruction = (opcode | (cond << 4) | ((rn & 7) << 10) |
+                   ((rd & 7) << 13) | (bits_16_20 << 16) |
+                   ((rn & 56) << 23) | ((rd & 56) << 26))
+    return instruction
