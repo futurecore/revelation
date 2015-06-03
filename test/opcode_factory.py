@@ -25,6 +25,8 @@ def int_arith32(name, rd, rn, rm):
         opcode = 0b1011111
     elif name == 'orr':
         opcode = 0b1111111
+    elif name == 'eor':
+        opcode = 0b0001111
     else:
         raise NotImplementedError()
     instruction = (opcode | ((rm & 7) << 7) | ((rn & 7) << 10) |
@@ -45,6 +47,8 @@ def int_arith16(name, rd, rn, rm):
         opcode = 0b1011010
     elif name == 'orr':
         opcode = 0b1111010
+    elif name == 'eor':
+        opcode = 0b0001010
     else:
         raise NotImplementedError()
     instruction = (opcode | ((rm & 7) << 7) |

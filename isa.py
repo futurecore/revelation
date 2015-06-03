@@ -35,10 +35,12 @@ encodings = [
     #---------------------------------------------------------------------
     # Bitwise arithmetic
     #---------------------------------------------------------------------
-    ['and32',     'xxxxxxxxxxxxxxxxxxxxxxxxx1011111'],  # AND32
-    ['and16',     'xxxxxxxxxxxxxxxxxxxxxxxxx1011010'],  # AND16
-    ['orr32',     'xxxxxxxxxxxxxxxxxxxxxxxxx1111111'],  # ORR32
-    ['orr16',     'xxxxxxxxxxxxxxxxxxxxxxxxx1111010'],  # ORR16
+    ['and32',       'xxxxxxxxxxxx1010xxxxxxxxx1011111'],  # AND32
+    ['and16',       'xxxxxxxxxxxxxxxxxxxxxxxxx1011010'],  # AND16
+    ['orr32',       'xxxxxxxxxxxx1010xxxxxxxxx1111111'],  # ORR32
+    ['orr16',       'xxxxxxxxxxxxxxxxxxxxxxxxx1111010'],  # ORR16
+    ['eor32',       'xxxxxxxxxxxx1010xxxxxxxxx0001111'],  # EOR32
+    ['eor16',       'xxxxxxxxxxxxxxxxxxxxxxxxx0001010'],  # EOR16
     #--------------------------------------------------------------------
     # Loads and stores
     #---------------------------------------------------------------------
@@ -123,7 +125,7 @@ def execute_sub32(s, inst):
 #-----------------------------------------------------------------------
 def make_bit_executor(name, is16bit):
     def execute_bit(s, inst):
-        """RD = RN & RM
+        """RD = RN <OP> RM
         AN = RD[31]
         AV = 0
         AC = 0
@@ -135,6 +137,8 @@ def make_bit_executor(name, is16bit):
             result = s.rf[inst.rn] & s.rf[inst.rm]
         elif name == "orr":
             result = s.rf[inst.rn] | s.rf[inst.rm]
+        elif name == "eor":
+            result = s.rf[inst.rn] ^ s.rf[inst.rm]
         s.rf[inst.rd] = trim_32(result)
         s.AN = (result >> 31) & 1
         s.AC = 0
@@ -147,6 +151,8 @@ execute_and32 = make_bit_executor("and", False)
 execute_and16 = make_bit_executor("and", True)
 execute_orr32 = make_bit_executor("orr", False)
 execute_orr16 = make_bit_executor("orr", True)
+execute_eor32 = make_bit_executor("eor", False)
+execute_eor16 = make_bit_executor("eor", True)
 
 
 #-----------------------------------------------------------------------
