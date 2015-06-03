@@ -35,10 +35,10 @@ encodings = [
     #---------------------------------------------------------------------
     # Bitwise arithmetic
     #---------------------------------------------------------------------
-    ['bit1632',     'xxxxxxxxxxxxxxxxxxxxxxxxx1011111'],  # AND32
-    ['bit1632',     'xxxxxxxxxxxxxxxxxxxxxxxxx1011010'],  # AND16
-    ['bit1632',     'xxxxxxxxxxxxxxxxxxxxxxxxx1011111'],  # ORR32
-    ['bit1632',     'xxxxxxxxxxxxxxxxxxxxxxxxx1011010'],  # ORR16
+    ['and32',     'xxxxxxxxxxxxxxxxxxxxxxxxx1011111'],  # AND32
+    ['and16',     'xxxxxxxxxxxxxxxxxxxxxxxxx1011010'],  # AND16
+    ['orr32',     'xxxxxxxxxxxxxxxxxxxxxxxxx1111111'],  # ORR32
+    ['orr16',     'xxxxxxxxxxxxxxxxxxxxxxxxx1111010'],  # ORR16
     #--------------------------------------------------------------------
     # Loads and stores
     #---------------------------------------------------------------------
@@ -121,22 +121,32 @@ def execute_sub32(s, inst):
 #-----------------------------------------------------------------------
 # bit1632 - 16 or 32 bit bitwise arithmetic.
 #-----------------------------------------------------------------------
-def execute_bit1632(s, inst):
-    """RD = RN & RM
-    AN = RD[31]
-    AV = 0
-    AC = 0
-    If ( RD[31:0] == 0 ) { AZ=1 } else { AZ=0 }
-    """
-    if not inst.bit2:
-        inst.bits &= 0xffff
-    result = s.rf[inst.rn] & s.rf[inst.rm]
-    s.rf[inst.rd] = trim_32(result)
-    s.AN = (result >> 31) & 1
-    s.AC = 0
-    s.AV = 0
-    s.AZ = trim_32(result) == 0
-    s.pc += 4 if inst.bit2 else 2
+def make_bit_executor(name, is16bit):
+    def execute_bit(s, inst):
+        """RD = RN & RM
+        AN = RD[31]
+        AV = 0
+        AC = 0
+        If ( RD[31:0] == 0 ) { AZ=1 } else { AZ=0 }
+        """
+        if is16bit:
+            inst.bits &= 0xffff
+        if name == "and":
+            result = s.rf[inst.rn] & s.rf[inst.rm]
+        elif name == "orr":
+            result = s.rf[inst.rn] | s.rf[inst.rm]
+        s.rf[inst.rd] = trim_32(result)
+        s.AN = (result >> 31) & 1
+        s.AC = 0
+        s.AV = 0
+        s.AZ = trim_32(result) == 0
+        s.pc += 4 if not is16bit else 2
+    return execute_bit
+
+execute_and32 = make_bit_executor("and", False)
+execute_and16 = make_bit_executor("and", True)
+execute_orr32 = make_bit_executor("orr", False)
+execute_orr16 = make_bit_executor("orr", True)
 
 
 #-----------------------------------------------------------------------

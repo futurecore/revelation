@@ -64,6 +64,28 @@ def test_execute_and16():
     expected_state.check(state)
 
 
+
+def test_execute_orr32():
+    state = new_state()
+    instr = opcode_factory.int_arith32('orr', 2, 1, 0)
+    name, executefn = decode(instr)
+    state.rf[0] = 5
+    state.rf[1] = 7
+    executefn(state, Instruction(instr, None))
+    expected_state = StateChecker(AZ=0, pc=4, rf2=(5 | 7))
+    expected_state.check(state)
+
+
+def test_execute_orr16():
+    state = new_state()
+    instr = opcode_factory.int_arith16('orr', 2, 1, 0) | (0xffff << 16)
+    name, executefn = decode(instr)
+    state.rf[0] = 5
+    state.rf[1] = 7
+    executefn(state, Instruction(instr, None))
+    expected_state = StateChecker(AZ=0, pc=2, rf2=(5 | 7))
+    expected_state.check(state)
+
 def test_decode_add32_immediate_argument():
     instr = Instruction(opcode_factory.int_arith32_immediate('add', 1, 0, 0b01010101010), "")
     assert instr.rd == 1

@@ -9,6 +9,20 @@ def test_int_arith32_immediate():
     assert int_arith32_immediate('sub', 1, 0, 0b01010101010) == instr
 
 
+def test_int_arith16():
+    #       0bdddnnnmmm0011010
+    instr = 0b0100010000011010
+    assert int_arith16('add', 2, 1, 0) == instr
+    #       0bdddnnnmmm0111010
+    instr = 0b0100010000111010
+    assert int_arith16('sub', 2, 1, 0) == instr
+    #       0bdddnnnmmm1011010
+    instr = 0b0100010001011010
+    assert int_arith16('and', 2, 1, 0) == instr
+    #       0bdddnnnmmm1111010
+    instr = 0b0100010001111010
+    assert int_arith16('orr', 2, 1, 0) == instr
+
 
 def test_int_arith32():
     #       0bdddnnnmmmxxx1010dddnnnmmm0011111
@@ -20,7 +34,10 @@ def test_int_arith32():
     #       0bdddnnnmmmxxx1010dddnnnmmm1011111
     instr = 0b00000000000010100100010001011111
     assert int_arith32('and', 2, 1, 0) == instr
-#
+    #       0bdddnnnmmmxxx1010dddnnnmmm1111111
+    instr = 0b00000000000010100100010001111111
+    assert int_arith32('orr', 2, 1, 0) == instr
+
 def test_jr32():
     #       0bxxxnnnxxxxxx0010xxxnnn0101011111
     instr = 0b00000000000000100000000101001111
