@@ -24,28 +24,32 @@ from pydgin.misc import create_risc_decoder
 # Instruction Encodings
 #=======================================================================
 encodings = [
-    ['nop16',     'xxxxxxxxxxxxxxxxxxxxxx0110100010'],
+    ['nop16',       'xxxxxxxxxxxxxxxxxxxxxx0110100010'],
     #---------------------------------------------------------------------
     # Arithmetic
     #---------------------------------------------------------------------
-    ['add32',     'xxxxxxxxxxxx1010xxxxxxxxx0011111'],
-    ['add32',     'xxxxxxxxxxxxxxxxxxxxxxxxx0011011'], # with immediate
-    ['sub32',     'xxxxxxxxxxxx1010xxxxxxxxx0111111'],
-    ['sub32',     'xxxxxxxxxxxxxxxxxxxxxxxxx0111011'], # with immediate
+    ['add32',       'xxxxxxxxxxxx1010xxxxxxxxx0011111'],
+    ['add32',       'xxxxxxxxxxxxxxxxxxxxxxxxx0011011'],  # with immediate.
+    ['sub32',       'xxxxxxxxxxxx1010xxxxxxxxx0111111'],
+    ['sub32',       'xxxxxxxxxxxxxxxxxxxxxxxxx0111011'],  # with immediate.
+    #---------------------------------------------------------------------
+    # Loads and stores
+    #---------------------------------------------------------------------
+    ['ldstrpmd32',  'xxxxxx1xxxxxxxxxxxxxxxxxxxxx1100'],  # LD or STR combined.
     #---------------------------------------------------------------------
     # Jumps and branch conditions
     #---------------------------------------------------------------------
-    ['bcond32',   'xxxxxxxxxxxxxxxxxxxxxxxxxxxx1000'],
-    ['jr32',      'xxxxxxxxxxxx0010xxxxxx0101001111'],
+    ['bcond32',     'xxxxxxxxxxxxxxxxxxxxxxxxxxxx1000'],
+    ['jr32',        'xxxxxxxxxxxx0010xxxxxx0101001111'],
     #---------------------------------------------------------------------
     # Move
     #---------------------------------------------------------------------
-    ['movcond32', 'xxxxxxxxxxxx0010xxxxxx00xxxx1111'],
+    ['movcond32',   'xxxxxxxxxxxx0010xxxxxx00xxxx1111'],
 ]
 
 
 def reg_or_imm(s, inst):
-    if inst.b2 == 1:
+    if inst.bit2 == 1:
         return s.rf[inst.rm]
     else:
         return inst.imm
@@ -105,6 +109,31 @@ def execute_sub32(s, inst):
     s.AV = overflow_from_sub(s.rf[inst.rn], s.rf[inst.rm], result)
     s.AVS = s.AVS | s.AV
     s.pc += 4
+
+
+#-----------------------------------------------------------------------
+# ldstrpmd32 - load-store post-modify with displacement.
+#-----------------------------------------------------------------------
+def execute_ldstrpmd32(s, inst):
+    """
+    address=RN;
+    EITHER:
+        RD=memory[address]; (LD)
+    OR:
+        memory[address]=RD; (STR)
+    RN=RN +/- IMM11 << (log2(size_in_bits/8));
+    """
+    address = s.rf[inst.rn]
+    size_in_bits = inst.bits_5_6
+    if inst.bit4:  # STORE
+        s.mem.write(address, 0b1 << size_in_bits, s.rf[inst.rd])
+    else:          # LOAD
+        s.rf[inst.rd] = s.mem.read(address, 0b1 << size_in_bits)
+    imm = inst.imm
+    if inst.sub_bit24:  # Subtract
+        s.rf[inst.rn] = address - (imm << size_in_bits)
+    else:
+        s.rf[inst.rn] = address + (imm << size_in_bits)
 
 
 #-----------------------------------------------------------------------

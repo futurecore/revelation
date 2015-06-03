@@ -2,7 +2,7 @@ from pydgin.debug import Debug
 
 from epiphany.instruction import Instruction
 from epiphany.isa import decode, should_branch
-from epiphany.machine import State, TestState
+from epiphany.machine import State, StateChecker
 from epiphany.sim import new_memory
 
 import opcode_factory
@@ -38,7 +38,7 @@ def test_execute_add32():
     state.rf[0] = 5
     state.rf[1] = 7
     executefn(state, Instruction(instr, None))
-    expected_state = TestState(AZ=0, pc=4, rf2=12)
+    expected_state = StateChecker(AZ=0, pc=4, rf2=12)
     expected_state.check(state)
 
 
@@ -55,7 +55,7 @@ def test_execute_add32_immediate():
     name, executefn = decode(instr)
     state.rf[0] = 5
     executefn(state, Instruction(instr, None))
-    expected_state = TestState(AZ=0, pc=4, rf1=(0b01010101010 + 5))
+    expected_state = StateChecker(AZ=0, pc=4, rf1=(0b01010101010 + 5))
     expected_state.check(state)
 
 
@@ -69,7 +69,7 @@ def test_execute_nop16():
     instr = opcode_factory.nop16()
     name, executefn = decode(instr)
     executefn(state, Instruction(instr, None))
-    expected_state = TestState(pc=2)
+    expected_state = StateChecker(pc=2)
     expected_state.check(state)
 
 
@@ -96,7 +96,7 @@ def test_execute_sub32():
     state.rf[0] = 5
     state.rf[1] = 7
     executefn(state, Instruction(instr, None))
-    expected_state = TestState(pc=4, AZ=0, AN=0, rf2=2)
+    expected_state = StateChecker(pc=4, AZ=0, AN=0, rf2=2)
     expected_state.check(state)
 
 
@@ -106,7 +106,7 @@ def test_execute_sub32_immediate_zero_result():
     name, executefn = decode(instr)
     state.rf[0] = 5
     executefn(state, Instruction(instr, None))
-    expected_state = TestState(pc=4, AZ=1, AN=0, AC=0, rf1=0)
+    expected_state = StateChecker(pc=4, AZ=1, AN=0, AC=0, rf1=0)
     expected_state.check(state)
 
 
@@ -117,7 +117,7 @@ def test_execute_sub32_immediate():
     name, executefn = decode(instr)
     state.rf[0] = 5
     executefn(state, Instruction(instr, None))
-    expected_state = TestState(pc=4, AZ=0, AN=1, AC=1,
+    expected_state = StateChecker(pc=4, AZ=0, AN=1, AC=1,
                                rf1=trim_32(5 - 0b01010101010))
     expected_state.check(state)
 
@@ -129,7 +129,7 @@ def test_decode_execute_jr32():
     state.rf[0] = 111
     executefn(state, Instruction(instr, None))
     assert name == "jr32"
-    expected_state = TestState(pc=111)
+    expected_state = StateChecker(pc=111)
     expected_state.check(state)
 
 
@@ -163,5 +163,43 @@ def test_execute_movcond32():
     assert name == "movcond32"
     state.rf[1] = 111
     executefn(state, Instruction(instr, None))
-    expected_state = TestState(rf0=111)
+    expected_state = StateChecker(rf0=111)
     expected_state.check(state)
+
+
+def test_decode_ldstrpmd32():
+    instr = opcode_factory.ldstrpmd32(1, 0, 1, 0b1010101010, 0b11, 1)
+    name, executefn = decode(instr)
+    assert name == "ldstrpmd32"
+    assert Instruction(instr, "").sub_bit24 == 1
+    assert Instruction(instr, "").bit4 == 1
+    assert Instruction(instr, "").bits_5_6 == 0b11
+
+
+def test_execute_ldpmd32():
+    state = new_state()
+    state.rf[5] = 8
+    state.mem.write(8, 4, 42) # Start address, number of bytes, value
+    # bb: 00=byte, 01=half-word, 10=word, 11=double-word
+    #       opcode_factory.ldstrpmd32(rd, rn, sub, imm, bb, s):
+    instr = opcode_factory.ldstrpmd32(0,   5,   1,   1, 0b10, 0)
+    assert Instruction(instr, "").bit4 == 0
+    name, executefn = decode(instr)
+    executefn(state, Instruction(instr, None))
+    expected_state = StateChecker(rf0=42, rf5=4)
+    expected_state.check(state)
+
+
+def test_execute_strpmd32():
+    state = new_state()
+    state.rf[0] = 42
+    state.rf[5] = 8
+    # bb: 00=byte, 01=half-word, 10=word, 11=double-word
+    #       opcode_factory.ldstrpmd32(rd, rn, sub, imm, bb, s):
+    instr = opcode_factory.ldstrpmd32(0,   5,   1,   1, 0b10, 1)
+    assert Instruction(instr, "").bit4 == 1
+    name, executefn = decode(instr)
+    executefn(state, Instruction(instr, None))
+    expected_state = StateChecker(rf0=42, rf5=4)
+    expected_state.check(state)
+    assert 42 == state.mem.read(8, 4) # Start address, number of bytes

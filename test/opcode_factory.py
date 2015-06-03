@@ -47,3 +47,15 @@ def movcond32(cond, rd, rn):
                    ((rd & 7) << 13) | (bits_16_20 << 16) |
                    ((rn & 56) << 23) | ((rd & 56) << 26))
     return instruction
+
+
+def ldstrpmd32(rd, rn, sub, imm, bb, s):
+    # Data size
+    # 00=byte, 01=half-word, 10=word, 11=double-word
+    opcode = 0b1100
+    bit25 = 1
+    instruction = (opcode | (s << 4) | (bb << 5) | ((imm & 7) << 7) |
+                   ((rn & 7) << 10) | ((rd & 7) << 13) |
+                   ((imm & (0xFF << 3)) << 13) | (sub << 24) | (bit25 << 25) |
+                   ((rn & 56) << 23) | ((rd & 56) << 26))
+    return instruction

@@ -24,7 +24,7 @@ class Instruction(object):
         return ((self.bits >> 7) & 0x7) | ((self.bits >> 13) & (0xFF << 3))
 
     @property
-    def b2(self):
+    def bit2(self):
         """Get bit 2 of an instruction.
         """
         return (self.bits >> 2) & 1
@@ -37,3 +37,20 @@ class Instruction(object):
     def bcond32_imm(self):
         return self.bits >> 8
 
+    @property
+    def bits_5_6(self):
+        return (self.bits >> 5) & 3
+
+    @property
+    def sub_bit24(self):
+        return (self.bits >> 24) & 1
+
+
+    @property
+    def sub_bit20(self):
+        return (self.bits >> 20) & 1
+
+
+    @property
+    def bit4(self):
+        return (self.bits >> 4) & 1

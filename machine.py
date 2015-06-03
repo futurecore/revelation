@@ -43,7 +43,7 @@ class State(object):
         return self.pc
 
 
-class TestState(object):
+class StateChecker(object):
     """Used only for testing.
     __equals__ tests whether registers and flags of interest are equal to a
     given other state.
