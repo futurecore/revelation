@@ -6,6 +6,7 @@ from epiphany.machine import State, StateChecker
 from epiphany.sim import new_memory
 
 import opcode_factory
+import pytest
 
 def new_state(**args):
     return State(new_memory(), Debug(), **args)
@@ -42,57 +43,29 @@ def test_execute_add32():
     expected_state.check(state)
 
 
-def test_execute_and32():
+@pytest.mark.parametrize("name,expected", [("and", 5 & 7),
+                                           ("orr", 5 | 7),
+                                           ("eor", 5 ^ 7),
+                                          ])
+def test_bitwise32(name, expected):
     state = new_state(rf0=5, rf1=7)
-    instr = opcode_factory.int_arith32('and', 2, 1, 0)
+    instr = opcode_factory.int_arith32(name, 2, 1, 0)
     name, executefn = decode(instr)
     executefn(state, Instruction(instr, None))
-    expected_state = StateChecker(AZ=0, pc=4, rf2=(5 & 7))
+    expected_state = StateChecker(AZ=0, pc=4, rf2=expected)
     expected_state.check(state)
 
 
-def test_execute_and16():
+@pytest.mark.parametrize("name,expected", [("and", 5 & 7),
+                                           ("orr", 5 | 7),
+                                           ("eor", 5 ^ 7),
+                                          ])
+def test_bitwise16(name, expected):
     state = new_state(rf0=5, rf1=7)
-    instr = opcode_factory.int_arith16('and', 2, 1, 0) | (0xffff << 16)
+    instr = opcode_factory.int_arith16(name, 2, 1, 0)
     name, executefn = decode(instr)
     executefn(state, Instruction(instr, None))
-    expected_state = StateChecker(AZ=0, pc=2, rf2=(5 & 7))
-    expected_state.check(state)
-
-
-def test_execute_orr32():
-    state = new_state(rf0=5, rf1=7)
-    instr = opcode_factory.int_arith32('orr', 2, 1, 0)
-    name, executefn = decode(instr)
-    executefn(state, Instruction(instr, None))
-    expected_state = StateChecker(AZ=0, pc=4, rf2=(5 | 7))
-    expected_state.check(state)
-
-
-def test_execute_orr16():
-    state = new_state(rf0=5, rf1=7)
-    instr = opcode_factory.int_arith16('orr', 2, 1, 0) | (0xffff << 16)
-    name, executefn = decode(instr)
-    executefn(state, Instruction(instr, None))
-    expected_state = StateChecker(AZ=0, pc=2, rf2=(5 | 7))
-    expected_state.check(state)
-
-
-def test_execute_eor32():
-    state = new_state(rf0=5, rf1=7)
-    instr = opcode_factory.int_arith32('eor', 2, 1, 0)
-    name, executefn = decode(instr)
-    executefn(state, Instruction(instr, None))
-    expected_state = StateChecker(AZ=0, pc=4, rf2=(5 ^ 7))
-    expected_state.check(state)
-
-
-def test_execute_eor16():
-    state = new_state(rf0=5, rf1=7)
-    instr = opcode_factory.int_arith16('eor', 2, 1, 0) | (0xffff << 16)
-    name, executefn = decode(instr)
-    executefn(state, Instruction(instr, None))
-    expected_state = StateChecker(AZ=0, pc=2, rf2=(5 ^ 7))
+    expected_state = StateChecker(AZ=0, pc=2, rf2=expected)
     expected_state.check(state)
 
 
