@@ -35,6 +35,27 @@ def test_execute_add32(name, expected):
     expected_state = StateChecker(pc=4, **expected)
     expected_state.check(state)
 
+@pytest.mark.parametrize("name,expected", [("asr", 5 >> 7),
+                                          ])
+def test_shifts32(name, expected):
+    state = new_state(rf0=5, rf1=7)
+    instr = opcode_factory.int_arith32(name, 2, 1, 0)
+    name, executefn = decode(instr)
+    executefn(state, Instruction(instr, None))
+    expected_state = StateChecker(AZ=1, pc=4, rf2=expected)
+    expected_state.check(state)
+
+
+@pytest.mark.parametrize("name,expected", [("asr", 5 >> 7),
+                                          ])
+def test_shifts16(name, expected):
+    state = new_state(rf0=5, rf1=7)
+    instr = opcode_factory.int_arith16(name, 2, 1, 0)
+    name, executefn = decode(instr)
+    executefn(state, Instruction(instr, None))
+    expected_state = StateChecker(AZ=1, pc=2, rf2=expected)
+    expected_state.check(state)
+
 
 @pytest.mark.parametrize("name,expected", [("and", 5 & 7),
                                            ("orr", 5 | 7),

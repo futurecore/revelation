@@ -41,7 +41,9 @@ encodings = [
     ['orr16',       'xxxxxxxxxxxxxxxxxxxxxxxxx1111010'],  # ORR16
     ['eor32',       'xxxxxxxxxxxx1010xxxxxxxxx0001111'],  # EOR32
     ['eor16',       'xxxxxxxxxxxxxxxxxxxxxxxxx0001010'],  # EOR16
-    #--------------------------------------------------------------------
+    ['asr32',       'xxxxxxxxxxxx1010xxxxxxxxx1101111'],  # ASR32
+    ['asr16',       'xxxxxxxxxxxxxxxxxxxxxxxxx1101010'],  # ASR16
+     #--------------------------------------------------------------------
     # Loads and stores
     #---------------------------------------------------------------------
     ['ldstrpmd32',  'xxxxxx1xxxxxxxxxxxxxxxxxxxxx1100'],  # LD or STR combined.
@@ -139,6 +141,8 @@ def make_bit_executor(name, is16bit):
             result = s.rf[inst.rn] | s.rf[inst.rm]
         elif name == "eor":
             result = s.rf[inst.rn] ^ s.rf[inst.rm]
+        elif name == "asr":
+            result = s.rf[inst.rn] >> s.rf[inst.rm]  # TODO: First 5 bits?
         s.rf[inst.rd] = trim_32(result)
         s.AN = (result >> 31) & 1
         s.AC = 0
@@ -153,6 +157,8 @@ execute_orr32 = make_bit_executor("orr", False)
 execute_orr16 = make_bit_executor("orr", True)
 execute_eor32 = make_bit_executor("eor", False)
 execute_eor16 = make_bit_executor("eor", True)
+execute_asr32 = make_bit_executor("asr", False)
+execute_asr16 = make_bit_executor("asr", True)
 
 
 #-----------------------------------------------------------------------
