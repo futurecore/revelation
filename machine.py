@@ -4,6 +4,9 @@
 
 from pydgin.storage import RegisterFile
 
+DONT_CARE = 'x'
+
+
 #-----------------------------------------------------------------------
 # State
 #-----------------------------------------------------------------------
@@ -38,3 +41,38 @@ class State(object):
 
     def fetch_pc( self ):
         return self.pc
+
+
+class TestState(object):
+    """Used only for testing.
+    __equals__ tests whether registers and flags of interest are equal to a
+    given other state.
+    """
+    possible_attributes = "AN AZ AC AV AVS pc".split()
+    def __init__(self, **args):
+        self.interesting_state = []
+        for attr in self.possible_attributes:
+            if attr in args:
+                self.interesting_state.append(attr)
+                setattr(self, attr, args[attr])
+        self.expected_registers = []
+        for arg, value in args.items():
+            if arg.startswith("rf"):
+                index = int(arg[2:])
+                self.expected_registers.append((index, value))
+
+        # TODO: Registers
+
+    def check(self, state):
+        for attr in self.possible_attributes:
+            if attr in self.interesting_state:
+                expected = getattr(self, attr)
+                got = getattr(state, attr)
+                if expected != got:
+                    raise ValueError("attrs %s differ. expected: %s got: %s" %
+                                         (attr, expected, got))
+        for index, expected in self.expected_registers:
+            got = state.rf[index]
+            if expected != got:
+                raise ValueError("register %s differs. expected: %s got: %s" %
+                                     (index, expected, got))
