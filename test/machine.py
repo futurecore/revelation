@@ -14,19 +14,21 @@ class StateChecker(object):
         for arg, value in args.items():
             if arg.startswith("rf"):
                 index = int(arg[2:])
+                if index >= 64:
+                    raise ValueError("The Epiphany only has 64 registers cannot set rf[%d]." %
+                                     index)
                 self.expected_registers.append((index, value))
 
     def check(self, state):
         for index, expected in self.expected_registers:
             got = state.rf[index]
             if expected != got:
-                raise ValueError("register %s differs. expected: %s got: %s" %
-                                     (index, expected, got))
+                raise ValueError("Register %s differs. expected: %s got: %s" %
+                                 (index, expected, got))
         for attr in self.possible_attributes:
             if attr in self.interesting_state:
                 expected = getattr(self, attr)
                 got = getattr(state, attr)
                 if expected != got:
-                    raise ValueError("attrs %s differ. expected: %s got: %s" %
-                                         (attr, expected, got))
-
+                    raise ValueError("Flags %s differ. expected: %s got: %s" %
+                                     (attr, expected, got))
