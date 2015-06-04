@@ -39,9 +39,6 @@ class State(object):
         # marks if should be running, syscall_exit sets it false
         self.running = True
 
-    def get_register(self, index):
-        return self.rf[index]
-
     def set_register(self, index, value):
         self.rf[index] = value
 
