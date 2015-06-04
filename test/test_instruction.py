@@ -131,29 +131,30 @@ def test_execute_movcond32():
     expected_state = StateChecker(rf0=111)
     expected_state.check(state)
 
-
-def test_execute_ldpmd32():
+@pytest.mark.parametrize("sub,expected", [(1, 8 - 4), (0, 8 + 4)])
+def test_execute_ldpmd32(sub, expected):
     state = new_state(rf5=8)
     state.mem.write(8, 4, 42) # Start address, number of bytes, value
     # bb: 00=byte, 01=half-word, 10=word, 11=double-word
     #       opcode_factory.ldstrpmd32(rd, rn, sub, imm, bb, s):
-    instr = opcode_factory.ldstrpmd32(0,   5,   1,   1, 0b10, 0)
+    instr = opcode_factory.ldstrpmd32(0,   5, sub,   1, 0b10, 0)
     assert Instruction(instr, "").bit4 == 0
     name, executefn = decode(instr)
     executefn(state, Instruction(instr, None))
-    expected_state = StateChecker(rf0=42, rf5=4)
+    expected_state = StateChecker(rf0=42, rf5=expected)
     expected_state.check(state)
 
 
-def test_execute_strpmd32():
+@pytest.mark.parametrize("sub,expected", [(1, 8 - 4), (0, 8 + 4)])
+def test_execute_strpmd32(sub, expected):
     state = new_state(rf0=42, rf5=8)
     # bb: 00=byte, 01=half-word, 10=word, 11=double-word
     #       opcode_factory.ldstrpmd32(rd, rn, sub, imm, bb, s):
-    instr = opcode_factory.ldstrpmd32(0,   5,   1,   1, 0b10, 1)
+    instr = opcode_factory.ldstrpmd32(0,   5, sub,   1, 0b10, 1)
     assert Instruction(instr, "").bit4 == 1
     name, executefn = decode(instr)
     executefn(state, Instruction(instr, None))
-    expected_state = StateChecker(rf0=42, rf5=4)
+    expected_state = StateChecker(rf0=42, rf5=expected)
     expected_state.check(state)
     assert 42 == state.mem.read(8, 4) # Start address, number of bytes
 
