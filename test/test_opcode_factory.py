@@ -1,5 +1,7 @@
 from opcode_factory import *
 
+import pytest
+
 def test_int_arith32_immediate():
     #       0bdddnnnxxiiiiiiiidddnnniii0011011 ADD
     instr = 0b00000000010101010010000100011011
@@ -7,6 +9,8 @@ def test_int_arith32_immediate():
     #       0bdddnnnxxiiiiiiiidddnnniii0111011 SUB
     instr = 0b00000000010101010010000100111011
     assert int_arith32_immediate('sub', 1, 0, 0b01010101010) == instr
+    with pytest.raises(NotImplementedError):
+        int_arith32_immediate('xxx', 1, 0, 0b0)
 
 
 def test_int_arith16():
@@ -34,6 +38,8 @@ def test_int_arith16():
     #       0bdddnnnmmm0101010
     instr = 0b0100010000101010
     assert int_arith16('lsl', 2, 1, 0) == instr
+    with pytest.raises(NotImplementedError):
+        int_arith16('xxx', 1, 0, 0b0)
 
 
 def test_int_arith32():
@@ -61,6 +67,8 @@ def test_int_arith32():
     #       0bdddnnnmmmxxx1010dddnnnmmm0101111
     instr = 0b00000000000010100100010000101111
     assert int_arith32('lsl', 2, 1, 0) == instr
+    with pytest.raises(NotImplementedError):
+        int_arith32('xxx', 1, 0, 0b0)
 
 
 def test_jr32():
