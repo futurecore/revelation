@@ -1,7 +1,10 @@
 language: python
 
+install:
+  - pip install -r requirements.txt
+
 python:
     - "2.7"
 
 script:
-    - py.test epiphany/test
+    - py.test --cov-report term-missing --cov epiphany epiphany/test/
