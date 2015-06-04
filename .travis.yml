@@ -1,10 +1,13 @@
 language: python
 
 install:
-  - pip install -r requirements.txt
+    - pip install -r requirements.txt
+    - pip install coveralls
 
 python:
     - "2.7"
 
 script:
     - py.test --cov-report term-missing --cov epiphany epiphany/test/
+
+after_success: coveralls
