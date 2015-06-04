@@ -28,6 +28,12 @@ def test_int_arith16():
     #       0bdddnnnmmm1101010
     instr = 0b0100010001101010
     assert int_arith16('asr', 2, 1, 0) == instr
+    #       0bdddnnnmmm1001010
+    instr = 0b0100010001001010
+    assert int_arith16('lsr', 2, 1, 0) == instr
+    #       0bdddnnnmmm0101010
+    instr = 0b0100010000101010
+    assert int_arith16('lsl', 2, 1, 0) == instr
 
 
 def test_int_arith32():
@@ -49,6 +55,12 @@ def test_int_arith32():
     #       0bdddnnnmmmxxx1010dddnnnmmm1101111
     instr = 0b00000000000010100100010001101111
     assert int_arith32('asr', 2, 1, 0) == instr
+    #       0bdddnnnmmmxxx1010dddnnnmmm1001111
+    instr = 0b00000000000010100100010001001111
+    assert int_arith32('lsr', 2, 1, 0) == instr
+    #       0bdddnnnmmmxxx1010dddnnnmmm0101111
+    instr = 0b00000000000010100100010000101111
+    assert int_arith32('lsl', 2, 1, 0) == instr
 
 
 def test_jr32():

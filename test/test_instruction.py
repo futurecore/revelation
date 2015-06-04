@@ -35,25 +35,53 @@ def test_execute_add32(name, expected):
     expected_state = StateChecker(pc=4, **expected)
     expected_state.check(state)
 
-@pytest.mark.parametrize("name,expected", [("asr", 5 >> 7),
-                                          ])
-def test_shifts32(name, expected):
-    state = new_state(rf0=5, rf1=7)
-    instr = opcode_factory.int_arith32(name, 2, 1, 0)
+
+@pytest.mark.parametrize("rn,rm,is16bit", [(-1, 28, True),
+                                           (-1, 28, False),
+                                           ( 1, 28, True),
+                                           ( 1, 28, False)])
+def test_logical_shift_right(rn, rm, is16bit):
+    rd = 2
+    state = new_state(rf0=trim_32(rn), rf1=trim_32(rm))
+    instr = (opcode_factory.int_arith16("lsr", rd, 0, 1) if is16bit
+             else opcode_factory.int_arith32("lsr", rd, 0, 1))
     name, executefn = decode(instr)
     executefn(state, Instruction(instr, None))
-    expected_state = StateChecker(AZ=1, pc=4, rf2=expected)
+    expected_state = StateChecker(AZ=(False if rn < 0 else True), # 1 >> 5 == 0
+                                  AV=0, AC=0,
+                                  pc=(2 if is16bit else 4),
+                                  rf2=(0b1111 if rn < 0 else 0))
     expected_state.check(state)
 
 
-@pytest.mark.parametrize("name,expected", [("asr", 5 >> 7),
-                                          ])
-def test_shifts16(name, expected):
-    state = new_state(rf0=5, rf1=7)
-    instr = opcode_factory.int_arith16(name, 2, 1, 0)
+@pytest.mark.parametrize("rn,rm,is16bit", [(-1, 5, True),
+                                           (-1, 5, False),
+                                           ( 1, 5, True),
+                                           ( 1, 5, False)])
+def test_arith_shift_right(rn, rm, is16bit):
+    rd = 2
+    state = new_state(rf0=trim_32(rn), rf1=trim_32(rm))
+    instr = (opcode_factory.int_arith16("asr", rd, 0, 1) if is16bit
+             else opcode_factory.int_arith32("asr", rd, 0, 1))
     name, executefn = decode(instr)
     executefn(state, Instruction(instr, None))
-    expected_state = StateChecker(AZ=1, pc=2, rf2=expected)
+    expected_state = StateChecker(AZ=(False if rn < 0 else True), # 1 >> 5 == 0
+                                  AV=0, AC=0,
+                                  pc=(2 if is16bit else 4),
+                                  rf2=(trim_32(-1) if rn < 0 else 0))
+    expected_state.check(state)
+
+
+@pytest.mark.parametrize("name,is16bit", [("lsl", True), ("lsl", False)])
+def test_shift_left(name, is16bit):
+    state = new_state(rf0=5, rf1=7)
+    instr = (opcode_factory.int_arith16(name, 2, 1, 0) if is16bit
+             else opcode_factory.int_arith32(name, 2, 1, 0))
+    name, executefn = decode(instr)
+    executefn(state, Instruction(instr, None))
+    expected_state = StateChecker(AZ=0, AN=0, AC=0, AV=0,
+                                  pc=(2 if is16bit else 4),
+                                  rf2=7 << 5)
     expected_state.check(state)
 
 
@@ -66,7 +94,7 @@ def test_bitwise32(name, expected):
     instr = opcode_factory.int_arith32(name, 2, 1, 0)
     name, executefn = decode(instr)
     executefn(state, Instruction(instr, None))
-    expected_state = StateChecker(AZ=0, pc=4, rf2=expected)
+    expected_state = StateChecker(AZ=0, AV=0, AC=0, pc=4, rf2=expected)
     expected_state.check(state)
 
 
@@ -79,7 +107,7 @@ def test_bitwise16(name, expected):
     instr = opcode_factory.int_arith16(name, 2, 1, 0)
     name, executefn = decode(instr)
     executefn(state, Instruction(instr, None))
-    expected_state = StateChecker(AZ=0, pc=2, rf2=expected)
+    expected_state = StateChecker(AZ=0, AV=0, AC=0, pc=2, rf2=expected)
     expected_state.check(state)
 
 

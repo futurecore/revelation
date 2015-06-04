@@ -29,6 +29,10 @@ def int_arith32(name, rd, rn, rm):
         opcode = 0b0001111
     elif name == 'asr':
         opcode = 0b1101111
+    elif name == 'lsr':
+        opcode = 0b1001111
+    elif name == 'lsl':
+        opcode = 0b0101111
     else:
         raise NotImplementedError()
     instruction = (opcode | ((rm & 7) << 7) | ((rn & 7) << 10) |
@@ -53,6 +57,10 @@ def int_arith16(name, rd, rn, rm):
         opcode = 0b0001010
     elif name == 'asr':
         opcode = 0b1101010
+    elif name == 'lsr':
+        opcode = 0b1001010
+    elif name == 'lsl':
+        opcode = 0b0101010
     else:
         raise NotImplementedError()
     instruction = (opcode | ((rm & 7) << 7) |

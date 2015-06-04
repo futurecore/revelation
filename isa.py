@@ -43,7 +43,11 @@ encodings = [
     ['eor16',       'xxxxxxxxxxxxxxxxxxxxxxxxx0001010'],  # EOR16
     ['asr32',       'xxxxxxxxxxxx1010xxxxxxxxx1101111'],  # ASR32
     ['asr16',       'xxxxxxxxxxxxxxxxxxxxxxxxx1101010'],  # ASR16
-     #--------------------------------------------------------------------
+    ['lsr32',       'xxxxxxxxxxxx1010xxxxxxxxx1001111'],  # LSR32
+    ['lsr16',       'xxxxxxxxxxxxxxxxxxxxxxxxx1001010'],  # LSR16
+    ['lsl32',       'xxxxxxxxxxxx1010xxxxxxxxx0101111'],  # LSL32
+    ['lsl16',       'xxxxxxxxxxxxxxxxxxxxxxxxx0101010'],  # LSL16
+    #--------------------------------------------------------------------
     # Loads and stores
     #---------------------------------------------------------------------
     ['ldstrpmd32',  'xxxxxx1xxxxxxxxxxxxxxxxxxxxx1100'],  # LD or STR combined.
@@ -64,6 +68,17 @@ def reg_or_imm(s, inst):
         return s.rf[inst.rm]
     else:
         return inst.imm
+
+
+def trim_5(value):
+    return value & 0b11111
+
+
+def signed(value, is16bit):
+  if is16bit and (value & 0x8000) or not is16bit and (value & 0x80000000):
+    twos_complement = ~value + 1
+    return -trim_32( twos_complement )
+  return value
 
 
 #-----------------------------------------------------------------------
@@ -142,7 +157,11 @@ def make_bit_executor(name, is16bit):
         elif name == "eor":
             result = s.rf[inst.rn] ^ s.rf[inst.rm]
         elif name == "asr":
-            result = s.rf[inst.rn] >> s.rf[inst.rm]  # TODO: First 5 bits?
+            result = signed(s.rf[inst.rn], True) >> trim_5(s.rf[inst.rm])
+        elif name == "lsr":
+            result = s.rf[inst.rn] >> trim_5(s.rf[inst.rm])
+        elif name == "lsl":
+            result = s.rf[inst.rn] << trim_5(s.rf[inst.rm])
         s.rf[inst.rd] = trim_32(result)
         s.AN = (result >> 31) & 1
         s.AC = 0
@@ -159,6 +178,10 @@ execute_eor32 = make_bit_executor("eor", False)
 execute_eor16 = make_bit_executor("eor", True)
 execute_asr32 = make_bit_executor("asr", False)
 execute_asr16 = make_bit_executor("asr", True)
+execute_lsr32 = make_bit_executor("lsr", False)
+execute_lsr16 = make_bit_executor("lsr", True)
+execute_lsl32 = make_bit_executor("lsl", False)
+execute_lsl16 = make_bit_executor("lsl", True)
 
 
 #-----------------------------------------------------------------------
