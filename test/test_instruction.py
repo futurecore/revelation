@@ -3,7 +3,8 @@ from pydgin.utils import trim_32
 
 from epiphany.instruction import Instruction
 from epiphany.isa import decode, should_branch
-from epiphany.machine import State, StateChecker
+from epiphany.machine import State
+from epiphany.test.machine import StateChecker
 from epiphany.sim import new_memory
 
 import opcode_factory

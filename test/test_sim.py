@@ -1,5 +1,5 @@
 from epiphany.sim import Epiphany
-from epiphany.machine import StateChecker
+from epiphany.test.machine import StateChecker
 
 import opcode_factory
 
