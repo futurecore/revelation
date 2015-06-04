@@ -9,7 +9,6 @@ from pydgin.storage import RegisterFile
 #-----------------------------------------------------------------------
 class State(object):
 #    _virtualizable_ = ['pc', 'ncycles', 'N', 'Z', 'C', 'V']
-    possible_attributes = "AN AZ AC AV AVS BN BZ pc".split()
 
     def __init__(self, memory, debug, reset_addr=0x0, **args):
         self.pc       = reset_addr
@@ -21,17 +20,16 @@ class State(object):
         self.rf.debug  = debug
         self.mem.debug = debug
 
-        for attr in self.possible_attributes:
-            if attr in args:
-                setattr(self, attr, args[attr])
-            else:
-                setattr(self, attr, 0b0)
-        for arg, value in args.items():
-            if arg.startswith("rf"):
-                index = int(arg[2:])
-                self.set_register(index, value)
+        self.AN  = 0b0
+        self.AZ  = 0b0
+        self.AC  = 0b0
+        self.AV  = 0b0
+        self.AVS = 0b0
+        self.BN  = 0b0
+        self.BZ  = 0b0
 
         # other registers
+        self.pc = 0b0
         self.status   = 0
         self.ncycles  = 0
         self.stats_en = False

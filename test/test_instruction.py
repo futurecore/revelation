@@ -11,7 +11,18 @@ import opcode_factory
 import pytest
 
 def new_state(**args):
-    return State(new_memory(), Debug(), **args)
+    possible_attributes = "AN AZ AC AV AVS BN BZ pc".split()
+    state = State(new_memory(), Debug(), **args)
+    for attr in possible_attributes:
+        if attr in args:
+            setattr(state, attr, args[attr])
+        else:
+            setattr(state, attr, 0b0)
+    for arg, value in args.items():
+        if arg.startswith("rf"):
+            index = int(arg[2:])
+            state.set_register(index, value)
+    return state
 
 
 def test_add_register_arguments():
