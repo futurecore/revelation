@@ -1,28 +1,11 @@
-from pydgin.debug import Debug
 from pydgin.utils import trim_32
 
 from epiphany.instruction import Instruction
-from epiphany.isa import decode, should_branch
-from epiphany.machine import State
-from epiphany.test.machine import StateChecker
-from epiphany.sim import new_memory
+from epiphany.isa import decode
+from epiphany.test.machine import StateChecker, new_state
 
 import opcode_factory
 import pytest
-
-def new_state(**args):
-    possible_attributes = "AN AZ AC AV AVS BN BZ pc".split()
-    state = State(new_memory(), Debug(), **args)
-    for attr in possible_attributes:
-        if attr in args:
-            setattr(state, attr, args[attr])
-        else:
-            setattr(state, attr, 0b0)
-    for arg, value in args.items():
-        if arg.startswith("rf"):
-            index = int(arg[2:])
-            state.set_register(index, value)
-    return state
 
 
 def test_add_register_arguments():
@@ -200,46 +183,3 @@ def test_execute_jr32():
     expected_state.check(state)
 
 # TODO: test bcond32
-
-def test_should_branch():
-    state = new_state(AZ=1)
-    assert should_branch(state, 0b0000)
-    state.AZ = 0
-    assert should_branch(state, 0b0001)
-    state.AZ = 0
-    state.AC = 1
-    assert should_branch(state, 0b0010)
-    state.AC = 1
-    assert should_branch(state, 0b0011)
-    state.AZ = 1
-    state.AC = 0
-    assert should_branch(state, 0b0100)
-    state.AC = 0
-    assert should_branch(state, 0b0101)
-    state.AZ = 0
-    state.AV = state.AN = 2
-    assert should_branch(state, 0b0110)
-    state.AZ = 1
-    state.AV = state.AN = 3
-    assert should_branch(state, 0b0111)
-    state.AV = 4
-    state.AN = 3
-    assert should_branch(state, 0b1000)
-    state.AZ = 1
-    state.AV = 3
-    state.AN = 4
-    assert should_branch(state, 0b1001)
-    state.BZ = 1
-    assert should_branch(state, 0b1010)
-    state.BZ = 0
-    assert should_branch(state, 0b1011)
-    state.BN = 1
-    state.BZ = 0
-    assert should_branch(state, 0b1100)
-    state.BN = 1
-    state.BZ = 1
-    assert should_branch(state, 0b1101)
-    assert should_branch(state, 0b1110)
-    assert should_branch(state, 0b1111)
-    with pytest.raises(ValueError):
-        should_branch(state, 0b11111)

@@ -1,3 +1,23 @@
+from pydgin.debug import Debug
+from epiphany.machine import State
+from epiphany.sim import new_memory
+
+
+def new_state(**args):
+    possible_attributes = "AN AZ AC AV AVS BN BZ pc".split()
+    state = State(new_memory(), Debug(), **args)
+    for attr in possible_attributes:
+        if attr in args:
+            setattr(state, attr, args[attr])
+        else:
+            setattr(state, attr, 0b0)
+    for arg, value in args.items():
+        if arg.startswith("rf"):
+            index = int(arg[2:])
+            state.set_register(index, value)
+    return state
+
+
 class StateChecker(object):
     """Used only for testing.
     check() tests whether registers and flags of interest are equal to a
