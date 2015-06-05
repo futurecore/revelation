@@ -5,7 +5,7 @@ from epiphany.sim import new_memory
 
 def new_state(**args):
     possible_attributes = "AN AZ AC AV AVS BN BZ pc".split()
-    state = State(new_memory(), Debug(), **args)
+    state = State(new_memory(), Debug())
     for attr in possible_attributes:
         if attr in args:
             setattr(state, attr, args[attr])
