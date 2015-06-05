@@ -3,11 +3,14 @@ language: python
 install:
     - pip install -r requirements.txt
     - pip install coveralls
+    - cd $HOME
+    - hg clone https://bitbucket.org/pypy/pypy pypy
+    - cd $TRAVIS_BUILD_DIR
 
 python:
     - "2.7"
 
 script:
-    - py.test --cov-report term-missing --cov epiphany epiphany/test/
+    - PYTHONPATH=$HOME/pypy/:. py.test --cov-report term-missing --cov epiphany epiphany/test/
 
 after_success: coveralls
