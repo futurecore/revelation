@@ -21,6 +21,75 @@ from pydgin.misc import create_risc_decoder
 
 
 #=======================================================================
+# Register Definitions
+#=======================================================================
+reg_map = {
+    'r0'   :  0,   'r1'   :  1,   'r2'   :  2,   'r3'   :  3,
+    'r4'   :  4,   'r5'   :  5,   'r6'   :  6,   'r7'   :  7,
+    'r8'   :  8,   'r9'   :  9,   'r10'  : 10,   'r11'  : 11,
+    'r12'  : 12,   'r13'  : 13,   'r14'  : 14,   'r15'  : 15,
+    'r16'  : 16,   'r17'  : 17,   'r18'  : 18,   'r19'  : 19,
+    'r20'  : 20,   'r21'  : 21,   'r22'  : 22,   'r23'  : 23,
+    'r24'  : 24,   'r25'  : 25,   'r26'  : 26,   'r27'  : 27,
+    'r28'  : 28,   'r29'  : 29,   'r30'  : 30,   'r31'  : 31,
+    'r32'  : 32,   'r33'  : 33,   'r34'  : 34,   'r35'  : 35,
+    'r36'  : 36,   'r37'  : 37,   'r38'  : 38,   'r39'  : 39,
+    'r40'  : 40,   'r41'  : 41,   'r42'  : 42,   'r43'  : 43,
+    'r48'  : 48,   'r49'  : 49,   'r50'  : 50,   'r51'  : 51,
+    'r52'  : 52,   'r53'  : 53,   'r54'  : 54,   'r55'  : 55,
+    'r56'  : 56,   'r57'  : 57,   'r58'  : 58,   'r59'  : 59,
+    'r60'  : 40,   'r61'  : 61,   'r62'  : 62,   'r63'  : 63,
+    'UNUSED'      : 64,
+    'CONFIG'      : 65,  # Core configuration
+    'STATUS'      : 66,  # Core status
+    'pc'          : 67,  # Program counter
+    'DEBUGSTATUS' : 68,  # Debug status
+    'LC'          : 69,  # Hardware counter loop
+    'LS'          : 70,  # Hardware counter start address
+    'LE'          : 71,  # Hardware counter end address
+    'IRET'        : 72,  # Interrupt PC return address
+    'IMASK'       : 73,  # Interrupt mask
+    'ILAT'        : 74,  # Interrupt latch
+    'ILATST'      : 75,  # Alias for setting interrupts
+    'ILATCL'      : 76,  # Alias for clearing interrupts
+    'IPEND'       : 77,  # Interrupt currently in progress
+    'FSTATUS'     : 78,  # Alias for writing to all STATUS bits
+    'DEBUGCMD'    : 79,  # Debug command register
+    'RESETCORE'   : 80,  # Per core software reset
+    # Event timer registers
+    'CTIMER0'     : 81,  # Core timer 0
+    'CTIMER1'     : 82,  # Core timer 1
+    # Process control registers
+    'MEMSTATUS'   : 83,  # Memory protection status
+    'MEMPROTECT'  : 84,  # Memory protection registration
+    # DMA registers
+    'DMA0CONFIG'  : 85,  # DMA channel 0 configuration
+    'DMA0STRIDE'  : 86,  # DMA channel 0 stride
+    'DMA0COUNT'   : 87,  # DMA channel 0 count
+    'DMA0SRCADDR' : 88,  # DMA channel 0 source address
+    'DMA0DSTADDR' : 89,  # DMA channel 0 destination address
+    'DMA0AUTO0'   : 90,  # DMA channel 0 slave lower data
+    'DMA0AUTO1'   : 91,  # DMA channel 0 slave upper data
+    'DMA0STATUS'  : 92,  # DMA channel 0 status
+    'DMA1CONFIG'  : 93,  # DMA channel 1 configuration
+    'DMA1STRIDE'  : 94,  # DMA channel 1 stride
+    'DMA1COUNT'   : 95,  # DMA channel 1 count
+    'DMA1SRCADDR' : 96,  # DMA channel 1 source address
+    'DMA1DSTADDR' : 97,  # DMA channel 1 destination address
+    'DMA1AUTO0'   : 98,  # DMA channel 1 slave lower data
+    'DMA1AUTO1'   : 99,  # DMA channel 1 slave upper data
+    'DMA1STATUS'  : 100, # DMA channel 1 status
+    # Mesh node control registers
+    'MESHCONFIG'  : 101, # Mesh node configuration
+    'COREID'      : 102, # Processor core ID
+    'MULTICAST'   : 103, # Multicast configuration
+    'CMESHROUTE'  : 104, # cMesh routing configuration
+    'XMESHROUTE'  : 105, # xMesh routing configuration
+    'RMESHROUTE'  : 106, # rMesh routing configuration
+     }
+
+
+#=======================================================================
 # Instruction Encodings
 #=======================================================================
 encodings = [
