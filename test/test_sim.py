@@ -1,11 +1,11 @@
-from epiphany.sim import Epiphany
+from epiphany.test.sim import MockEpiphany
 from epiphany.test.machine import StateChecker
 
 import opcode_factory
 
 def test_single_inst_add32():
     instructions = [opcode_factory.int_arith32_immediate('add', 1, 0, 0b01010101010)]
-    epiphany = Epiphany()
+    epiphany = MockEpiphany()
     epiphany.init_test_state(instructions)
     epiphany.state.rf[0] = 0b01010101010
     epiphany.run()
@@ -17,7 +17,7 @@ def test_single_inst_add32():
 def test_single_inst_sub32():
     from pydgin.utils import trim_32
     instructions = [opcode_factory.int_arith32_immediate('sub', 1, 0, 0b01010101010)]
-    epiphany = Epiphany()
+    epiphany = MockEpiphany()
     epiphany.init_test_state(instructions)
     epiphany.state.rf[0] = 5
     epiphany.run()
@@ -32,7 +32,7 @@ def test_add32_sub32():
     # TODO: to rf[0] before instruction 2 is executed.
                     opcode_factory.int_arith32_immediate('sub', 1, 0, 0b01010101010),
                     ]
-    epiphany = Epiphany()
+    epiphany = MockEpiphany()
     epiphany.init_test_state(instructions)
     epiphany.state.rf[0] = 0
     epiphany.run()
@@ -45,7 +45,7 @@ def test_bcond32():#
                     opcode_factory.bcond32(0b0000, 0b000000000000000000000100),
                     opcode_factory.int_arith32_immediate('add', 1,0, 0b01010101010), # ADD 0b01010101010
                     ]
-    epiphany = Epiphany()
+    epiphany = MockEpiphany()
     epiphany.init_test_state(instructions)
     epiphany.state.rf[0] = 5
     epiphany.run()
@@ -66,7 +66,7 @@ def test_add32_nop16_sub32():
                     opcode_factory.nop16(),
                     opcode_factory.int_arith32_immediate('sub', 1, 0, 0b01010101010),
                     ]
-    epiphany = Epiphany()
+    epiphany = MockEpiphany()
     epiphany.init_test_state(instructions)
     epiphany.state.rf[0] = 0
     epiphany.run()
