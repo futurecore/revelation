@@ -19,6 +19,8 @@ from arm.utils import (
 
 from pydgin.misc import create_risc_decoder
 
+from rpython.rlib import objectmodel
+
 
 #=======================================================================
 # Register Definitions
@@ -325,8 +327,11 @@ def should_branch(s, cond):
     elif cond == 0b1111:
         return True  # Branch and link
     else:
-        raise ValueError('Invalid condition, should be unreachable: ' +
-                         str(bin(cond)))
+        if objectmodel.we_are_translated():
+            raise ValueError
+        else:
+            raise ValueError('Invalid condition, should be unreachable: ' +
+                             str(bin(cond)))
 
 
 def execute_bcond32(s, inst):
