@@ -19,8 +19,10 @@ from arm.utils import (
 
 from pydgin.misc import create_risc_decoder
 
-from rpython.rlib import objectmodel
-
+try:
+    from rpython.rlib.objectmodel import we_are_translated
+except ImportError:
+    we_are_translated = lambda : False
 
 #=======================================================================
 # Register Definitions
@@ -327,7 +329,7 @@ def should_branch(s, cond):
     elif cond == 0b1111:
         return True  # Branch and link
     else:
-        if objectmodel.we_are_translated():
+        if we_are_translated():
             raise ValueError
         else:
             raise ValueError('Invalid condition, should be unreachable: ' +
