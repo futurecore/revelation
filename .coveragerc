@@ -1,0 +1,17 @@
+[report]
+# Regexes for lines to exclude from consideration
+exclude_lines =
+    # Have to re-enable the standard pragma
+    pragma: no cover
+
+    # Don't complain if tests don't hit defensive assertion code:
+    except subprocess.CalledProcessError as excn:
+    raise NotImplementedError
+
+    # Don't complain if tests take a path which is only used in a test harness:
+    .*we_are_translated.*
+    def init_state
+
+    # Don't complain if non-runnable code isn't run:
+    if 0:
+    if __name__ == .__main__.:
