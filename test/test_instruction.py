@@ -204,4 +204,23 @@ def test_execute_jr32():
     expected_state = StateChecker(pc=111)
     expected_state.check(state)
 
-# TODO: test bcond32
+
+@pytest.mark.parametrize("is16bit,imm,expected_pc",
+                         [(False, 0b01111111,  254),
+                          (True,  0b011111111, 510)])
+def test_bcond(is16bit, imm, expected_pc):
+    state = new_state(AZ=1, pc=0)
+    instr = opcode_factory.bcond16(0b0000, imm)
+    name, executefn = decode(instr)
+    executefn(state, Instruction(instr, None))
+    expected_state = StateChecker(pc=expected_pc, AZ=1)
+    expected_state.check(state)
+
+
+def test_execute_bkpt16():
+    state = new_state()
+    instr = opcode_factory.bkpt16()
+    name, executefn = decode(instr)
+    executefn(state, Instruction(instr, None))
+    expected_state = StateChecker(DEBUGSTATUS=1)
+    expected_state.check(state)

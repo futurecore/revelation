@@ -99,6 +99,7 @@ reg_map = {
 encodings = [
     ['nop16',       'xxxxxxxxxxxxxxxxxxxxxx0110100010'],
     ['idle16',      'xxxxxxxxxxxxxxxxxxxxxx0110110010'],
+    ['bkpt16',      'xxxxxxxxxxxxxxxxxxxxxx0111000010'],
     #---------------------------------------------------------------------
     # Arithmetic
     #---------------------------------------------------------------------
@@ -133,6 +134,7 @@ encodings = [
     # Jumps and branch conditions
     #---------------------------------------------------------------------
     ['bcond32',     'xxxxxxxxxxxxxxxxxxxxxxxxxxxx1000'],
+    ['bcond16',     'xxxxxxxxxxxxxxxxxxxxxxxxxxxx0000'],
     ['jr32',        'xxxxxxxxxxxx0010xxxxxx0101001111'],
     #---------------------------------------------------------------------
     # Move
@@ -156,7 +158,7 @@ def trim_5(value):
 def signed(value, is16bit):
   if is16bit and (value & 0x8000) or not is16bit and (value & 0x80000000):
     twos_complement = ~value + 1
-    return -trim_32( twos_complement )
+    return -trim_32(twos_complement)
   return value
 
 
@@ -165,7 +167,6 @@ def signed(value, is16bit):
 #-----------------------------------------------------------------------
 def execute_nop16(s, inst):
     s.pc += 2
-    return
 
 
 #-----------------------------------------------------------------------
@@ -182,6 +183,15 @@ def execute_idle16(s, inst):
     mask = 1 << 32
     status &= ~mask
     s.rf[reg_map['STATUS']] = status
+
+
+#-----------------------------------------------------------------------
+# bkpt16
+#-----------------------------------------------------------------------
+def execute_bkpt16(s, inst):
+    s.rf[reg_map['DEBUGSTATUS']] |= 1
+    s.pc += 2
+    s.running = False
 
 
 #-----------------------------------------------------------------------
@@ -329,7 +339,7 @@ def execute_jr32(s, inst):
 
 
 #-----------------------------------------------------------------------
-# bcond32 - branch on condition.
+# bcon16 and bcond32 - branch on condition.
 #-----------------------------------------------------------------------
 def should_branch(s, cond):
     if cond == 0b0000:
@@ -372,13 +382,20 @@ def should_branch(s, cond):
                              str(bin(cond)))
 
 
-def execute_bcond32(s, inst):
-    cond = inst.bcond
-    imm = inst.bcond32_imm
-    if should_branch(s, cond):
-        s.pc += imm << 1
-    else:
-        s.pc += 4
+def make_bcond_executor(is16bit):
+    def execute_bcond(s, inst):
+        if is16bit:
+            inst.bits &= 0xffff
+        cond = inst.bcond
+        imm = inst.bcond_imm
+        if should_branch(s, cond):
+            s.pc += imm << 1
+        else:
+            s.pc += 2 if is16bit else 4
+    return execute_bcond
+
+execute_bcond32 = make_bcond_executor(False)
+execute_bcond16 = make_bcond_executor(True)
 
 
 #-----------------------------------------------------------------------

@@ -80,8 +80,14 @@ def test_jr32():
 
 def test_bcond32():
     #       0biiiiiiiiiiiiiiiiiiiiiiiicccc1000
-    instr = 0b00000000000000000000000011111000
-    assert bcond32(0b1111, 0) == instr
+    instr = 0b11100000000000000000000011111000
+    assert bcond32(0b1111, 0b111000000000000000000000) == instr
+
+
+def test_bcond16():
+    #       0bxxxxxxxxxxxxxxxxiiiiiiiicccc0000
+    instr = 0b00000000000000001110000011110000
+    assert bcond16(0b1111, 0b11100000) == instr
 
 
 def test_movcond32():
@@ -109,3 +115,8 @@ def test_nop16():
 def test_idle16():
     instr = 0b0000000000000000000000110110010
     assert idle16() == instr
+
+
+def test_bkpt16():
+    instr = 0b00000000000000000000000111000010
+    assert bkpt16() == instr

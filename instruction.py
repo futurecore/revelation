@@ -28,7 +28,7 @@ class Instruction(object):
         return (self.bits >> 4) & 15
 
     @property
-    def bcond32_imm(self):
+    def bcond_imm(self):
         return self.bits >> 8
 
     @property
