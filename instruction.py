@@ -24,12 +24,6 @@ class Instruction(object):
         return ((self.bits >> 7) & 0x7) | ((self.bits >> 13) & (0xFF << 3))
 
     @property
-    def bit2(self):
-        """Get bit 2 of an instruction.
-        """
-        return (self.bits >> 2) & 1
-
-    @property
     def bcond(self):
         return (self.bits >> 4) & 15
 
@@ -48,3 +42,16 @@ class Instruction(object):
     @property
     def bit4(self):
         return (self.bits >> 4) & 1
+
+    @property
+    def bit2(self):
+        """Get bit 2 of an instruction.
+        """
+        return (self.bits >> 2) & 1
+
+    @property
+    def bit0(self):
+        """Get bit 0 of an instruction.
+        """
+        return self.bits & 1
+

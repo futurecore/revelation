@@ -68,6 +68,18 @@ def int_arith16(name, rd, rn, rm):
     return instruction
 
 
+def int_arith16_immediate(name, rd, rn, imm):
+    if name == 'add':
+        opcode = 0b0010011
+    elif name == 'sub':
+        opcode = 0b0110011
+    else:
+        raise NotImplementedError()
+    instruction = (opcode | ((imm & 7) << 7) |
+                   ((rn & 7) << 10) | ((rd & 7) << 13))
+    return instruction
+
+
 def jr32(rn):
     opcode = 0b0101001111
     bits_16_20 = 0b0010

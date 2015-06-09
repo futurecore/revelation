@@ -19,15 +19,27 @@ def test_add_register_arguments():
     assert instr.rm == 0 + 8
 
 
-@pytest.mark.parametrize("name,expected", [("add", {'AZ':0, 'rf2':12}),
+@pytest.mark.parametrize("name,expected", [("add", {'AZ':0, 'rf2':92}),
                                            ("sub", {'AZ':0, 'AN':0, 'rf2':2}),
                                           ])
-def test_execute_add32(name, expected):
-    state = new_state(rf0=5, rf1=7)
+def test_execute_add32sub32(name, expected):
+    state = new_state(rf0=45, rf1=47)
     instr = opcode_factory.int_arith32(name, 2, 1, 0)
     name, executefn = decode(instr)
     executefn(state, Instruction(instr, None))
     expected_state = StateChecker(pc=4, **expected)
+    expected_state.check(state)
+
+
+@pytest.mark.parametrize("name,expected", [("add", {'AZ':0, 'rf2':7}),
+                                           ("sub", {'AZ':0, 'AN':0, 'rf2':3}),
+                                          ])
+def test_execute_add16sub16(name, expected):
+    state = new_state(rf0=2, rf1=5)
+    instr = opcode_factory.int_arith16(name, 2, 1, 0)
+    name, executefn = decode(instr)
+    executefn(state, Instruction(instr, None))
+    expected_state = StateChecker(pc=2, **expected)
     expected_state.check(state)
 
 
