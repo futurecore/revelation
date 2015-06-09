@@ -3,14 +3,18 @@ import os.path
 import subprocess
 import pytest
 
-from epiphany.test.machine import StateChecker
+pytestmark = pytest.mark.skipif(True,
+                                reason=("Pydgin needs a .bss section in ELF " +
+                                        "files, but e-as cannot compile .bss.")
+                                )
 
 asm_dir = os.path.join('epiphany', 'test', 'asm')
 
-@pytest.mark.parametrize("asm,expected",
-                         [('nop.elf', StateChecker(pc=2)),
-                          pytest.mark.xfail(('add.elf', StateChecker(pc=4)))])
-def test_asm_nop(asm, expected):
+@pytest.mark.parametrize("asm,expected_instructions",
+                         [('nop.elf', 2),
+                          ('add.elf', 2),
+                         ])
+def test_asm(asm, expected_instructions):
     os.putenv('PYTHONPATH', '.:../../pypy/')
     try:
         output = subprocess.check_output(['python',
@@ -26,4 +30,4 @@ def test_asm_nop(asm, expected):
     assert output, "Output of simulating {0} was empty".format(os.path.join(asm_dir, asm))
     for line in output.split('\n'):
         if line.startswith("Instructions"):
-            assert expected.pc == int(line.split()[-1])
+            assert expected_instructions == int(line.split()[-1])

@@ -7,7 +7,7 @@ ELFS=$(patsubst %.s,%.elf,$(ASMS))
 all: $(ELFS)
 
 %.elf: %.s
-	epiphany-elf-as $< -o $@
+	epiphany-elf-as epiphany-macros.h $< -o $@
 
 clean:
 	rm -f *.elf
