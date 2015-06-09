@@ -159,14 +159,18 @@ def test_sub32_immediate_argument():
     assert instr.imm == 0b01010101010
 
 
-def test_execute_movcond32():
-    state = new_state(AZ=1, rf1=111)
-    instr = opcode_factory.movcond32(0b0000, 0, 1)
+@pytest.mark.parametrize("is16bit,val", [(True, 0b111), (False, 0b1111)])
+def test_execute_movcond32(is16bit, val):
+    state = new_state(AZ=1, rf1=val)
+    if is16bit:
+      instr = opcode_factory.movcond16(0b0000, 0, 1)
+    else:
+      instr = opcode_factory.movcond32(0b0000, 0, 1)
     name, executefn = decode(instr)
-    assert name == "movcond32"
     executefn(state, Instruction(instr, None))
-    expected_state = StateChecker(rf0=111)
+    expected_state = StateChecker(rf0=val)
     expected_state.check(state)
+
 
 @pytest.mark.parametrize("sub,expected", [(1, 8 - 4), (0, 8 + 4)])
 def test_execute_ldpmd32(sub, expected):

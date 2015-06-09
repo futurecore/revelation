@@ -38,6 +38,7 @@ import pytest
                           ("bcond16",    opcode_factory.bcond16(0b1111, 0)),
                           ("ldstrpmd32", opcode_factory.ldstrpmd32(1, 0, 1, 0b1010101010, 0b11, 1)),
                           ("movcond32",  opcode_factory.movcond32(0b0000, 0, 0)),
+                          ("movcond16",  opcode_factory.movcond16(0b0000, 0, 0)),
                          ])
 def test_decode(name, instr):
     decoded_name, _ = decode(instr)

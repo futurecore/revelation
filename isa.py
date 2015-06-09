@@ -140,6 +140,7 @@ encodings = [
     # Move
     #---------------------------------------------------------------------
     ['movcond32',   'xxxxxxxxxxxx0010xxxxxx00xxxx1111'],
+    ['movcond16',   'xxxxxxxxxxxxxxxxxxxxxx00xxxx0010'],
 ]
 
 
@@ -401,11 +402,18 @@ execute_bcond16 = make_bcond_executor(True)
 #-----------------------------------------------------------------------
 # movcond32 - move on condition.
 #-----------------------------------------------------------------------
-def execute_movcond32(s, inst):
-    rd = inst.rd
-    rn = inst.rn
-    if should_branch(s, inst.bcond):
-        s.rf[rd] = s.rf[rn]
+def make_movcond_executor(is16bit):
+    def execute_movcond(s, inst):
+        if is16bit:
+            inst.bits &= 0xffff
+        rd = inst.rd
+        rn = inst.rn
+        if should_branch(s, inst.bcond):
+            s.rf[rd] = s.rf[rn]
+    return execute_movcond
+
+execute_movcond32 = make_movcond_executor(False)
+execute_movcond16 = make_movcond_executor(True)
 
 
 #=======================================================================

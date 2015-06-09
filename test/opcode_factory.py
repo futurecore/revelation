@@ -112,6 +112,13 @@ def movcond32(cond, rd, rn):
     return instruction
 
 
+def movcond16(cond, rd, rn):
+    opcode = 0b0010
+    instruction = (opcode | (cond << 4) |
+                   ((rn & 7) << 10) | ((rd & 7) << 13))
+    return instruction
+
+
 def ldstrpmd32(rd, rn, sub, imm, bb, s):
     # Data size
     # 00=byte, 01=half-word, 10=word, 11=double-word
