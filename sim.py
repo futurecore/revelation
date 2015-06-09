@@ -25,7 +25,7 @@ class Epiphany(Sim):
     def init_state(self, exe_file, run_argv, run_envp):
         mem = new_memory()
         entrypoint, breakpoint = load_program(exe_file, mem)
-        self.state = State(mem, Debug(), reset_addr=0x43)
+        self.state = State(mem, Debug(), reset_addr=0x0)
 
 
 init_sim(Epiphany())

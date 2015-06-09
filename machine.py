@@ -11,7 +11,7 @@ class State(object):
     _virtualizable_ = ['pc', 'ncycles', 'AN', 'AZ', 'AC', 'AV',
                        'AVS', 'BN', 'BZ']
 
-    def __init__(self, memory, debug, reset_addr=0x43):
+    def __init__(self, memory, debug, reset_addr=0x00):
         self.pc       = reset_addr
         self.rf       = RegisterFile(constant_zero=False, num_regs=107)
         self.mem      = memory
