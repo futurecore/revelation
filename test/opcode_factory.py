@@ -94,6 +94,11 @@ def jr32(rn):
     return (opcode | ((rn & 7)) << 7) | (bits_16_20 << 16) | ((rn & 56) << 23)
 
 
+def jr16(rn):
+    opcode = 0b0101000010
+    return (opcode | ((rn & 7) << 7))
+
+
 def bcond_factory(is16bit):
     def bcond(cond, imm):
         opcode = 0b0000 if is16bit else 0b1000

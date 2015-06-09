@@ -200,12 +200,16 @@ def test_execute_strpmd32(sub, expected):
     assert 42 == state.mem.read(8, 4) # Start address, number of bytes
 
 
-def test_execute_jr32():
-    state = new_state(rf0=111)
-    instr = opcode_factory.jr32(0)
+@pytest.mark.parametrize("is16bit,val", [(True, 0b111), (False, 0b1111)])
+def test_execute_jr32(is16bit, val):
+    state = new_state(rf0=val)
+    if is16bit:
+        instr = opcode_factory.jr16(0)
+    else:
+        instr = opcode_factory.jr32(0)
     name, executefn = decode(instr)
     executefn(state, Instruction(instr, None))
-    expected_state = StateChecker(pc=111)
+    expected_state = StateChecker(pc=val)
     expected_state.check(state)
 
 

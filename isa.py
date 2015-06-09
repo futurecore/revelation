@@ -136,6 +136,7 @@ encodings = [
     ['bcond32',     'xxxxxxxxxxxxxxxxxxxxxxxxxxxx1000'],
     ['bcond16',     'xxxxxxxxxxxxxxxxxxxxxxxxxxxx0000'],
     ['jr32',        'xxxxxxxxxxxx0010xxxxxx0101001111'],
+    ['jr16',        'xxxxxxxxxxxxxxxxxxxxxx0101000010'],
     #---------------------------------------------------------------------
     # Move
     #---------------------------------------------------------------------
@@ -330,13 +331,20 @@ def execute_ldstrpmd32(s, inst):
 
 
 #-----------------------------------------------------------------------
-# jr32 - jump.
+# jr32 and js16 - jump.
 #-----------------------------------------------------------------------
-def execute_jr32(s, inst):
-    """
-    PC = RN;
-    """
-    s.pc = s.rf[inst.rn]
+def make_jr_executor(is16bit):
+    def execute_jr(s, inst):
+        """
+        PC = RN;
+        """
+        if is16bit:
+            inst.bits &= 0xffff
+        s.pc = s.rf[inst.rn]
+    return execute_jr
+
+execute_jr32 = make_jr_executor(False)
+execute_jr16 = make_jr_executor(True)
 
 
 #-----------------------------------------------------------------------

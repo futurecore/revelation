@@ -78,6 +78,13 @@ def test_jr32():
     assert jr32(rn) == instr
 
 
+def test_jr16():
+    #       0bxxxxxxxxxxxxxxxxxxxnnn0101000010
+    instr = 0b00000000000000000000000101000010
+    rn = 0
+    assert jr16(rn) == instr
+
+
 def test_bcond32():
     #       0biiiiiiiiiiiiiiiiiiiiiiiicccc1000
     instr = 0b11100000000000000000000011111000

@@ -34,6 +34,7 @@ import pytest
                           ("idle16",     opcode_factory.idle16()),
                           ("bkpt16",     opcode_factory.bkpt16()),
                           ("jr32",       opcode_factory.jr32(0)),
+                          ("jr16",       opcode_factory.jr16(0)),
                           ("bcond32",    opcode_factory.bcond32(0b1111, 0)),
                           ("bcond16",    opcode_factory.bcond16(0b1111, 0)),
                           ("ldstrpmd32", opcode_factory.ldstrpmd32(1, 0, 1, 0b1010101010, 0b11, 1)),
