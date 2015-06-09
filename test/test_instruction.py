@@ -130,6 +130,16 @@ def test_execute_nop16():
     expected_state.check(state)
 
 
+def test_execute_idle16():
+    state = new_state()
+    instr = opcode_factory.idle16()
+    name, executefn = decode(instr)
+    executefn(state, Instruction(instr, None))
+    expected_state = StateChecker(pc=0)
+    # TODO: Check STATUS register.
+    expected_state.check(state)
+
+
 def test_sub32_immediate_argument():
     instr = Instruction(opcode_factory.int_arith32_immediate('sub', 1, 0, 0b01010101010), "")
     assert instr.rd == 1

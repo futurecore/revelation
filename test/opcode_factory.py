@@ -98,3 +98,7 @@ def ldstrpmd32(rd, rn, sub, imm, bb, s):
                    ((imm & (0xFF << 3)) << 13) | (sub << 24) | (bit25 << 25) |
                    ((rn & 56) << 23) | ((rd & 56) << 26))
     return instruction
+
+
+def idle16():
+    return 0b0000000000000000000000110110010

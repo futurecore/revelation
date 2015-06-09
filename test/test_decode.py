@@ -17,6 +17,11 @@ def test_decode_nop16():
     assert name == "nop16"
 
 
+def test_decode_idle16():
+    name, _ = decode(opcode_factory.idle16())
+    assert name == "idle16"
+
+
 def test_decode_sub32():
     instr = opcode_factory.int_arith32('sub', 0, 0, 0)
     name, _ = decode(instr)

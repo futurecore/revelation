@@ -99,3 +99,13 @@ def test_ldstrpmd32():
     instr = 0b00000011001010100000011010101100
     # (rd, rn, sub, imm, bb, s):
     assert ldstrpmd32(0, 1, 0b1, 0b00101010101, 0b01, 0b0) == instr
+
+
+def test_nop16():
+    instr = 0b0000000000000000000000110100010
+    assert nop16() == instr
+
+
+def test_idle16():
+    instr = 0b0000000000000000000000110110010
+    assert idle16() == instr
