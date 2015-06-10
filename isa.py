@@ -175,16 +175,19 @@ def execute_nop16(s, inst):
 # idle16
 #-----------------------------------------------------------------------
 def execute_idle16(s, inst):
-    """TODO: Use the ILAT register.
+    """
         STATUS[0]=0
         while(!ILAT){
             PC=PC;
         }
     """
     status = s.rf[reg_map['STATUS']]
-    mask = 1 << 32
-    status &= ~mask
+    mask = 0b1111111111111111111111111110
+    status &= mask
     s.rf[reg_map['STATUS']] = status
+    if not s.rf[reg_map['ILAT']]: # TODO: Use threads here?
+        pass
+    s.pc += 2
 
 
 #-----------------------------------------------------------------------

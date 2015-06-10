@@ -1,7 +1,7 @@
 from pydgin.utils import trim_32
 
 from epiphany.instruction import Instruction
-from epiphany.isa import decode
+from epiphany.isa import decode, reg_map
 from epiphany.test.machine import StateChecker, new_state
 
 import opcode_factory
@@ -143,13 +143,13 @@ def test_execute_nop16():
 
 
 def test_execute_idle16():
-    state = new_state()
+    state = new_state(rfSTATUS=1)
     instr = opcode_factory.idle16()
     name, executefn = decode(instr)
     executefn(state, Instruction(instr, None))
-    expected_state = StateChecker(pc=0)
-    # TODO: Check STATUS register.
+    expected_state = StateChecker(pc=2, rfSTATUS=0)
     expected_state.check(state)
+    assert state.running
 
 
 def test_sub32_immediate_argument():
@@ -226,9 +226,10 @@ def test_bcond(is16bit, imm, expected_pc):
 
 
 def test_execute_bkpt16():
-    state = new_state()
+    state = new_state(rfDEBUGSTATUS=0)
     instr = opcode_factory.bkpt16()
     name, executefn = decode(instr)
     executefn(state, Instruction(instr, None))
-    expected_state = StateChecker(DEBUGSTATUS=1)
+    expected_state = StateChecker(rfDEBUGSTATUS=1)
     expected_state.check(state)
+    assert not state.running
