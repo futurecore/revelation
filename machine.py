@@ -16,7 +16,7 @@ class State(object):
         self.rf       = RegisterFile(constant_zero=False, num_regs=107)
         self.mem      = memory
 
-        self.running   = True
+        self.running   = True   # Set False by bkpt instructions.
         self.debug     = debug
         self.rf.debug  = debug
         self.mem.debug = debug
@@ -34,9 +34,6 @@ class State(object):
         self.status   = 0
         self.ncycles  = 0
         self.stats_en = False
-
-        # marks if should be running, syscall_exit sets it false
-        self.running = True
 
     def set_register(self, index, value):
         self.rf[index] = value

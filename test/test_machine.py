@@ -2,9 +2,19 @@ from epiphany.test.machine import StateChecker, new_state
 
 import pytest
 
+
 def test_register_out_of_range():
     with pytest.raises(ValueError):
-        StateChecker(rf65=0)
+        StateChecker(rf108=0)
+    with pytest.raises(ValueError):
+        new_state(rf108=0)
+
+
+def test_register_does_not_exist():
+    with pytest.raises(KeyError):
+        StateChecker(rfNONSENSE=0)
+    with pytest.raises(KeyError):
+        new_state(rfNONSENSE=0)
 
 
 def test_registers_differ():
