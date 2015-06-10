@@ -127,3 +127,8 @@ def test_idle16():
 def test_bkpt16():
     instr = 0b00000000000000000000000111000010
     assert bkpt16() == instr
+
+
+def test_gid16():
+    instr = 0b00000000000000000000001110010010
+    assert gid16() == instr

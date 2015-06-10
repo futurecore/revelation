@@ -100,6 +100,7 @@ encodings = [
     ['nop16',       'xxxxxxxxxxxxxxxxxxxxxx0110100010'],
     ['idle16',      'xxxxxxxxxxxxxxxxxxxxxx0110110010'],
     ['bkpt16',      'xxxxxxxxxxxxxxxxxxxxxx0111000010'],
+    ['gid16',       'xxxxxxxxxxxxxxxxxxxxxx1110010010'],
     #---------------------------------------------------------------------
     # Arithmetic
     #---------------------------------------------------------------------
@@ -197,6 +198,16 @@ def execute_bkpt16(s, inst):
     s.rf[reg_map['DEBUGSTATUS']] |= 1
     s.pc += 2
     s.running = False
+
+#-----------------------------------------------------------------------
+# gif16
+#-----------------------------------------------------------------------
+def execute_gid16(s, inst):
+    """Disable all interrupts.
+        STATUS[1]=1
+    """
+    s.rf[reg_map['STATUS']] |= (1 << 1)
+    s.pc += 2
 
 
 #-----------------------------------------------------------------------

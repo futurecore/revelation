@@ -10,6 +10,10 @@ def bkpt16():
     return 0b00000000000000000000000111000010
 
 
+def gid16():
+    return 0b00000000000000000000001110010010
+
+
 def int_arith32_immediate(name, rd, rn, imm):
     if name == 'add':
         opcode = 0b0011011

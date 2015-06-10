@@ -233,3 +233,12 @@ def test_execute_bkpt16():
     expected_state = StateChecker(rfDEBUGSTATUS=1)
     expected_state.check(state)
     assert not state.running
+
+
+def test_execute_gid16():
+    state = new_state(rfSTATUS=0)
+    instr = opcode_factory.gid16()
+    name, executefn = decode(instr)
+    executefn(state, Instruction(instr, None))
+    expected_state = StateChecker(rfSTATUS=0b10)
+    expected_state.check(state)
