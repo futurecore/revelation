@@ -1,22 +1,42 @@
 def make_zero_operand_factory(name):
     def factory():
-        if name == 'nop16':
+        if name == 'gie16':
+            return 0b00000000000000000000000110010010
+        elif name == 'gid16':
+            return 0b00000000000000000000001110010010
+        elif name == 'nop16':
             return 0b0000000000000000000000110100010
         elif name == 'idle16':
             return 0b0000000000000000000000110110010
         elif name == 'bkpt16':
             return 0b00000000000000000000000111000010
-        elif name == 'gid16':
-            return 0b00000000000000000000001110010010
-        elif name == 'gie16':
-            return 0b00000000000000000000000110010010
+        elif name == 'mbkpt16':
+            return 0b00000000000000000000001111000010
+        elif name == 'sync16':
+            return 0b00000000000000000000000111110010
+        elif name == 'rti16':
+            return 0b00000000000000000000000111010010
+        elif name == 'wand16':
+            return 0b00000000000000000000000110000010
+        elif name == 'unimpl16':
+            return 0b00000000000011110000000000001111
     return factory
 
-nop16  = make_zero_operand_factory('nop16')
-idle16 = make_zero_operand_factory('idle16')
-bkpt16 = make_zero_operand_factory('bkpt16')
-gid16  = make_zero_operand_factory('gid16')
-gie16  = make_zero_operand_factory('gie16')
+gie16    = make_zero_operand_factory('gie16')
+gid16    = make_zero_operand_factory('gid16')
+nop16    = make_zero_operand_factory('nop16')
+idle16   = make_zero_operand_factory('idle16')
+bkpt16   = make_zero_operand_factory('bkpt16')
+mbkpt16  = make_zero_operand_factory('mbkpt16')
+sync16   = make_zero_operand_factory('sync16')
+rti16    = make_zero_operand_factory('rti16')
+wand16   = make_zero_operand_factory('wand16')
+unimpl16 = make_zero_operand_factory('unimpl16')
+
+
+def trap16(trap):
+    opcode = 0b1111100010
+    return opcode | (trap << 10)
 
 
 def int_arith32_immediate(name, rd, rn, imm):

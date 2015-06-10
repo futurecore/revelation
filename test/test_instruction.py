@@ -1,7 +1,7 @@
 from pydgin.utils import trim_32
 
 from epiphany.instruction import Instruction
-from epiphany.isa import decode, reg_map
+from epiphany.isa import decode
 from epiphany.test.machine import StateChecker, new_state
 
 import opcode_factory
@@ -251,3 +251,31 @@ def test_execute_gie16():
     executefn(state, Instruction(instr, None))
     expected_state = StateChecker(rfSTATUS=0b00)
     expected_state.check(state)
+
+
+@pytest.mark.parametrize("name,instr", [('rti16',  opcode_factory.rti16()),
+                                        ('trap16', opcode_factory.trap16(0b111111)), ])
+def test_interrupt_instructions(name, instr):
+    with pytest.raises(NotImplementedError):
+        state = new_state()
+        name, executefn = decode(instr)
+        executefn(state, Instruction(instr, None))
+
+
+@pytest.mark.parametrize("name,instr", [('mbkpt16',  opcode_factory.mbkpt16()),
+                                        ('sync16', opcode_factory.sync16()),
+                                        ('wand16', opcode_factory.wand16()),
+                                       ])
+def test_multicore_instructions(name, instr):
+    with pytest.raises(NotImplementedError):
+        state = new_state()
+        name, executefn = decode(instr)
+        executefn(state, Instruction(instr, None))
+
+
+def test_unimpl16():
+    with pytest.raises(NotImplementedError):
+        state = new_state()
+        instr = opcode_factory.unimpl16()
+        name, executefn = decode(instr)
+        executefn(state, Instruction(instr, None))

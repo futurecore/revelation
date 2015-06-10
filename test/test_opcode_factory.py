@@ -114,12 +114,23 @@ def test_ldstrpmd32():
     assert ldstrpmd32(0, 1, 0b1, 0b00101010101, 0b01, 0b0) == instr
 
 
-@pytest.mark.parametrize("factory,instr",
-                         [(nop16,  0b0000000000000000000000110100010),
-                          (idle16, 0b0000000000000000000000110110010),
-                          (bkpt16, 0b00000000000000000000000111000010),
-                          (gid16,  0b00000000000000000000001110010010),
-                          (gie16,  0b00000000000000000000000110010010),
+def test_trap16():
+    #       0bxxxxxxxxxxxxxxxxtttttt1111100000
+    instr = 0b00000000000000001111111111100010
+    assert trap16(0b111111) == instr
+
+
+@pytest.mark.parametrize("name,factory,instr",
+                         [('gie16',    gie16,    0b00000000000000000000000110010010),
+                          ('gid16',    gid16,    0b00000000000000000000001110010010),
+                          ('nop16',    nop16,    0b0000000000000000000000110100010),
+                          ('idle16',   idle16,   0b0000000000000000000000110110010),
+                          ('bkpt16',   bkpt16,   0b00000000000000000000000111000010),
+                          ('mbkpt16',  mbkpt16,  0b00000000000000000000001111000010),
+                          ('sync16',   sync16,   0b00000000000000000000000111110010),
+                          ('rti16',    rti16,    0b00000000000000000000000111010010),
+                          ('wand16',   wand16,   0b00000000000000000000000110000010),
+                          ('unimpl16', unimpl16, 0b00000000000011110000000000001111),
                          ])
-def test_no_operands(factory, instr):
+def test_no_operands(name, factory, instr):
     assert instr == factory()

@@ -100,8 +100,14 @@ encodings = [
     ['nop16',       'xxxxxxxxxxxxxxxxxxxxxx0110100010'],
     ['idle16',      'xxxxxxxxxxxxxxxxxxxxxx0110110010'],
     ['bkpt16',      'xxxxxxxxxxxxxxxxxxxxxx0111000010'],
+    ['mbkpt16',     'xxxxxxxxxxxxxxxxxxxxxx1111000010'],
     ['gie16',       'xxxxxxxxxxxxxxxxxxxxxx0110010010'],
     ['gid16',       'xxxxxxxxxxxxxxxxxxxxxx1110010010'],
+    ['sync16',      'xxxxxxxxxxxxxxxxxxxxxx0111110010'],
+    ['rti16',       'xxxxxxxxxxxxxxxxxxxxxx0111010010'],
+    ['wand16',      'xxxxxxxxxxxxxxxxxxxxxx0110000010'],
+    ['trap16',      'xxxxxxxxxxxxxxxxxxxxxx1111100010'],
+    ['unimpl16',    'xxxxxxxxxxxx1111xxxxxx0000001111'],
     #---------------------------------------------------------------------
     # Arithmetic
     #---------------------------------------------------------------------
@@ -193,7 +199,7 @@ def execute_idle16(s, inst):
 
 
 #-----------------------------------------------------------------------
-# bkpt16
+# bkpt16 and mbkpt16
 #-----------------------------------------------------------------------
 def execute_bkpt16(s, inst):
     s.rf[reg_map['DEBUGSTATUS']] |= 1
@@ -201,8 +207,12 @@ def execute_bkpt16(s, inst):
     s.running = False
 
 
+def execute_mbkpt16(s, inst):
+    raise NotImplementedError('Multicore not implemented.')
+
+
 #-----------------------------------------------------------------------
-# gie16
+# gie16 and gid16
 #-----------------------------------------------------------------------
 def execute_gie16(s, inst):
     """Enables all interrupts in ILAT register, dependent on the per bit
@@ -214,15 +224,47 @@ def execute_gie16(s, inst):
     s.pc += 2
 
 
-#-----------------------------------------------------------------------
-# gid16
-#-----------------------------------------------------------------------
 def execute_gid16(s, inst):
     """Disable all interrupts.
         STATUS[1]=1
     """
     s.rf[reg_map['STATUS']] |= (1 << 1)
     s.pc += 2
+
+
+#-----------------------------------------------------------------------
+# sync16
+#-----------------------------------------------------------------------
+def execute_sync16(s, inst):
+    raise NotImplementedError('Interrupts not implemented.')
+
+
+#-----------------------------------------------------------------------
+# rti16
+#-----------------------------------------------------------------------
+def execute_rti16(s, inst):
+    raise NotImplementedError('Interrupts not implemented.')
+
+
+#-----------------------------------------------------------------------
+# trap16
+#-----------------------------------------------------------------------
+def execute_trap16(s, inst):
+    raise NotImplementedError('Interrupts not implemented.')
+
+
+#-----------------------------------------------------------------------
+# wand16
+#-----------------------------------------------------------------------
+def execute_wand16(s, inst):
+    raise NotImplementedError('Multicore not implemented.')
+
+
+#-----------------------------------------------------------------------
+# unimpl16
+#-----------------------------------------------------------------------
+def execute_unimpl16(s, inst):
+    raise NotImplementedError('UNIMPL16')
 
 
 #-----------------------------------------------------------------------
