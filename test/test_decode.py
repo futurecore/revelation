@@ -33,6 +33,8 @@ import pytest
                           ("nop16",      opcode_factory.nop16()),
                           ("idle16",     opcode_factory.idle16()),
                           ("bkpt16",     opcode_factory.bkpt16()),
+                          ("gid16",      opcode_factory.gid16()),
+                          ("gie16",      opcode_factory.gie16()),
                           ("jr32",       opcode_factory.jr32(0)),
                           ("jr16",       opcode_factory.jr16(0)),
                           ("bcond32",    opcode_factory.bcond32(0b1111, 0)),

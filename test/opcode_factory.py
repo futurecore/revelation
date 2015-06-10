@@ -1,17 +1,22 @@
-def nop16():
-    return 0b0000000000000000000000110100010
+def make_zero_operand_factory(name):
+    def factory():
+        if name == 'nop16':
+            return 0b0000000000000000000000110100010
+        elif name == 'idle16':
+            return 0b0000000000000000000000110110010
+        elif name == 'bkpt16':
+            return 0b00000000000000000000000111000010
+        elif name == 'gid16':
+            return 0b00000000000000000000001110010010
+        elif name == 'gie16':
+            return 0b00000000000000000000000110010010
+    return factory
 
-
-def idle16():
-    return 0b0000000000000000000000110110010
-
-
-def bkpt16():
-    return 0b00000000000000000000000111000010
-
-
-def gid16():
-    return 0b00000000000000000000001110010010
+nop16  = make_zero_operand_factory('nop16')
+idle16 = make_zero_operand_factory('idle16')
+bkpt16 = make_zero_operand_factory('bkpt16')
+gid16  = make_zero_operand_factory('gid16')
+gie16  = make_zero_operand_factory('gie16')
 
 
 def int_arith32_immediate(name, rd, rn, imm):

@@ -242,3 +242,12 @@ def test_execute_gid16():
     executefn(state, Instruction(instr, None))
     expected_state = StateChecker(rfSTATUS=0b10)
     expected_state.check(state)
+
+
+def test_execute_gie16():
+    state = new_state(rfSTATUS=0b10)
+    instr = opcode_factory.gie16()
+    name, executefn = decode(instr)
+    executefn(state, Instruction(instr, None))
+    expected_state = StateChecker(rfSTATUS=0b00)
+    expected_state.check(state)

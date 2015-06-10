@@ -100,6 +100,7 @@ encodings = [
     ['nop16',       'xxxxxxxxxxxxxxxxxxxxxx0110100010'],
     ['idle16',      'xxxxxxxxxxxxxxxxxxxxxx0110110010'],
     ['bkpt16',      'xxxxxxxxxxxxxxxxxxxxxx0111000010'],
+    ['gie16',       'xxxxxxxxxxxxxxxxxxxxxx0110010010'],
     ['gid16',       'xxxxxxxxxxxxxxxxxxxxxx1110010010'],
     #---------------------------------------------------------------------
     # Arithmetic
@@ -199,8 +200,22 @@ def execute_bkpt16(s, inst):
     s.pc += 2
     s.running = False
 
+
 #-----------------------------------------------------------------------
-# gif16
+# gie16
+#-----------------------------------------------------------------------
+def execute_gie16(s, inst):
+    """Enables all interrupts in ILAT register, dependent on the per bit
+    settings in the IMASK register.
+    TODO: Implement interrupts.
+        STATUS[1]=0
+    """
+    s.rf[reg_map['STATUS']] &= ~(1 << 1)
+    s.pc += 2
+
+
+#-----------------------------------------------------------------------
+# gid16
 #-----------------------------------------------------------------------
 def execute_gid16(s, inst):
     """Disable all interrupts.
