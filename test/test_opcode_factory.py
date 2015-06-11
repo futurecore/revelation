@@ -103,6 +103,24 @@ def test_movcond32():
     assert movcond32(0b0101, 0, 0) == instr
 
 
+def test_movcond16():
+    #       0bxxxxxxxxxxxxxxxxdddnnn00cccc0010
+    instr = 0b00000000000000001110100011110010
+    assert movcond16(0b1111, 0b111, 0b010) == instr
+
+
+def test_movimm16():
+    #       0bxxxxxxxxxxxxxxxxdddiiiiiiii00011
+    instr = 0b00000000000000001001111111100011
+    assert movimm16(0b100, 0b11111111) == instr
+
+
+def test_movimm32():
+    #       0bddd0iiiiiiiixxxxdddiiiiiiii01011
+    instr = 0b10001111111100001001111111101011
+    assert movimm32(0b100100, 0b1111111111111111) == instr
+
+
 def test_ldstrpmd32():
     #       0bdddnnn1Siiiiiiiidddnnniiibbs1100
     instr = 0b00000011001010100000011010111100

@@ -148,10 +148,12 @@ encodings = [
     ['jr32',        'xxxxxxxxxxxx0010xxxxxx0101001111'],
     ['jr16',        'xxxxxxxxxxxxxxxxxxxxxx0101000010'],
     #---------------------------------------------------------------------
-    # Move
+    # Moves
     #---------------------------------------------------------------------
     ['movcond32',   'xxxxxxxxxxxx0010xxxxxx00xxxx1111'],
     ['movcond16',   'xxxxxxxxxxxxxxxxxxxxxx00xxxx0010'],
+    ['movimm32',    'xxx0xxxxxxxxxxxxxxxxxxxxxxx01011'],
+    ['movimm16',    'xxxxxxxxxxxxxxxxxxxxxxxxxxx00011'],
 ]
 
 
@@ -440,10 +442,14 @@ execute_bcond16 = make_bcond_executor(True)
 
 
 #-----------------------------------------------------------------------
-# movcond32 - move on condition.
+# movcond32 and movcond16 - move on condition.
 #-----------------------------------------------------------------------
 def make_movcond_executor(is16bit):
     def execute_movcond(s, inst):
+        """
+        IF (Passed) <COND> then
+            RD = RN
+        """
         if is16bit:
             inst.bits &= 0xffff
         rd = inst.rd
@@ -454,6 +460,25 @@ def make_movcond_executor(is16bit):
 
 execute_movcond32 = make_movcond_executor(False)
 execute_movcond16 = make_movcond_executor(True)
+
+
+#-----------------------------------------------------------------------
+# movimm32 and movimm16 - move with immediate
+#-----------------------------------------------------------------------
+def make_movimm_executor(is16bit):
+    def execute_movimm(s, inst):
+        """
+        RD=<imm>
+        """
+        if is16bit:
+            inst.bits &= 0xffff
+        imm = inst.mov_imm
+        rd = inst.rd
+        s.rf[rd] = imm
+    return execute_movimm
+
+execute_movimm32 = make_movimm_executor(False)
+execute_movimm16 = make_movimm_executor(True)
 
 
 #=======================================================================

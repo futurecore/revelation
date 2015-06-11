@@ -19,8 +19,8 @@ def test_add_register_arguments():
     assert instr.rm == 0 + 8
 
 
-@pytest.mark.parametrize("name,expected", [("add", {'AZ':0, 'rf2':92}),
-                                           ("sub", {'AZ':0, 'AN':0, 'rf2':2}),
+@pytest.mark.parametrize("name,expected", [("add", dict(AZ=0, rf2=92)),
+                                           ("sub", dict(AZ=0, AN=0, rf2=2)),
                                           ])
 def test_execute_add32sub32(name, expected):
     state = new_state(rf0=45, rf1=47)
@@ -31,8 +31,8 @@ def test_execute_add32sub32(name, expected):
     expected_state.check(state)
 
 
-@pytest.mark.parametrize("name,expected", [("add", {'AZ':0, 'rf2':7}),
-                                           ("sub", {'AZ':0, 'AN':0, 'rf2':3}),
+@pytest.mark.parametrize("name,expected", [("add", dict(AZ=0, rf2=7)),
+                                           ("sub", dict(AZ=0, AN=0, rf2=3)),
                                           ])
 def test_execute_add16sub16(name, expected):
     state = new_state(rf0=2, rf1=5)
@@ -119,10 +119,10 @@ def test_bitwise16(name, expected):
 
 
 @pytest.mark.parametrize("name,imm,expected",
-                         [("add", 0b01010101010, {'AZ':0, 'rf1':(0b01010101010 + 5)}),
-                          ("sub", 0b01010101010, {'AZ':0, 'AN':1, 'AC':1,
-                                   'rf1':trim_32(5 - 0b01010101010)}),
-                          ("sub", 0b00000000101, {'AZ':1, 'AN':0, 'AC':0, 'rf1':0}),
+                         [("add", 0b01010101010, dict(AZ=0, rf1=(0b01010101010 + 5))),
+                          ("sub", 0b01010101010, dict(AZ=0, AN=1, AC=1,
+                                                      rf1=trim_32(5 - 0b01010101010))),
+                          ("sub", 0b00000000101, dict(AZ=1, AN=0, AC=0, rf1=0)),
                          ])
 def test_execute_arith32_immediate(name, imm, expected):
     state = new_state(rf0=5)
@@ -160,15 +160,23 @@ def test_sub32_immediate_argument():
 
 
 @pytest.mark.parametrize("is16bit,val", [(True, 0b111), (False, 0b1111)])
-def test_execute_movcond32(is16bit, val):
+def test_execute_movcond(is16bit, val):
     state = new_state(AZ=1, rf1=val)
-    if is16bit:
-      instr = opcode_factory.movcond16(0b0000, 0, 1)
-    else:
-      instr = opcode_factory.movcond32(0b0000, 0, 1)
+    instr = opcode_factory.movcond16(0b0000, 0, 1) if is16bit else opcode_factory.movcond32(0b0000, 0, 1)
     name, executefn = decode(instr)
     executefn(state, Instruction(instr, None))
     expected_state = StateChecker(rf0=val)
+    expected_state.check(state)
+
+
+@pytest.mark.parametrize("is16bit,imm", [(True, 0b11111111),
+                                         (False, 0b1111111111111111)])
+def test_execute_movimm(is16bit, imm):
+    state = new_state(AZ=1, rf2=0)
+    instr = opcode_factory.movimm16(2, imm) if is16bit else opcode_factory.movimm32(2, imm)
+    name, executefn = decode(instr)
+    executefn(state, Instruction(instr, None))
+    expected_state = StateChecker(rf2=imm)
     expected_state.check(state)
 
 
@@ -203,10 +211,7 @@ def test_execute_strpmd32(sub, expected):
 @pytest.mark.parametrize("is16bit,val", [(True, 0b111), (False, 0b1111)])
 def test_execute_jr32(is16bit, val):
     state = new_state(rf0=val)
-    if is16bit:
-        instr = opcode_factory.jr16(0)
-    else:
-        instr = opcode_factory.jr32(0)
+    instr = opcode_factory.jr16(0) if is16bit else opcode_factory.jr32(0)
     name, executefn = decode(instr)
     executefn(state, Instruction(instr, None))
     expected_state = StateChecker(pc=val)
@@ -254,7 +259,7 @@ def test_execute_gie16():
 
 
 @pytest.mark.parametrize("name,instr", [('rti16',  opcode_factory.rti16()),
-                                        ('trap16', opcode_factory.trap16(0b111111)), ])
+                                        ('trap16', opcode_factory.trap16(0b111111))])
 def test_interrupt_instructions(name, instr):
     with pytest.raises(NotImplementedError):
         state = new_state()
@@ -263,8 +268,8 @@ def test_interrupt_instructions(name, instr):
 
 
 @pytest.mark.parametrize("name,instr", [('mbkpt16',  opcode_factory.mbkpt16()),
-                                        ('sync16', opcode_factory.sync16()),
-                                        ('wand16', opcode_factory.wand16()),
+                                        ('sync16',   opcode_factory.sync16()),
+                                        ('wand16',   opcode_factory.wand16()),
                                        ])
 def test_multicore_instructions(name, instr):
     with pytest.raises(NotImplementedError):

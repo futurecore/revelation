@@ -148,8 +148,23 @@ def movcond32(cond, rd, rn):
 
 def movcond16(cond, rd, rn):
     opcode = 0b0010
-    instruction = (opcode | (cond << 4) |
-                   ((rn & 7) << 10) | ((rd & 7) << 13))
+    bits_9_10 = 0b00
+    instruction = (opcode | (cond << 4) | (bits_9_10 << 8) |
+                   (rn << 10) | (rd << 13))
+    return instruction
+
+
+def movimm32(rd, imm):
+    opcode = 0b01011
+    bit28 = 0
+    instruction = (opcode | ((imm & 255) << 5) | ((rd & 7) << 13) |
+                   ((imm & 65280) << 12) | (bit28 << 28) | ((rd & 56) << 26))
+    return instruction
+
+
+def movimm16(rd, imm):
+    opcode = 0b00011
+    instruction = (opcode | (imm << 5) | (rd << 13))
     return instruction
 
 
