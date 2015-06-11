@@ -30,6 +30,14 @@ import pytest
                           ("lsr16",      opcode_factory.int_arith16("lsr", 1, 1, 1)),
                           ("lsl32",      opcode_factory.int_arith32("lsl", 1, 1, 1)),
                           ("lsl16",      opcode_factory.int_arith16("lsl", 1, 1, 1)),
+                          ("lsrimm16",   opcode_factory.bit16_immediate("lsr", 1, 1, 1)),
+                          ("lslimm16",   opcode_factory.bit16_immediate("lsl", 1, 1, 1)),
+                          ("asrimm16",   opcode_factory.bit16_immediate("asr", 1, 1, 1)),
+                          ("bitrimm16",  opcode_factory.bit16_immediate("bitr", 1, 1, 1)),
+                          ("lsrimm32",   opcode_factory.bit32_immediate("lsr", 1, 1, 1)),
+                          ("lslimm32",   opcode_factory.bit32_immediate("lsl", 1, 1, 1)),
+                          ("asrimm32",   opcode_factory.bit32_immediate("asr", 1, 1, 1)),
+                          ("bitrimm32",  opcode_factory.bit32_immediate("bitr", 1, 1, 1)),
                           ("jr32",       opcode_factory.jr32(0)),
                           ("jr16",       opcode_factory.jr16(0)),
                           ("bcond32",    opcode_factory.bcond32(0b1111, 0)),
@@ -55,6 +63,28 @@ import pytest
 def test_decode(name, instr):
     decoded_name, _ = decode(instr)
     assert decoded_name == name
+
+
+def test_bit32_imm():
+    instr = Instruction(opcode_factory.bit32_immediate("bitr", 0b110110, 0b101101, 0b11111),
+                        None)
+    assert instr.imm5 == 0b11111
+    assert instr.rd == 0b110110
+    assert instr.rn == 0b101101
+    instr = Instruction(opcode_factory.bit32_immediate("lsr", 0, 0, 0b01011),
+                        None)
+    assert instr.imm5 == 0b01011
+
+
+def test_bit16_imm():
+    instr = Instruction(opcode_factory.bit16_immediate("bitr", 0b110, 0b101, 0b11111),
+                        None)
+    assert instr.imm5 == 0b11111
+    assert instr.rd == 0b110
+    assert instr.rn == 0b101
+    instr = Instruction(opcode_factory.bit16_immediate("lsr", 0, 0, 0b01011),
+                        None)
+    assert instr.imm5 == 0b01011
 
 
 def test_decode_add32():

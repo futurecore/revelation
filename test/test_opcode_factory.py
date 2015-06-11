@@ -71,6 +71,40 @@ def test_int_arith32():
         int_arith32('xxx', 1, 0, 0b0)
 
 
+def test_bit16_immediate():
+    #       0bxxxxxxxxxxxxxxxxdddnnniiiii00110 LSR
+    instr = 0b00000000000000001110101111100110
+    assert bit16_immediate('lsr', 0b111, 0b010, 0b11111) == instr
+    #       0bxxxxxxxxxxxxxxxxdddnnniiiii10110 LSL
+    instr = 0b00000000000000001110101111110110
+    assert bit16_immediate('lsl', 0b111, 0b010, 0b11111) == instr
+    #       0bxxxxxxxxxxxxxxxxdddnnniiiii01110 ASR
+    instr = 0b00000000000000001110101111101110
+    assert bit16_immediate('asr', 0b111, 0b010, 0b11111) == instr
+    #       0bxxxxxxxxxxxxxxxxdddnnniiiii11110 BITR
+    instr = 0b00000000000000001110101111111110
+    assert bit16_immediate('bitr', 0b111, 0b010, 0b11111) == instr
+    with pytest.raises(NotImplementedError):
+        bit16_immediate('xxx', 1, 0, 0b0)
+
+
+def test_bit32_immediate():
+    #       0bdddnnnxxxxxx0110dddnnniiiii01111 LSR
+    instr = 0b10001100000001101000111111101111
+    assert bit32_immediate('lsr', 0b100100, 0b011011, 0b11111) == instr
+    #       0bdddnnnxxxxxx0110dddnnniiiii11111 LSL
+    instr = 0b10001100000001101000111111111111
+    assert bit32_immediate('lsl', 0b100100, 0b011011, 0b11111) == instr
+    #       0bdddnnnxxxxxx1110dddnnniiiii01111 ASR
+    instr = 0b10001100000011101000111111101111
+    assert bit32_immediate('asr', 0b100100, 0b011011, 0b11111) == instr
+    #       0bdddnnnxxxxxx1110dddnnniiiii11111 BITR
+    instr = 0b10001100000011101000111111111111
+    assert bit32_immediate('bitr', 0b100100, 0b011011, 0b11111) == instr
+    with pytest.raises(NotImplementedError):
+        bit32_immediate('xxx', 1, 0, 0b0)
+
+
 def test_jr32():
     #       0bxxxnnnxxxxxx0010xxxnnn0101011111
     instr = 0b00000000000000100000000101001111

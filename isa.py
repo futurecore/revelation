@@ -136,6 +136,14 @@ encodings = [
     ['lsr16',       'xxxxxxxxxxxxxxxxxxxxxxxxx1001010'],  # LSR16
     ['lsl32',       'xxxxxxxxxxxx1010xxxxxxxxx0101111'],  # LSL32
     ['lsl16',       'xxxxxxxxxxxxxxxxxxxxxxxxx0101010'],  # LSL16
+    ['lsrimm32',    'xxxxxxxxxxxx0110xxxxxxxxxxx01111'],  # LSRIMM32
+    ['lslimm32',    'xxxxxxxxxxxx0110xxxxxxxxxxx11111'],  # LSLIMM32
+    ['asrimm32',    'xxxxxxxxxxxx1110xxxxxxxxxxx01111'],  # ASRIMM32
+    ['bitrimm32',   'xxxxxxxxxxxx1110xxxxxxxxxxx11111'],  # BITRIMM32
+    ['lsrimm16',    'xxxxxxxxxxxxxxxxxxxxxxxxxxx00110'],  # LSRIMM16
+    ['lslimm16',    'xxxxxxxxxxxxxxxxxxxxxxxxxxx10110'],  # LSLIMM16
+    ['asrimm16',    'xxxxxxxxxxxxxxxxxxxxxxxxxxx01110'],  # ASRIMM16
+    ['bitrimm16',   'xxxxxxxxxxxxxxxxxxxxxxxxxxx11110'],  # BITRIMM16
     #--------------------------------------------------------------------
     # Loads and stores
     #---------------------------------------------------------------------
@@ -337,7 +345,7 @@ execute_sub16 = make_sub_executor(True)
 #-----------------------------------------------------------------------
 # bit1632 - 16 or 32 bit bitwise arithmetic.
 #-----------------------------------------------------------------------
-def make_bit_executor(name, is16bit):
+def make_bit_executor(name, is16bit, imm):
     def execute_bit(s, inst):
         """RD = RN <OP> RM
         AN = RD[31]
@@ -347,18 +355,27 @@ def make_bit_executor(name, is16bit):
         """
         if is16bit:
             inst.bits &= 0xffff
+        rm = inst.imm5 if imm else s.rf[inst.rm]
         if name == "and":
-            result = s.rf[inst.rn] & s.rf[inst.rm]
+            result = s.rf[inst.rn] & rm
         elif name == "orr":
-            result = s.rf[inst.rn] | s.rf[inst.rm]
+            result = s.rf[inst.rn] | rm
         elif name == "eor":
-            result = s.rf[inst.rn] ^ s.rf[inst.rm]
+            result = s.rf[inst.rn] ^ rm
         elif name == "asr":
-            result = signed(s.rf[inst.rn], True) >> trim_5(s.rf[inst.rm])
+            result = signed(s.rf[inst.rn], True) >> trim_5(rm)
         elif name == "lsr":
-            result = s.rf[inst.rn] >> trim_5(s.rf[inst.rm])
+            result = s.rf[inst.rn] >> trim_5(rm)
         elif name == "lsl":
-            result = s.rf[inst.rn] << trim_5(s.rf[inst.rm])
+            result = s.rf[inst.rn] << trim_5(rm)
+        elif name == "bitr":
+            # The description of this instruction is confused in the ISA
+            # reference. The decode table states that the instruction always
+            # takes an intermediate, but the description of the instruction
+            # states that it does not.
+            width = 8 if is16bit else 32  # TODO: Check register sizes.
+            result_s = '{:0{width}b}'.format(s.rf[inst.rn], width=width)
+            result = int(result_s[::-1], 2)
         s.rf[inst.rd] = trim_32(result)
         s.AN = (result >> 31) & 1
         s.AC = 0
@@ -367,18 +384,30 @@ def make_bit_executor(name, is16bit):
         s.pc += 2 if is16bit else 4
     return execute_bit
 
-execute_and32 = make_bit_executor("and", False)
-execute_and16 = make_bit_executor("and", True)
-execute_orr32 = make_bit_executor("orr", False)
-execute_orr16 = make_bit_executor("orr", True)
-execute_eor32 = make_bit_executor("eor", False)
-execute_eor16 = make_bit_executor("eor", True)
-execute_asr32 = make_bit_executor("asr", False)
-execute_asr16 = make_bit_executor("asr", True)
-execute_lsr32 = make_bit_executor("lsr", False)
-execute_lsr16 = make_bit_executor("lsr", True)
-execute_lsl32 = make_bit_executor("lsl", False)
-execute_lsl16 = make_bit_executor("lsl", True)
+# 16 bit instructions with immediate.
+execute_and16     = make_bit_executor("and", True,  False)
+execute_orr16     = make_bit_executor("orr", True,  False)
+execute_eor16     = make_bit_executor("eor", True,  False)
+execute_asr16     = make_bit_executor("asr", True,  False)
+execute_lsr16     = make_bit_executor("lsr", True,  False)
+execute_lsl16     = make_bit_executor("lsl", True,  False)
+# 32 bit instructions without immediate.
+execute_and32     = make_bit_executor("and", False, False)
+execute_orr32     = make_bit_executor("orr", False, False)
+execute_eor32     = make_bit_executor("eor", False, False)
+execute_asr32     = make_bit_executor("asr", False, False)
+execute_lsr32     = make_bit_executor("lsr", False, False)
+execute_lsl32     = make_bit_executor("lsl", False, False)
+# 16 bit instructions with immediate.
+execute_lsrimm16  = make_bit_executor("lsr",  True, True)
+execute_lslimm16  = make_bit_executor("lsl",  True, True)
+execute_asrimm16  = make_bit_executor("asr",  True, True)
+execute_bitrimm16 = make_bit_executor("bitr", True, True)
+# 32 bit instructions with immediate.
+execute_lsrimm32  = make_bit_executor("lsr",  False, True)
+execute_lslimm32  = make_bit_executor("lsl",  False, True)
+execute_asrimm32  = make_bit_executor("asr",  False, True)
+execute_bitrimm32 = make_bit_executor("bitr", False, True)
 
 
 #-----------------------------------------------------------------------

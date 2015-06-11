@@ -24,6 +24,10 @@ class Instruction(object):
         return ((self.bits >> 7) & 0x7) | ((self.bits >> 13) & (0xFF << 3))
 
     @property
+    def imm5(self):
+        return (self.bits >> 5) & 31
+
+    @property
     def mov_imm(self):
         return ((self.bits >> 5) & 255) | ((self.bits >> 12) & 0xFF00)
 
