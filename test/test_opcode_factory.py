@@ -2,107 +2,97 @@ from opcode_factory import *
 
 import pytest
 
-def test_int_arith32_immediate():
+def test_arith32_immediate():
     #       0bdddnnnxxiiiiiiiidddnnniii0011011 ADD
     instr = 0b00000000010101010010000100011011
-    assert int_arith32_immediate('add', 1, 0, 0b01010101010) == instr
+    assert add32_immediate(1, 0, 0b01010101010) == instr
     #       0bdddnnnxxiiiiiiiidddnnniii0111011 SUB
     instr = 0b00000000010101010010000100111011
-    assert int_arith32_immediate('sub', 1, 0, 0b01010101010) == instr
-    with pytest.raises(NotImplementedError):
-        int_arith32_immediate('xxx', 1, 0, 0b0)
+    assert sub32_immediate(1, 0, 0b01010101010) == instr
 
 
-def test_int_arith16():
+def test_arith16():
     #       0bdddnnnmmm0011010
     instr = 0b0100010000011010
-    assert int_arith16('add', 2, 1, 0) == instr
+    assert add16(2, 1, 0) == instr
     #       0bdddnnnmmm0111010
     instr = 0b0100010000111010
-    assert int_arith16('sub', 2, 1, 0) == instr
+    assert sub16(2, 1, 0) == instr
     #       0bdddnnnmmm1011010
     instr = 0b0100010001011010
-    assert int_arith16('and', 2, 1, 0) == instr
+    assert and16(2, 1, 0) == instr
     #       0bdddnnnmmm1111010
     instr = 0b0100010001111010
-    assert int_arith16('orr', 2, 1, 0) == instr
+    assert orr16(2, 1, 0) == instr
     #       0bdddnnnmmm0001010
     instr = 0b0100010000001010
-    assert int_arith16('eor', 2, 1, 0) == instr
+    assert eor16(2, 1, 0) == instr
     #       0bdddnnnmmm1101010
     instr = 0b0100010001101010
-    assert int_arith16('asr', 2, 1, 0) == instr
+    assert asr16(2, 1, 0) == instr
     #       0bdddnnnmmm1001010
     instr = 0b0100010001001010
-    assert int_arith16('lsr', 2, 1, 0) == instr
+    assert lsr16(2, 1, 0) == instr
     #       0bdddnnnmmm0101010
     instr = 0b0100010000101010
-    assert int_arith16('lsl', 2, 1, 0) == instr
-    with pytest.raises(NotImplementedError):
-        int_arith16('xxx', 1, 0, 0b0)
+    assert lsl16(2, 1, 0) == instr
 
 
-def test_int_arith32():
+def test_bitwise32():
     #       0bdddnnnmmmxxx1010dddnnnmmm0011111
     instr = 0b00000000000010100100010000011111
-    assert int_arith32('add', 2, 1, 0) == instr
+    assert add32(2, 1, 0) == instr
     #       0bdddnnnmmmxxx1010dddnnnmmm0111111
     instr = 0b00000000000010100100010000111111
-    assert int_arith32('sub', 2, 1, 0) == instr
+    assert sub32(2, 1, 0) == instr
     #       0bdddnnnmmmxxx1010dddnnnmmm1011111
     instr = 0b00000000000010100100010001011111
-    assert int_arith32('and', 2, 1, 0) == instr
+    assert and32(2, 1, 0) == instr
     #       0bdddnnnmmmxxx1010dddnnnmmm1111111
     instr = 0b00000000000010100100010001111111
-    assert int_arith32('orr', 2, 1, 0) == instr
+    assert orr32(2, 1, 0) == instr
     #       0bdddnnnmmmxxx1010dddnnnmmm0001111
     instr = 0b00000000000010100100010000001111
-    assert int_arith32('eor', 2, 1, 0) == instr
+    assert eor32(2, 1, 0) == instr
     #       0bdddnnnmmmxxx1010dddnnnmmm1101111
     instr = 0b00000000000010100100010001101111
-    assert int_arith32('asr', 2, 1, 0) == instr
+    assert asr32(2, 1, 0) == instr
     #       0bdddnnnmmmxxx1010dddnnnmmm1001111
     instr = 0b00000000000010100100010001001111
-    assert int_arith32('lsr', 2, 1, 0) == instr
+    assert lsr32(2, 1, 0) == instr
     #       0bdddnnnmmmxxx1010dddnnnmmm0101111
     instr = 0b00000000000010100100010000101111
-    assert int_arith32('lsl', 2, 1, 0) == instr
-    with pytest.raises(NotImplementedError):
-        int_arith32('xxx', 1, 0, 0b0)
+    assert lsl32(2, 1, 0) == instr
 
 
 def test_bit16_immediate():
     #       0bxxxxxxxxxxxxxxxxdddnnniiiii00110 LSR
     instr = 0b00000000000000001110101111100110
-    assert bit16_immediate('lsr', 0b111, 0b010, 0b11111) == instr
+    assert lsr16_immediate(0b111, 0b010, 0b11111) == instr
     #       0bxxxxxxxxxxxxxxxxdddnnniiiii10110 LSL
     instr = 0b00000000000000001110101111110110
-    assert bit16_immediate('lsl', 0b111, 0b010, 0b11111) == instr
+    assert lsl16_immediate(0b111, 0b010, 0b11111) == instr
     #       0bxxxxxxxxxxxxxxxxdddnnniiiii01110 ASR
     instr = 0b00000000000000001110101111101110
-    assert bit16_immediate('asr', 0b111, 0b010, 0b11111) == instr
+    assert asr16_immediate(0b111, 0b010, 0b11111) == instr
     #       0bxxxxxxxxxxxxxxxxdddnnniiiii11110 BITR
     instr = 0b00000000000000001110101111111110
-    assert bit16_immediate('bitr', 0b111, 0b010, 0b11111) == instr
-    with pytest.raises(NotImplementedError):
-        bit16_immediate('xxx', 1, 0, 0b0)
+    assert bitr16_immediate(0b111, 0b010, 0b11111) == instr
 
 
 def test_bit32_immediate():
     #       0bdddnnnxxxxxx0110dddnnniiiii01111 LSR
     instr = 0b10001100000001101000111111101111
-    assert bit32_immediate('lsr', 0b100100, 0b011011, 0b11111) == instr
+    assert lsr32_immediate(0b100100, 0b011011, 0b11111) == instr
     #       0bdddnnnxxxxxx0110dddnnniiiii11111 LSL
     instr = 0b10001100000001101000111111111111
-    assert bit32_immediate('lsl', 0b100100, 0b011011, 0b11111) == instr
+    assert lsl32_immediate(0b100100, 0b011011, 0b11111) == instr
     #       0bdddnnnxxxxxx1110dddnnniiiii01111 ASR
     instr = 0b10001100000011101000111111101111
-    assert bit32_immediate('asr', 0b100100, 0b011011, 0b11111) == instr
+    assert asr32_immediate(0b100100, 0b011011, 0b11111) == instr
     #       0bdddnnnxxxxxx1110dddnnniiiii11111 BITR
     instr = 0b10001100000011101000111111111111
-    assert bit32_immediate('bitr', 0b100100, 0b011011, 0b11111) == instr
-    with pytest.raises(NotImplementedError):
-        bit32_immediate('xxx', 1, 0, 0b0)
+    assert bitr32_immediate(0b100100, 0b011011, 0b11111) == instr
 
 
 def test_jr32():
@@ -178,7 +168,7 @@ def test_trap16():
     assert trap16(0b111111) == instr
 
 
-@pytest.mark.parametrize("name,factory,instr",
+@pytest.mark.parametrize('name,factory,instr',
                          [('gie16',    gie16,    0b00000000000000000000000110010010),
                           ('gid16',    gid16,    0b00000000000000000000001110010010),
                           ('nop16',    nop16,    0b0000000000000000000000110100010),
