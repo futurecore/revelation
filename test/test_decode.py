@@ -37,6 +37,7 @@ import pytest
                           ("ldstrpmd32", opcode_factory.ldstrpmd32(1, 0, 1, 0b1010101010, 0b11, 1)),
                           ("movcond32",  opcode_factory.movcond32(0b0000, 0, 0)),
                           ("movcond16",  opcode_factory.movcond16(0b0000, 0, 0)),
+                          ("movtimm32",  opcode_factory.movtimm32(0b1111, 0)),
                           ("movimm32",   opcode_factory.movimm32(0b1111, 0)),
                           ("movimm16",   opcode_factory.movimm16(0b1111, 0)),
                           ("gie16",      opcode_factory.gie16()),

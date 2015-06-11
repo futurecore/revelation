@@ -121,6 +121,12 @@ def test_movimm32():
     assert movimm32(0b100100, 0b1111111111111111) == instr
 
 
+def test_movtimm32():
+    #       0bddd1iiiiiiiixxxxdddiiiiiiii01011
+    instr = 0b10011111111100001001111111101011
+    assert movtimm32(0b100100, 0b1111111111111111) == instr
+
+
 def test_ldstrpmd32():
     #       0bdddnnn1Siiiiiiiidddnnniiibbs1100
     instr = 0b00000011001010100000011010111100

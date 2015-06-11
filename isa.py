@@ -154,6 +154,7 @@ encodings = [
     ['movcond16',   'xxxxxxxxxxxxxxxxxxxxxx00xxxx0010'],
     ['movimm32',    'xxx0xxxxxxxxxxxxxxxxxxxxxxx01011'],
     ['movimm16',    'xxxxxxxxxxxxxxxxxxxxxxxxxxx00011'],
+    ['movtimm32',   'xxx1xxxxxxxxxxxxxxxxxxxxxxx01011'],
 ]
 
 
@@ -463,9 +464,9 @@ execute_movcond16 = make_movcond_executor(True)
 
 
 #-----------------------------------------------------------------------
-# movimm32 and movimm16 - move with immediate
+# movimm32, movtimm32 and movimm16 - move with immediate
 #-----------------------------------------------------------------------
-def make_movimm_executor(is16bit):
+def make_movimm_executor(is16bit, is_t):
     def execute_movimm(s, inst):
         """
         RD=<imm>
@@ -474,11 +475,12 @@ def make_movimm_executor(is16bit):
             inst.bits &= 0xffff
         imm = inst.mov_imm
         rd = inst.rd
-        s.rf[rd] = imm
+        s.rf[rd] = (rd | (imm << 16)) if is_t else imm
     return execute_movimm
 
-execute_movimm32 = make_movimm_executor(False)
-execute_movimm16 = make_movimm_executor(True)
+execute_movtimm32 = make_movimm_executor(False, True)
+execute_movimm32  = make_movimm_executor(False, False)
+execute_movimm16  = make_movimm_executor(True, False)
 
 
 #=======================================================================

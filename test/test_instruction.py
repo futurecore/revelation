@@ -169,14 +169,21 @@ def test_execute_movcond(is16bit, val):
     expected_state.check(state)
 
 
-@pytest.mark.parametrize("is16bit,imm", [(True, 0b11111111),
-                                         (False, 0b1111111111111111)])
-def test_execute_movimm(is16bit, imm):
+@pytest.mark.parametrize("is16bit,is_t,imm", [(True, False, 0b11111111),
+                                              (False, True, 0b0000000011111111),
+                                              (False, False, 0b1111111111111111)])
+def test_execute_movimm(is16bit, is_t, imm):
     state = new_state(AZ=1, rf2=0)
-    instr = opcode_factory.movimm16(2, imm) if is16bit else opcode_factory.movimm32(2, imm)
+    if is_t:
+        instr = opcode_factory.movtimm32(2, imm)
+    elif is16bit:
+        instr = opcode_factory.movimm16(2, imm)
+    else:
+        instr = opcode_factory.movimm32(2, imm)
     name, executefn = decode(instr)
     executefn(state, Instruction(instr, None))
-    expected_state = StateChecker(rf2=imm)
+    expected_t = 2 | (imm << 16)
+    expected_state = StateChecker(rf2=expected_t) if is_t else StateChecker(rf2=imm)
     expected_state.check(state)
 
 

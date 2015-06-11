@@ -135,12 +135,17 @@ def movcond16(cond, rd, rn):
     return instruction
 
 
-def movimm32(rd, imm):
-    opcode = 0b01011
-    bit28 = 0
-    instruction = (opcode | ((imm & 255) << 5) | ((rd & 7) << 13) |
-                   ((imm & 65280) << 12) | (bit28 << 28) | ((rd & 56) << 26))
-    return instruction
+def make_movimm32(is_t):
+    def mov32_instruction(rd, imm):
+        opcode = 0b01011
+        bit28 = 1 if is_t else 0
+        instruction = (opcode | ((imm & 255) << 5) | ((rd & 7) << 13) |
+                       ((imm & 65280) << 12) | (bit28 << 28) | ((rd & 56) << 26))
+        return instruction
+    return mov32_instruction
+
+movimm32  = make_movimm32(False)
+movtimm32 = make_movimm32(True)
 
 
 def movimm16(rd, imm):
