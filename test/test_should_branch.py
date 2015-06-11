@@ -1,4 +1,4 @@
-from epiphany.isa import should_branch
+from epiphany.condition_codes import should_branch
 from epiphany.test.machine import new_state
 
 import pytest
