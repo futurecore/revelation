@@ -40,6 +40,8 @@ import pytest
                           ('bitrimm32',  opcode_factory.bitr32_immediate(1, 1, 1)),
                           ('jr32',       opcode_factory.jr32(0)),
                           ('jr16',       opcode_factory.jr16(0)),
+                          ('jalr32',     opcode_factory.jalr32(0)),
+                          ('jalr16',     opcode_factory.jalr16(0)),
                           ('bcond32',    opcode_factory.bcond32(0b1111, 0)),
                           ('bcond16',    opcode_factory.bcond16(0b1111, 0)),
                           ('ldstrpmd32', opcode_factory.ldstrpmd32(1, 0, 1, 0b1010101010, 0b11, 1)),

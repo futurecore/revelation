@@ -49,7 +49,7 @@ def test_execute_add16sub16(factory, expected):
                                            (-1, 28, False),
                                            ( 1, 28, True),
                                            ( 1, 28, False)])
-def test_logical_shift_right(rn, rm, is16bit):
+def test_execute_logical_shift_right(rn, rm, is16bit):
     rd = 2
     state = new_state(rf0=trim_32(rn), rf1=trim_32(rm))
     instr = (opcode_factory.lsr16(rd, 0, 1) if is16bit
@@ -67,7 +67,7 @@ def test_logical_shift_right(rn, rm, is16bit):
                                             (-1, 28, False),
                                             ( 1, 28, True),
                                             ( 1, 28, False)])
-def test_logical_shift_right_imm(rn, imm, is16bit):
+def test_execute_logical_shift_right_imm(rn, imm, is16bit):
     rd = 2
     state = new_state(rf0=trim_32(rn))
     instr = (opcode_factory.lsr16_immediate(rd, 0, imm) if is16bit
@@ -85,7 +85,7 @@ def test_logical_shift_right_imm(rn, imm, is16bit):
                                            (-1, 5, False),
                                            ( 1, 5, True),
                                            ( 1, 5, False)])
-def test_arith_shift_right(rn, rm, is16bit):
+def test_execute_arith_shift_right(rn, rm, is16bit):
     rd = 2
     state = new_state(rf0=trim_32(rn), rf1=trim_32(rm))
     instr = (opcode_factory.asr16(rd, 0, 1) if is16bit
@@ -103,7 +103,7 @@ def test_arith_shift_right(rn, rm, is16bit):
                                             (-1, 5, False),
                                             ( 1, 5, True),
                                             ( 1, 5, False)])
-def test_arith_shift_right_imm(rn, imm, is16bit):
+def test_execute_arith_shift_right_imm(rn, imm, is16bit):
     rd = 2
     state = new_state(rf0=trim_32(rn))
     instr = (opcode_factory.asr16_immediate(rd, 0, imm) if is16bit
@@ -121,7 +121,7 @@ def test_arith_shift_right_imm(rn, imm, is16bit):
                          [(opcode_factory.lsl16, True),
                           (opcode_factory.lsl32, False)
                          ])
-def test_shift_left(factory, is16bit):
+def test_execute_shift_left(factory, is16bit):
     state = new_state(rf0=5, rf1=7)
     instr = factory(2, 1, 0)
     name, executefn = decode(instr)
@@ -136,7 +136,7 @@ def test_shift_left(factory, is16bit):
                          [(opcode_factory.lsl16_immediate, True),
                           (opcode_factory.lsl32_immediate, False)
                          ])
-def test_shift_left_immediate(factory, is16bit):
+def test_execute_shift_left_immediate(factory, is16bit):
     state = new_state(rf1=7)
     instr = factory(2, 1, 5)
     name, executefn = decode(instr)
@@ -157,7 +157,7 @@ def test_shift_left_immediate(factory, is16bit):
                            0b10101010101010101010101010101010,
                            False),
                           ])
-def test_bitr_immediate(bits, expected, is16bit):
+def test_execute_bitr_immediate(bits, expected, is16bit):
     state = new_state(rf0=0, rf1=bits)
     instr = (opcode_factory.bitr16_immediate(2, 1, 0) if is16bit
              else opcode_factory.bitr32_immediate(2, 1, 0))
@@ -174,7 +174,7 @@ def test_bitr_immediate(bits, expected, is16bit):
                                               (opcode_factory.orr32, 5 | 7),
                                               (opcode_factory.eor32, 5 ^ 7),
                                           ])
-def test_bitwise32(factory, expected):
+def test_execute_bitwise32(factory, expected):
     state = new_state(rf0=5, rf1=7)
     instr = factory(2, 1, 0)
     name, executefn = decode(instr)
@@ -187,7 +187,7 @@ def test_bitwise32(factory, expected):
                                               (opcode_factory.orr16, 5 | 7),
                                               (opcode_factory.eor16, 5 ^ 7),
                                              ])
-def test_bitwise16(factory, expected):
+def test_execute_bitwise16(factory, expected):
     state = new_state(rf0=5, rf1=7)
     instr = factory(2, 1, 0)
     name, executefn = decode(instr)
@@ -296,8 +296,8 @@ def test_execute_strpmd32(sub, expected):
     assert 42 == state.mem.read(8, 4) # Start address, number of bytes
 
 
-@pytest.mark.parametrize('is16bit,val', [(True, 0b111), (False, 0b1111)])
-def test_execute_jr32(is16bit, val):
+@pytest.mark.parametrize('is16bit,val', [(True, 0b111), (False, 0b111111)])
+def test_execute_jump(is16bit, val):
     state = new_state(rf0=val)
     instr = opcode_factory.jr16(0) if is16bit else opcode_factory.jr32(0)
     name, executefn = decode(instr)
@@ -306,10 +306,20 @@ def test_execute_jr32(is16bit, val):
     expected_state.check(state)
 
 
+@pytest.mark.parametrize('is16bit,val', [(True, 0b111), (False, 0b111111)])
+def test_execute_jump_and_link(is16bit, val):
+    state = new_state(rf0=val, pc=5)
+    instr = opcode_factory.jalr16(0) if is16bit else opcode_factory.jalr32(0)
+    name, executefn = decode(instr)
+    executefn(state, Instruction(instr, None))
+    expected_state = StateChecker(pc=val, rfLR=5)
+    expected_state.check(state)
+
+
 @pytest.mark.parametrize('is16bit,imm,expected_pc',
                          [(False, 0b01111111,  254),
                           (True,  0b011111111, 510)])
-def test_bcond(is16bit, imm, expected_pc):
+def test_execute_bcond(is16bit, imm, expected_pc):
     state = new_state(AZ=1, pc=0)
     instr = opcode_factory.bcond16(0b0000, imm)
     name, executefn = decode(instr)
@@ -348,7 +358,7 @@ def test_execute_gie16():
 
 @pytest.mark.parametrize('name,instr', [('rti16',  opcode_factory.rti16()),
                                         ('trap16', opcode_factory.trap16(0b111111))])
-def test_interrupt_instructions(name, instr):
+def test_execute_interrupt_instructions(name, instr):
     with pytest.raises(NotImplementedError):
         state = new_state()
         name, executefn = decode(instr)
@@ -359,14 +369,14 @@ def test_interrupt_instructions(name, instr):
                                         ('sync16',   opcode_factory.sync16()),
                                         ('wand16',   opcode_factory.wand16()),
                                        ])
-def test_multicore_instructions(name, instr):
+def test_execute_multicore_instructions(name, instr):
     with pytest.raises(NotImplementedError):
         state = new_state()
         name, executefn = decode(instr)
         executefn(state, Instruction(instr, None))
 
 
-def test_unimpl16():
+def test_execute_unimpl16():
     with pytest.raises(NotImplementedError):
         state = new_state()
         instr = opcode_factory.unimpl16()

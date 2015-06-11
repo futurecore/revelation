@@ -96,17 +96,31 @@ def test_bit32_immediate():
 
 
 def test_jr32():
-    #       0bxxxnnnxxxxxx0010xxxnnn0101011111
-    instr = 0b00000000000000100000000101001111
-    rn = 0
+    #       0bxxxnnnxxxxxx0010xxxnnn0101001111
+    instr = 0b00011100000000100001110101001111
+    rn = 0b111111
     assert jr32(rn) == instr
 
 
 def test_jr16():
     #       0bxxxxxxxxxxxxxxxxxxxnnn0101000010
-    instr = 0b00000000000000000000000101000010
-    rn = 0
+    instr = 0b00000000000000000001110101000010
+    rn = 0b111
     assert jr16(rn) == instr
+
+
+def test_jalr32():
+    #       0bxxxnnnxxxxxx0010xxxnnn0101011111
+    instr = 0b00011100000000100001110101011111
+    rn = 0b111111
+    assert jalr32(rn) == instr
+
+
+def test_jalr16():
+    #       0bxxxxxxxxxxxxxxxxxxxnnn0101010010
+    instr = 0b00000000000000000001110101010010
+    rn = 0b111
+    assert jalr16(rn) == instr
 
 
 def test_bcond32():

@@ -170,15 +170,25 @@ add16_immediate = make_arith16_immediate_factory('add')
 sub16_immediate = make_arith16_immediate_factory('sub')
 
 
-def jr32(rn):
-    opcode = 0b0101001111
-    bits_16_20 = 0b0010
-    return (opcode | ((rn & 7)) << 7) | (bits_16_20 << 16) | ((rn & 56) << 23)
+def make_jump32_factory(and_link):
+    def jump(rn):
+        opcode = 0b0101011111 if and_link else 0b0101001111
+        bits_16_20 = 0b0010
+        return (opcode | ((rn & 7) << 10) | (bits_16_20 << 16) | ((rn & 56) << 23))
+    return jump
+
+jr32   = make_jump32_factory(False)
+jalr32 = make_jump32_factory(True)
 
 
-def jr16(rn):
-    opcode = 0b0101000010
-    return (opcode | ((rn & 7) << 7))
+def make_jump16_factory(and_link):
+    def jump(rn):
+        opcode = 0b0101010010 if and_link else 0b0101000010
+        return (opcode | (rn << 10))
+    return jump
+
+jr16   = make_jump16_factory(False)
+jalr16 = make_jump16_factory(True)
 
 
 def bcond_factory(is16bit):

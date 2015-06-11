@@ -45,6 +45,13 @@ reg_map = {
     'r52'  : 52,   'r53'  : 53,   'r54'  : 54,   'r55'  : 55,
     'r56'  : 56,   'r57'  : 57,   'r58'  : 58,   'r59'  : 59,
     'r60'  : 40,   'r61'  : 61,   'r62'  : 62,   'r63'  : 63,
+    # Synonyms.
+    'SB' : 9,   # Static base
+    'SL' : 10,  # Stack limit
+    'FP' : 11,  # Frame pointer
+    'SP' : 13,  # Stack pointer
+    'LR' : 14,  # Link register
+    # Special registers.
     'UNUSED'      : 64,
     'CONFIG'      : 65,  # Core configuration
     'STATUS'      : 66,  # Core status
@@ -155,6 +162,8 @@ encodings = [
     ['bcond16',     'xxxxxxxxxxxxxxxxxxxxxxxxxxxx0000'],
     ['jr32',        'xxxxxxxxxxxx0010xxxxxx0101001111'],
     ['jr16',        'xxxxxxxxxxxxxxxxxxxxxx0101000010'],
+    ['jalr32',      'xxxxxxxxxxxx0010xxxxxx0101011111'],
+    ['jalr16',      'xxxxxxxxxxxxxxxxxxxxxx0101010010'],
     #---------------------------------------------------------------------
     # Moves
     #---------------------------------------------------------------------
@@ -436,7 +445,7 @@ def execute_ldstrpmd32(s, inst):
 
 
 #-----------------------------------------------------------------------
-# jr32 and js16 - jump.
+# jr32 and jr16 - jump.
 #-----------------------------------------------------------------------
 def make_jr_executor(is16bit):
     def execute_jr(s, inst):
@@ -450,6 +459,25 @@ def make_jr_executor(is16bit):
 
 execute_jr32 = make_jr_executor(False)
 execute_jr16 = make_jr_executor(True)
+
+
+#-----------------------------------------------------------------------
+# jalr32 and jalr16 - register and link jump.
+#-----------------------------------------------------------------------
+def make_jalr_executor(is16bit):
+    def execute_jalr(s, inst):
+        """
+        LR = PC;
+        PC = RN;
+        """
+        if is16bit:
+            inst.bits &= 0xffff
+        s.rf[reg_map['LR']] = s.pc
+        s.pc = s.rf[inst.rn]
+    return execute_jalr
+
+execute_jalr32 = make_jalr_executor(False)
+execute_jalr16 = make_jalr_executor(True)
 
 
 #-----------------------------------------------------------------------
