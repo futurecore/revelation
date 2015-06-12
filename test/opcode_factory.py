@@ -18,12 +18,12 @@ wand16   = make_zero_operand_factory(0b00000000000000000000000110000010)
 unimpl16 = make_zero_operand_factory(0b00000000000011110000000000001111)
 
 
-def trap16(trap):
+def trap16(trap=0):
     return 0b1111100010 | (trap << 10)
 
 
 def make_arith32_immediate_factory(name):
-    def arith32_immediate(rd, rn, imm):
+    def arith32_immediate(rd=0, rn=0, imm=0):
         if name == 'add':
             opcode = 0b0011011
         elif name == 'sub':
@@ -40,7 +40,7 @@ sub32_immediate = make_arith32_immediate_factory('sub')
 
 
 def make_bitwise32_factory(name):
-    def arith32(rd, rn, rm):
+    def arith32(rd=0, rn=0, rm=0):
         bits_16_20 = 0b1010
         if name == 'add':
             opcode = 0b0011111
@@ -76,7 +76,7 @@ lsl32 = make_bitwise32_factory('lsl')
 
 
 def make_bitwise32_immediate_factory(name):
-    def bit32_immediate(rd, rn, imm):
+    def bit32_immediate(rd=0, rn=0, imm=0):
         if name == 'lsr':
             opcode = 0b01111
             bits_16_20 = 0b0110
@@ -102,7 +102,7 @@ bitr32_immediate = make_bitwise32_immediate_factory('bitr')
 
 
 def make_bitwise16_immediate_factory(name):
-    def bit16_immediate(rd, rn, imm):
+    def bit16_immediate(rd=0, rn=0, imm=0):
         if name == 'lsr':
             opcode = 0b00110
         elif name == 'lsl':
@@ -123,7 +123,7 @@ bitr16_immediate = make_bitwise16_immediate_factory('bitr')
 
 
 def make_bitwise16_factory(name):
-    def bit16(rd, rn, rm):
+    def bit16(rd=0, rn=0, rm=0):
         assert rd <= 0b111
         assert rn <= 0b111
         assert rm <= 0b111
@@ -159,7 +159,7 @@ lsl16 = make_bitwise16_factory('lsl')
 
 
 def make_arith16_immediate_factory(name):
-    def arith16_immediate(rd, rn, imm):
+    def arith16_immediate(rd=0, rn=0, imm=0):
         if name == 'add':
             opcode = 0b0010011
         elif name == 'sub':
@@ -174,7 +174,7 @@ sub16_immediate = make_arith16_immediate_factory('sub')
 
 
 def make_jump32_factory(and_link):
-    def jump(rn):
+    def jump(rn=0):
         opcode = 0b0101011111 if and_link else 0b0101001111
         bits_16_20 = 0b0010
         return (opcode | ((rn & 7) << 10) | (bits_16_20 << 16) | ((rn & 56) << 23))
@@ -185,7 +185,7 @@ jalr32 = make_jump32_factory(True)
 
 
 def make_jump16_factory(and_link):
-    def jump(rn):
+    def jump(rn=0):
         opcode = 0b0101010010 if and_link else 0b0101000010
         return (opcode | (rn << 10))
     return jump
@@ -195,31 +195,31 @@ jalr16 = make_jump16_factory(True)
 
 
 def bcond_factory(is16bit):
-    def bcond(cond, imm):
+    def bcond(condition=0, imm=0):
         opcode = 0b0000 if is16bit else 0b1000
-        return (opcode | (cond << 4) | (imm << 8))
+        return (opcode | (condition << 4) | (imm << 8))
     return bcond
 
 bcond32 = bcond_factory(False)
 bcond16 = bcond_factory(True)
 
 
-def movcond32(cond, rd, rn):
+def movcond32(condition=0, rd=0, rn=0):
     opcode = 0b1111
     bits_16_20 = 0b0010
-    return (opcode | (cond << 4) | ((rn & 7) << 10) |
+    return (opcode | (condition << 4) | ((rn & 7) << 10) |
             ((rd & 7) << 13) | (bits_16_20 << 16) |
             ((rn & 56) << 23) | ((rd & 56) << 26))
 
 
-def movcond16(cond, rd, rn):
+def movcond16(condition, rd=0, rn=0):
     opcode = 0b0010
     bits_9_10 = 0b00
-    return (opcode | (cond << 4) | (bits_9_10 << 8) | (rn << 10) | (rd << 13))
+    return (opcode | (condition << 4) | (bits_9_10 << 8) | (rn << 10) | (rd << 13))
 
 
 def make_movimm32(is_t):
-    def mov32_immediate(rd, imm):
+    def mov32_immediate(rd=0, imm=0):
         opcode = 0b01011
         bit28 = 1 if is_t else 0
         return (opcode | ((imm & 255) << 5) | ((rd & 7) << 13) |
@@ -232,7 +232,7 @@ movtimm32 = make_movimm32(True)
 
 def make_mov_factory(is16bit, is_from):
     # TODO: Find out what M0 and M1 are for.
-    def mov(rd, rn):
+    def mov(rd=0, rn=0):
         rn = reg_map[rn] if is_from else rn
         rd = reg_map[rd] if not is_from else rd
         if is16bit and is_from:
@@ -255,12 +255,12 @@ movfs16  = make_mov_factory(True,  True)
 movfs32  = make_mov_factory(False, True)
 
 
-def movimm16(rd, imm):
+def movimm16(rd=0, imm=0):
     opcode = 0b00011
     return (opcode | (imm << 5) | (rd << 13))
 
 
-def ldstrpmd32(rd, rn, sub, imm, bb, s):
+def ldstrpmd32(rd=0, rn=0, sub=0, imm=0, bb=0, s=0):
     # Data size
     # 00=byte, 01=half-word, 10=word, 11=double-word
     opcode = 0b1100

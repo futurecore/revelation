@@ -9,11 +9,11 @@ import pytest
 
 
 def test_add_register_arguments():
-    instr = Instruction(opcode_factory.add32(2, 1, 0), '')
+    instr = Instruction(opcode_factory.add32(rd=2, rn=1, rm=0), '')
     assert instr.rd == 2
     assert instr.rn == 1
     assert instr.rm == 0
-    instr = Instruction(opcode_factory.add32(10, 9, 8), '')
+    instr = Instruction(opcode_factory.add32(rd=10, rn=9, rm=8), '')
     assert instr.rd == 2 + 8
     assert instr.rn == 1 + 8
     assert instr.rm == 0 + 8
@@ -25,7 +25,7 @@ def test_add_register_arguments():
                          ])
 def test_execute_add32sub32(factory, expected):
     state = new_state(rf0=45, rf1=47)
-    instr = factory(2, 1, 0)
+    instr = factory(rd=2, rn=1, rm=0)
     name, executefn = decode(instr)
     executefn(state, Instruction(instr, None))
     expected_state = StateChecker(pc=4, **expected)
@@ -38,7 +38,7 @@ def test_execute_add32sub32(factory, expected):
                          ])
 def test_execute_add16sub16(factory, expected):
     state = new_state(rf0=2, rf1=5)
-    instr = factory(2, 1, 0)
+    instr = factory(rd=2, rn=1, rm=0)
     name, executefn = decode(instr)
     executefn(state, Instruction(instr, None))
     expected_state = StateChecker(pc=2, **expected)
@@ -52,8 +52,8 @@ def test_execute_add16sub16(factory, expected):
 def test_execute_logical_shift_right(rn, rm, is16bit):
     rd = 2
     state = new_state(rf0=trim_32(rn), rf1=trim_32(rm))
-    instr = (opcode_factory.lsr16(rd, 0, 1) if is16bit
-             else opcode_factory.lsr32(rd, 0, 1))
+    instr = (opcode_factory.lsr16(rd=rd, rn=0, rm=1) if is16bit
+             else opcode_factory.lsr32(rd=rd, rn=0, rm=1))
     name, executefn = decode(instr)
     executefn(state, Instruction(instr, None))
     expected_state = StateChecker(AZ=(False if rn < 0 else True), # 1 >> 5 == 0
@@ -70,8 +70,8 @@ def test_execute_logical_shift_right(rn, rm, is16bit):
 def test_execute_logical_shift_right_imm(rn, imm, is16bit):
     rd = 2
     state = new_state(rf0=trim_32(rn))
-    instr = (opcode_factory.lsr16_immediate(rd, 0, imm) if is16bit
-             else opcode_factory.lsr32_immediate(rd, 0, imm))
+    instr = (opcode_factory.lsr16_immediate(rd=rd, rn=0, imm=imm) if is16bit
+             else opcode_factory.lsr32_immediate(rd=rd, rn=0, imm=imm))
     name, executefn = decode(instr)
     executefn(state, Instruction(instr, None))
     expected_state = StateChecker(AZ=(False if rn < 0 else True), # 1 >> 5 == 0
@@ -88,8 +88,8 @@ def test_execute_logical_shift_right_imm(rn, imm, is16bit):
 def test_execute_arith_shift_right(rn, rm, is16bit):
     rd = 2
     state = new_state(rf0=trim_32(rn), rf1=trim_32(rm))
-    instr = (opcode_factory.asr16(rd, 0, 1) if is16bit
-             else opcode_factory.asr32(rd, 0, 1))
+    instr = (opcode_factory.asr16(rd=rd, rn=0, rm=1) if is16bit
+             else opcode_factory.asr32(rd=rd, rn=0, rm=1))
     name, executefn = decode(instr)
     executefn(state, Instruction(instr, None))
     expected_state = StateChecker(AZ=(False if rn < 0 else True), # 1 >> 5 == 0
@@ -106,8 +106,8 @@ def test_execute_arith_shift_right(rn, rm, is16bit):
 def test_execute_arith_shift_right_imm(rn, imm, is16bit):
     rd = 2
     state = new_state(rf0=trim_32(rn))
-    instr = (opcode_factory.asr16_immediate(rd, 0, imm) if is16bit
-             else opcode_factory.asr32_immediate(rd, 0, imm))
+    instr = (opcode_factory.asr16_immediate(rd=rd, rn=0, imm=imm) if is16bit
+             else opcode_factory.asr32_immediate(rd=rd, rn=0, imm=imm))
     name, executefn = decode(instr)
     executefn(state, Instruction(instr, None))
     expected_state = StateChecker(AZ=(False if rn < 0 else True), # 1 >> 5 == 0
@@ -123,7 +123,7 @@ def test_execute_arith_shift_right_imm(rn, imm, is16bit):
                          ])
 def test_execute_shift_left(factory, is16bit):
     state = new_state(rf0=5, rf1=7)
-    instr = factory(2, 1, 0)
+    instr = factory(rd=2, rn=1, rm=0)
     name, executefn = decode(instr)
     executefn(state, Instruction(instr, None))
     expected_state = StateChecker(AZ=0, AN=0, AC=0, AV=0,
@@ -138,7 +138,7 @@ def test_execute_shift_left(factory, is16bit):
                          ])
 def test_execute_shift_left_immediate(factory, is16bit):
     state = new_state(rf1=7)
-    instr = factory(2, 1, 5)
+    instr = factory(rd=2, rn=1, imm=5)
     name, executefn = decode(instr)
     executefn(state, Instruction(instr, None))
     expected_state = StateChecker(AZ=0, AN=0, AC=0, AV=0,
@@ -159,8 +159,8 @@ def test_execute_shift_left_immediate(factory, is16bit):
                           ])
 def test_execute_bitr_immediate(bits, expected, is16bit):
     state = new_state(rf0=0, rf1=bits)
-    instr = (opcode_factory.bitr16_immediate(2, 1, 0) if is16bit
-             else opcode_factory.bitr32_immediate(2, 1, 0))
+    instr = (opcode_factory.bitr16_immediate(rd=2, rn=1, imm=0) if is16bit
+             else opcode_factory.bitr32_immediate(rd=2, rn=1, imm=0))
     name, executefn = decode(instr)
     executefn(state, Instruction(instr, None))
     expected_state = StateChecker(AZ=0, AC=0, AV=0,
@@ -176,7 +176,7 @@ def test_execute_bitr_immediate(bits, expected, is16bit):
                                           ])
 def test_execute_bitwise32(factory, expected):
     state = new_state(rf0=5, rf1=7)
-    instr = factory(2, 1, 0)
+    instr = factory(rd=2, rn=1, rm=0)
     name, executefn = decode(instr)
     executefn(state, Instruction(instr, None))
     expected_state = StateChecker(AZ=0, AV=0, AC=0, pc=4, rf2=expected)
@@ -189,7 +189,7 @@ def test_execute_bitwise32(factory, expected):
                                              ])
 def test_execute_bitwise16(factory, expected):
     state = new_state(rf0=5, rf1=7)
-    instr = factory(2, 1, 0)
+    instr = factory(rd=2, rn=1, rm=0)
     name, executefn = decode(instr)
     executefn(state, Instruction(instr, None))
     expected_state = StateChecker(AZ=0, AV=0, AC=0, pc=2, rf2=expected)
@@ -206,7 +206,7 @@ def test_execute_bitwise16(factory, expected):
                          ])
 def test_execute_arith32_immediate(opcode, imm, expected):
     state = new_state(rf0=5)
-    instr = opcode(1, 0, imm)
+    instr = opcode(rd=1, rn=0, imm=imm)
     name, executefn = decode(instr)
     executefn(state, Instruction(instr, None))
     expected_state = StateChecker(pc=4, **expected)
@@ -233,7 +233,7 @@ def test_execute_idle16():
 
 
 def test_sub32_immediate_argument():
-    instr = Instruction(opcode_factory.sub32_immediate(1, 0, 0b01010101010), '')
+    instr = Instruction(opcode_factory.sub32_immediate(rd=1, rn=0, imm=0b01010101010), '')
     assert instr.rd == 1
     assert instr.rn == 0
     assert instr.imm == 0b01010101010
@@ -242,8 +242,8 @@ def test_sub32_immediate_argument():
 @pytest.mark.parametrize('is16bit,val', [(True, 0b111), (False, 0b1111)])
 def test_execute_movcond(is16bit, val):
     state = new_state(AZ=1, rf1=val)
-    instr = (opcode_factory.movcond16(0b0000, 0, 1) if is16bit
-             else opcode_factory.movcond32(0b0000, 0, 1))
+    instr = (opcode_factory.movcond16(condition=0b0000, rd=0, rn=1) if is16bit
+             else opcode_factory.movcond32(condition=0b0000, rd=0, rn=1))
     name, executefn = decode(instr)
     executefn(state, Instruction(instr, None))
     expected_state = StateChecker(rf0=val)
@@ -256,11 +256,11 @@ def test_execute_movcond(is16bit, val):
 def test_execute_movimm(is16bit, is_to, imm):
     state = new_state(AZ=1, rf2=0)
     if is_to:
-        instr = opcode_factory.movtimm32(2, imm)
+        instr = opcode_factory.movtimm32(rd=2, imm=imm)
     elif is16bit:
-        instr = opcode_factory.movimm16(2, imm)
+        instr = opcode_factory.movimm16(rd=2, imm=imm)
     else:
-        instr = opcode_factory.movimm32(2, imm)
+        instr = opcode_factory.movimm32(rd=2, imm=imm)
     name, executefn = decode(instr)
     executefn(state, Instruction(instr, None))
     expected_t = 2 | (imm << 16)
@@ -276,16 +276,16 @@ def test_execute_movimm(is16bit, is_to, imm):
 def test_execute_mov_special(is16bit, is_from):
     state = new_state(rf0=5, rf1=3, rfSP=7, rfSTATUS=11)
     if is_from and is16bit:
-        instr = opcode_factory.movfs16(0, 'r1')
+        instr = opcode_factory.movfs16(rd=0, rn='r1')
         expected_state = StateChecker(rf0=3, rf1=3, rfSP=7, rfSTATUS=11)
     elif is_from and (not is16bit):
-        instr = opcode_factory.movfs32(0, 'SP')
+        instr = opcode_factory.movfs32(rd=0, rn='SP')
         expected_state = StateChecker(rf0=7, rf1=3, rfSP=7, rfSTATUS=11)
     elif (not is_from) and is16bit:
-        instr = opcode_factory.movts16('r1', 0)
+        instr = opcode_factory.movts16(rd='r1', rn=0)
         expected_state = StateChecker(rf0=5, rf1=5, rfSP=7, rfSTATUS=11)
     elif (not is_from) and (not is16bit):
-        instr = opcode_factory.movts32('SP', 0)
+        instr = opcode_factory.movts32(rd='SP', rn=0)
         expected_state = StateChecker(rf0=5, rf1=3, rfSP=5, rfSTATUS=11)
     name, executefn = decode(instr)
     executefn(state, Instruction(instr, None))
@@ -297,8 +297,7 @@ def test_execute_ldpmd32(sub, expected):
     state = new_state(rf5=8)
     state.mem.write(8, 4, 42) # Start address, number of bytes, value
     # bb: 00=byte, 01=half-word, 10=word, 11=double-word
-    #       opcode_factory.ldstrpmd32(rd, rn, sub, imm, bb, s):
-    instr = opcode_factory.ldstrpmd32(0,   5, sub,   1, 0b10, 0)
+    instr = opcode_factory.ldstrpmd32(rd=0, rn=5, sub=sub, imm=1, bb=0b10, s=0)
     assert Instruction(instr, '').bit4 == 0
     name, executefn = decode(instr)
     executefn(state, Instruction(instr, None))
@@ -310,8 +309,7 @@ def test_execute_ldpmd32(sub, expected):
 def test_execute_strpmd32(sub, expected):
     state = new_state(rf0=42, rf5=8)
     # bb: 00=byte, 01=half-word, 10=word, 11=double-word
-    #       opcode_factory.ldstrpmd32(rd, rn, sub, imm, bb, s):
-    instr = opcode_factory.ldstrpmd32(0,   5, sub,   1, 0b10, 1)
+    instr = opcode_factory.ldstrpmd32(rd=0, rn=5, sub=sub, imm=1, bb=0b10, s=1)
     assert Instruction(instr, '').bit4 == 1
     name, executefn = decode(instr)
     executefn(state, Instruction(instr, None))
@@ -323,7 +321,7 @@ def test_execute_strpmd32(sub, expected):
 @pytest.mark.parametrize('is16bit,val', [(True, 0b111), (False, 0b111111)])
 def test_execute_jump(is16bit, val):
     state = new_state(rf0=val)
-    instr = opcode_factory.jr16(0) if is16bit else opcode_factory.jr32(0)
+    instr = opcode_factory.jr16(rn=0) if is16bit else opcode_factory.jr32(0)
     name, executefn = decode(instr)
     executefn(state, Instruction(instr, None))
     expected_state = StateChecker(pc=val)
@@ -333,7 +331,7 @@ def test_execute_jump(is16bit, val):
 @pytest.mark.parametrize('is16bit,val', [(True, 0b111), (False, 0b111111)])
 def test_execute_jump_and_link(is16bit, val):
     state = new_state(rf0=val, pc=5)
-    instr = opcode_factory.jalr16(0) if is16bit else opcode_factory.jalr32(0)
+    instr = opcode_factory.jalr16(rn=0) if is16bit else opcode_factory.jalr32(0)
     name, executefn = decode(instr)
     executefn(state, Instruction(instr, None))
     expected_state = StateChecker(pc=val, rfLR=5)
@@ -345,7 +343,7 @@ def test_execute_jump_and_link(is16bit, val):
                           (True,  0b011111111, 510)])
 def test_execute_bcond(is16bit, imm, expected_pc):
     state = new_state(AZ=1, pc=0)
-    instr = opcode_factory.bcond16(0b0000, imm)
+    instr = opcode_factory.bcond16(condition=0b0000, imm=imm)
     name, executefn = decode(instr)
     executefn(state, Instruction(instr, None))
     expected_state = StateChecker(pc=expected_pc, AZ=1)

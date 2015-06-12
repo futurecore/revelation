@@ -5,164 +5,160 @@ import pytest
 def test_arith32_immediate():
     #       0bdddnnnxxiiiiiiiidddnnniii0011011 ADD
     instr = 0b00000000010101010010000100011011
-    assert add32_immediate(1, 0, 0b01010101010) == instr
+    assert add32_immediate(rd=1, rn=0, imm=0b01010101010) == instr
     #       0bdddnnnxxiiiiiiiidddnnniii0111011 SUB
     instr = 0b00000000010101010010000100111011
-    assert sub32_immediate(1, 0, 0b01010101010) == instr
+    assert sub32_immediate(rd=1, rn=0, imm=0b01010101010) == instr
 
 
 def test_arith16():
     #       0bdddnnnmmm0011010
     instr = 0b0100010000011010
-    assert add16(2, 1, 0) == instr
+    assert add16(rd=2, rn=1, rm=0) == instr
     #       0bdddnnnmmm0111010
     instr = 0b0100010000111010
-    assert sub16(2, 1, 0) == instr
+    assert sub16(rd=2, rn=1, rm=0) == instr
     #       0bdddnnnmmm1011010
     instr = 0b0100010001011010
-    assert and16(2, 1, 0) == instr
+    assert and16(rd=2, rn=1, rm=0) == instr
     #       0bdddnnnmmm1111010
     instr = 0b0100010001111010
-    assert orr16(2, 1, 0) == instr
+    assert orr16(rd=2, rn=1, rm=0) == instr
     #       0bdddnnnmmm0001010
     instr = 0b0100010000001010
-    assert eor16(2, 1, 0) == instr
+    assert eor16(rd=2, rn=1, rm=0) == instr
     #       0bdddnnnmmm1101010
     instr = 0b0100010001101010
-    assert asr16(2, 1, 0) == instr
+    assert asr16(rd=2, rn=1, rm=0) == instr
     #       0bdddnnnmmm1001010
     instr = 0b0100010001001010
-    assert lsr16(2, 1, 0) == instr
+    assert lsr16(rd=2, rn=1, rm=0) == instr
     #       0bdddnnnmmm0101010
     instr = 0b0100010000101010
-    assert lsl16(2, 1, 0) == instr
+    assert lsl16(rd=2, rn=1, rm=0) == instr
 
 
 def test_bitwise32():
     #       0bdddnnnmmmxxx1010dddnnnmmm0011111
     instr = 0b00000000000010100100010000011111
-    assert add32(2, 1, 0) == instr
+    assert add32(rd=2, rn=1, rm=0) == instr
     #       0bdddnnnmmmxxx1010dddnnnmmm0111111
     instr = 0b00000000000010100100010000111111
-    assert sub32(2, 1, 0) == instr
+    assert sub32(rd=2, rn=1, rm=0) == instr
     #       0bdddnnnmmmxxx1010dddnnnmmm1011111
     instr = 0b00000000000010100100010001011111
-    assert and32(2, 1, 0) == instr
+    assert and32(rd=2, rn=1, rm=0) == instr
     #       0bdddnnnmmmxxx1010dddnnnmmm1111111
     instr = 0b00000000000010100100010001111111
-    assert orr32(2, 1, 0) == instr
+    assert orr32(rd=2, rn=1, rm=0) == instr
     #       0bdddnnnmmmxxx1010dddnnnmmm0001111
     instr = 0b00000000000010100100010000001111
-    assert eor32(2, 1, 0) == instr
+    assert eor32(rd=2, rn=1, rm=0) == instr
     #       0bdddnnnmmmxxx1010dddnnnmmm1101111
     instr = 0b00000000000010100100010001101111
-    assert asr32(2, 1, 0) == instr
+    assert asr32(rd=2, rn=1, rm=0) == instr
     #       0bdddnnnmmmxxx1010dddnnnmmm1001111
     instr = 0b00000000000010100100010001001111
-    assert lsr32(2, 1, 0) == instr
+    assert lsr32(rd=2, rn=1, rm=0) == instr
     #       0bdddnnnmmmxxx1010dddnnnmmm0101111
     instr = 0b00000000000010100100010000101111
-    assert lsl32(2, 1, 0) == instr
+    assert lsl32(rd=2, rn=1, rm=0) == instr
 
 
 def test_bit16_immediate():
     #       0bxxxxxxxxxxxxxxxxdddnnniiiii00110 LSR
     instr = 0b00000000000000001110101111100110
-    assert lsr16_immediate(0b111, 0b010, 0b11111) == instr
+    assert lsr16_immediate(rd=0b111, rn=0b010, imm=0b11111) == instr
     #       0bxxxxxxxxxxxxxxxxdddnnniiiii10110 LSL
     instr = 0b00000000000000001110101111110110
-    assert lsl16_immediate(0b111, 0b010, 0b11111) == instr
+    assert lsl16_immediate(rd=0b111, rn=0b010, imm=0b11111) == instr
     #       0bxxxxxxxxxxxxxxxxdddnnniiiii01110 ASR
     instr = 0b00000000000000001110101111101110
-    assert asr16_immediate(0b111, 0b010, 0b11111) == instr
+    assert asr16_immediate(rd=0b111, rn=0b010, imm=0b11111) == instr
     #       0bxxxxxxxxxxxxxxxxdddnnniiiii11110 BITR
     instr = 0b00000000000000001110101111111110
-    assert bitr16_immediate(0b111, 0b010, 0b11111) == instr
+    assert bitr16_immediate(rd=0b111, rn=0b010, imm=0b11111) == instr
 
 
 def test_bit32_immediate():
     #       0bdddnnnxxxxxx0110dddnnniiiii01111 LSR
     instr = 0b10001100000001101000111111101111
-    assert lsr32_immediate(0b100100, 0b011011, 0b11111) == instr
+    assert lsr32_immediate(rd=0b100100, rn=0b011011, imm=0b11111) == instr
     #       0bdddnnnxxxxxx0110dddnnniiiii11111 LSL
     instr = 0b10001100000001101000111111111111
-    assert lsl32_immediate(0b100100, 0b011011, 0b11111) == instr
+    assert lsl32_immediate(rd=0b100100, rn=0b011011, imm=0b11111) == instr
     #       0bdddnnnxxxxxx1110dddnnniiiii01111 ASR
     instr = 0b10001100000011101000111111101111
-    assert asr32_immediate(0b100100, 0b011011, 0b11111) == instr
+    assert asr32_immediate(rd=0b100100, rn=0b011011, imm=0b11111) == instr
     #       0bdddnnnxxxxxx1110dddnnniiiii11111 BITR
     instr = 0b10001100000011101000111111111111
-    assert bitr32_immediate(0b100100, 0b011011, 0b11111) == instr
+    assert bitr32_immediate(rd=0b100100, rn=0b011011, imm=0b11111) == instr
 
 
 def test_jr32():
     #       0bxxxnnnxxxxxx0010xxxnnn0101001111
     instr = 0b00011100000000100001110101001111
-    rn = 0b111111
-    assert jr32(rn) == instr
+    assert jr32(rn=0b111111) == instr
 
 
 def test_jr16():
     #       0bxxxxxxxxxxxxxxxxxxxnnn0101000010
     instr = 0b00000000000000000001110101000010
-    rn = 0b111
-    assert jr16(rn) == instr
+    assert jr16(rn=0b111) == instr
 
 
 def test_jalr32():
     #       0bxxxnnnxxxxxx0010xxxnnn0101011111
     instr = 0b00011100000000100001110101011111
-    rn = 0b111111
-    assert jalr32(rn) == instr
+    assert jalr32(rn=0b111111) == instr
 
 
 def test_jalr16():
     #       0bxxxxxxxxxxxxxxxxxxxnnn0101010010
     instr = 0b00000000000000000001110101010010
-    rn = 0b111
-    assert jalr16(rn) == instr
+    assert jalr16(rn=0b111) == instr
 
 
 def test_bcond32():
     #       0biiiiiiiiiiiiiiiiiiiiiiiicccc1000
     instr = 0b11100000000000000000000011111000
-    assert bcond32(0b1111, 0b111000000000000000000000) == instr
+    assert bcond32(condition=0b1111, imm=0b111000000000000000000000) == instr
 
 
 def test_bcond16():
     #       0bxxxxxxxxxxxxxxxxiiiiiiiicccc0000
     instr = 0b00000000000000001110000011110000
-    assert bcond16(0b1111, 0b11100000) == instr
+    assert bcond16(condition=0b1111, imm=0b11100000) == instr
 
 
 def test_movcond32():
     #       0bdddnnnxxxxxx0010dddnnn00cccc1111
     instr = 0b00000000000000100000000001011111
-    assert movcond32(0b0101, 0, 0) == instr
+    assert movcond32(condition=0b0101, rd=0, rn=0) == instr
 
 
 def test_movcond16():
     #       0bxxxxxxxxxxxxxxxxdddnnn00cccc0010
     instr = 0b00000000000000001110100011110010
-    assert movcond16(0b1111, 0b111, 0b010) == instr
+    assert movcond16(condition=0b1111, rd=0b111, rn=0b010) == instr
 
 
 def test_movimm16():
     #       0bxxxxxxxxxxxxxxxxdddiiiiiiii00011
     instr = 0b00000000000000001001111111100011
-    assert movimm16(0b100, 0b11111111) == instr
+    assert movimm16(rd=0b100, imm=0b11111111) == instr
 
 
 def test_movimm32():
     #       0bddd0iiiiiiiixxxxdddiiiiiiii01011
     instr = 0b10001111111100001001111111101011
-    assert movimm32(0b100100, 0b1111111111111111) == instr
+    assert movimm32(rd=0b100100, imm=0b1111111111111111) == instr
 
 
 def test_movtimm32():
     #       0bddd1iiiiiiiixxxxdddiiiiiiii01011
     instr = 0b10011111111100001001111111101011
-    assert movtimm32(0b100100, 0b1111111111111111) == instr
+    assert movtimm32(rd=0b100100, imm=0b1111111111111111) == instr
 
 
 def test_movts():
@@ -170,10 +166,10 @@ def test_movts():
     assert reg_map['LR'] == 14
     #       0bxxxxxxxxxxxxxxxxdddnnn0100000010
     instr = 0b00000000000000000110000100000010
-    assert movts16('r3', 0) == instr
+    assert movts16(rd='r3', rn=0) == instr
     #       0bdddnnnxxxxxx0010dddnnn0100001111
     instr = 0b00100000000000101100000100001111
-    assert movts32('LR', 0) == instr
+    assert movts32(rd='LR', rn=0) == instr
 
 
 def test_movfs():
@@ -181,10 +177,10 @@ def test_movfs():
     assert reg_map['LR'] == 14
     #       0bdddnnnxxxxxxxxxxdddnnn0100010010
     instr = 0b00000000000000000000110100010010
-    assert movfs16(0, 'r3') == instr
+    assert movfs16(rd=0, rn='r3') == instr
     #       0bdddnnnxxxxxx0010dddnnn0100011111
     instr = 0b00000100000000100001100100011111
-    assert movfs32(0, 'LR') == instr
+    assert movfs32(rd=0, rn='LR') == instr
 
 
 def test_ldstrpmd32():
@@ -201,7 +197,7 @@ def test_ldstrpmd32():
 def test_trap16():
     #       0bxxxxxxxxxxxxxxxxtttttt1111100000
     instr = 0b00000000000000001111111111100010
-    assert trap16(0b111111) == instr
+    assert trap16(trap=0b111111) == instr
 
 
 @pytest.mark.parametrize('name,factory,instr',
