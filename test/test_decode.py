@@ -50,6 +50,10 @@ import pytest
                           ('movtimm32',  opcode_factory.movtimm32(0b1111, 0)),
                           ('movimm32',   opcode_factory.movimm32(0b1111, 0)),
                           ('movimm16',   opcode_factory.movimm16(0b1111, 0)),
+                          ('movfs32',    opcode_factory.movfs32(0b110,   'LR')),
+                          ('movfs16',    opcode_factory.movfs16(0b110,   'r1')),
+                          ('movts32',    opcode_factory.movts32('LR', 0b011)),
+                          ('movts16',    opcode_factory.movts16('r1', 0)),
                           ('gie16',      opcode_factory.gie16()),
                           ('gid16',      opcode_factory.gid16()),
                           ('nop16',      opcode_factory.nop16()),
@@ -102,3 +106,23 @@ def test_decode_add32_immediate_argument():
     assert instr.rd == 1
     assert instr.rn == 0
     assert instr.imm == 0b01010101010
+
+
+def test_mov_registers():
+    from epiphany.isa import reg_map
+    instr = Instruction(opcode_factory.movfs16(0, 'SP'), '')
+    assert instr.rd == 0
+    assert instr.rn == reg_map['SP']
+    instr = Instruction(opcode_factory.movfs32(0, 'SP'), '')
+    assert instr.rd == 0
+    assert instr.rn == reg_map['SP']
+    instr = Instruction(opcode_factory.movts16('r1', 0), '')
+    assert instr.rd == reg_map['r1']
+    assert instr.rn == 0
+    instr = Instruction(opcode_factory.movts16('SP', 0), '')
+    assert instr.rd == reg_map['SP']
+    assert instr.rn == 0
+    instr = Instruction(opcode_factory.movts32('SP', 0), '')
+    assert instr.rd == reg_map['SP']
+    assert instr.rn == 0
+

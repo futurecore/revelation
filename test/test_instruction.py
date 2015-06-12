@@ -250,12 +250,12 @@ def test_execute_movcond(is16bit, val):
     expected_state.check(state)
 
 
-@pytest.mark.parametrize('is16bit,is_t,imm', [(True, False, 0b11111111),
-                                              (False, True, 0b0000000011111111),
-                                              (False, False, 0b1111111111111111)])
-def test_execute_movimm(is16bit, is_t, imm):
+@pytest.mark.parametrize('is16bit,is_to,imm', [(True, False, 0b11111111),
+                                               (False, True, 0b0000000011111111),
+                                               (False, False, 0b1111111111111111)])
+def test_execute_movimm(is16bit, is_to, imm):
     state = new_state(AZ=1, rf2=0)
-    if is_t:
+    if is_to:
         instr = opcode_factory.movtimm32(2, imm)
     elif is16bit:
         instr = opcode_factory.movimm16(2, imm)
@@ -264,7 +264,31 @@ def test_execute_movimm(is16bit, is_t, imm):
     name, executefn = decode(instr)
     executefn(state, Instruction(instr, None))
     expected_t = 2 | (imm << 16)
-    expected_state = StateChecker(rf2=expected_t) if is_t else StateChecker(rf2=imm)
+    expected_state = StateChecker(rf2=expected_t) if is_to else StateChecker(rf2=imm)
+    expected_state.check(state)
+
+
+@pytest.mark.parametrize('is16bit,is_from,', [(True,  False),
+                                              (True,  True),
+                                              (False, False),
+                                              (False, True)
+                                           ])
+def test_execute_mov_special(is16bit, is_from):
+    state = new_state(rf0=5, rf1=3, rfSP=7, rfSTATUS=11)
+    if is_from and is16bit:
+        instr = opcode_factory.movfs16(0, 'r1')
+        expected_state = StateChecker(rf0=3, rf1=3, rfSP=7, rfSTATUS=11)
+    elif is_from and (not is16bit):
+        instr = opcode_factory.movfs32(0, 'SP')
+        expected_state = StateChecker(rf0=7, rf1=3, rfSP=7, rfSTATUS=11)
+    elif (not is_from) and is16bit:
+        instr = opcode_factory.movts16('r1', 0)
+        expected_state = StateChecker(rf0=5, rf1=5, rfSP=7, rfSTATUS=11)
+    elif (not is_from) and (not is16bit):
+        instr = opcode_factory.movts32('SP', 0)
+        expected_state = StateChecker(rf0=5, rf1=3, rfSP=5, rfSTATUS=11)
+    name, executefn = decode(instr)
+    executefn(state, Instruction(instr, None))
     expected_state.check(state)
 
 

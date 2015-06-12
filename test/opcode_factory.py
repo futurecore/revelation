@@ -1,3 +1,6 @@
+from epiphany.isa import reg_map
+
+
 def make_zero_operand_factory(opcode):
     def factory():
         return opcode
@@ -216,16 +219,40 @@ def movcond16(cond, rd, rn):
 
 
 def make_movimm32(is_t):
-    def mov32_instruction(rd, imm):
+    def mov32_immediate(rd, imm):
         opcode = 0b01011
         bit28 = 1 if is_t else 0
-        instruction = (opcode | ((imm & 255) << 5) | ((rd & 7) << 13) |
-                       ((imm & 65280) << 12) | (bit28 << 28) | ((rd & 56) << 26))
-        return instruction
-    return mov32_instruction
+        return (opcode | ((imm & 255) << 5) | ((rd & 7) << 13) |
+                ((imm & 65280) << 12) | (bit28 << 28) | ((rd & 56) << 26))
+    return mov32_immediate
 
 movimm32  = make_movimm32(False)
 movtimm32 = make_movimm32(True)
+
+
+def make_mov_factory(is16bit, is_from):
+    # TODO: Find out what M0 and M1 are for.
+    def mov(rd, rn):
+        rn = reg_map[rn] if is_from else rn
+        rd = reg_map[rd] if not is_from else rd
+        if is16bit and is_from:
+            opcode = 0b0100010010
+        elif is16bit and not is_from:
+            opcode = 0b0100000010
+        elif not is16bit and is_from:
+            opcode = 0b0100011111
+        elif not is16bit and not is_from:
+            opcode = 0b0100001111
+        bits_16_20 = 0b0000 if is16bit else 0b0010
+        return (opcode | ((rn & 7) << 10) |
+                ((rd & 7) << 13) | (bits_16_20 << 16) |
+                ((rn & 56) << 23) | ((rd & 56) << 26))
+    return mov
+
+movts16  = make_mov_factory(True,  False)
+movts32  = make_mov_factory(False, False)
+movfs16  = make_mov_factory(True,  True)
+movfs32  = make_mov_factory(False, True)
 
 
 def movimm16(rd, imm):

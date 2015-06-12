@@ -172,6 +172,10 @@ encodings = [
     ['movimm32',    'xxx0xxxxxxxxxxxxxxxxxxxxxxx01011'],
     ['movimm16',    'xxxxxxxxxxxxxxxxxxxxxxxxxxx00011'],
     ['movtimm32',   'xxx1xxxxxxxxxxxxxxxxxxxxxxx01011'],
+    ['movts16',     'xxxxxxxxxxxxxxxxxxxxxx0100000010'],
+    ['movts32',     'xxxxxxxxxxxx0010xxxxxx0100001111'],
+    ['movfs16',     'xxxxxxxxxxxxxxxxxxxxxx0100010010'],
+    ['movfs32',     'xxxxxxxxxxxx0010xxxxxx0100011111'],
 ]
 
 
@@ -538,6 +542,24 @@ def make_movimm_executor(is16bit, is_t):
 execute_movtimm32 = make_movimm_executor(False, True)
 execute_movimm32  = make_movimm_executor(False, False)
 execute_movimm16  = make_movimm_executor(True, False)
+
+#-----------------------------------------------------------------------
+# movts16, movts32, movfs16 and movfs32 - move
+#-----------------------------------------------------------------------
+def make_mov_executor(is16bit):
+    def execute_mov(s, inst):
+        """
+        RD=RN
+        """
+        if is16bit:
+            inst.bits &= 0xffff
+        s.rf[inst.rd] = s.rf[inst.rn]
+    return execute_mov
+
+execute_movts32 = make_mov_executor(False)
+execute_movts16 = make_mov_executor(True)
+execute_movfs32 = make_mov_executor(False)
+execute_movfs16 = make_mov_executor(True)
 
 
 #=======================================================================
