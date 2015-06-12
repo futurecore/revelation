@@ -6,7 +6,7 @@ from epiphany.sim import Epiphany, new_memory
 
 class MockEpiphany(Epiphany):
 
-    def init_test_state(self, instructions):
+    def load_program_as_list(self, instructions):
         """Load the program into a memory object.
         This function should ONLY be called by unit tests.
         Assume 32bit instructions.
