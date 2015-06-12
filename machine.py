@@ -8,7 +8,7 @@ from pydgin.storage import RegisterFile
 # State
 #-----------------------------------------------------------------------
 class State(object):
-    _virtualizable_ = ['pc', 'ncycles', 'AN', 'AZ', 'AC', 'AV',
+    _virtualizable_ = ['pc', 'num_insts', 'AN', 'AZ', 'AC', 'AV',
                        'AVS', 'BN', 'BZ']
 
     def __init__(self, memory, debug, reset_addr=0x00):
@@ -31,8 +31,8 @@ class State(object):
 
         # other registers
         self.pc = 0b0
-        self.status   = 0
-        self.ncycles  = 0
+        self.status = 0
+        self.num_insts = 0
         self.stats_en = False
 
     def set_register(self, index, value):
