@@ -22,7 +22,7 @@ class Epiphany(Sim):
         inst_str, exec_fun = decode(bits)
         return Instruction(bits, inst_str), exec_fun
 
-    def init_state(self, exe_file, run_argv, run_envp):
+    def init_state(self, exe_file, filename, run_argv, envp, testbin):
         mem = new_memory()
         entrypoint, breakpoint = load_program(exe_file, mem)
         self.state = State(mem, Debug(), reset_addr=0x0)
