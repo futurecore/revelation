@@ -11,6 +11,6 @@ python:
     - "2.7"
 
 script:
-    - PYTHONPATH=$HOME/pypy/:. py.test --cov-report term-missing --cov epiphany epiphany/test/
+    - PYTHONPATH=$HOME/pypy/:. py.test -n 4 --cov-report term-missing --cov epiphany epiphany/test/
 
 after_success: coveralls
