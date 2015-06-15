@@ -6,15 +6,15 @@ def make_zero_operand_factory(opcode):
         return opcode
     return factory
 
-gie16    = make_zero_operand_factory(0b00000000000000000000000110010010)
-gid16    = make_zero_operand_factory(0b00000000000000000000001110010010)
-nop16    = make_zero_operand_factory(0b0000000000000000000000110100010)
-idle16   = make_zero_operand_factory(0b0000000000000000000000110110010)
-bkpt16   = make_zero_operand_factory(0b00000000000000000000000111000010)
-mbkpt16  = make_zero_operand_factory(0b00000000000000000000001111000010)
-sync16   = make_zero_operand_factory(0b00000000000000000000000111110010)
-rti16    = make_zero_operand_factory(0b00000000000000000000000111010010)
-wand16   = make_zero_operand_factory(0b00000000000000000000000110000010)
+gie16    = make_zero_operand_factory(0b0000000110010010)
+gid16    = make_zero_operand_factory(0b0000001110010010)
+nop16    = make_zero_operand_factory(0b0000000110100010)
+idle16   = make_zero_operand_factory(0b0000000110110010)
+bkpt16   = make_zero_operand_factory(0b0000000111000010)
+mbkpt16  = make_zero_operand_factory(0b0000001111000010)
+sync16   = make_zero_operand_factory(0b0000000111110010)
+rti16    = make_zero_operand_factory(0b0000000111010010)
+wand16   = make_zero_operand_factory(0b0000000110000010)
 unimpl16 = make_zero_operand_factory(0b00000000000011110000000000001111)
 
 
