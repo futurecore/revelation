@@ -86,3 +86,15 @@ The flag is unaffected by all non-floating-point instructions.
 A three bit field indicating the cause of a software exception.
 A software exception edge interrupt is generated whenever this field is non-zero.
 The software exception cause values differ for Epiphany-III and IV and can be found in Appendix-C.
+
+
+## LD / STR data size
+Load and store transactions with unaligned addresses generate a software exception that is handled by the node's interrupt controller.
+For unaligned write accesses, data is still written to memory, but the data written will be incorrect.
+Unaligned reads return values to the register file before an unaligned exception occur.
+
+00=byte, 01=half-word, 10=word, 11=double-word
+
+
+## Notes on memory-mapping
+The 32-bit address map supports up to 4095 cores in a single shared memory system, but practically some of the memory space will probably be dedicated to off-chip SDRAM and memory mapped IO peripherals.
