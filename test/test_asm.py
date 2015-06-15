@@ -3,11 +3,6 @@ import os.path
 import subprocess
 import pytest
 
-pytestmark = pytest.mark.skipif(True,
-                                reason=("Pydgin needs a .bss section in ELF " +
-                                        "files, but e-as cannot compile .bss.")
-                                )
-
 asm_dir = os.path.join('epiphany', 'test', 'asm')
 
 @pytest.mark.parametrize("asm,expected_instructions",
@@ -31,3 +26,24 @@ def test_asm(asm, expected_instructions):
     for line in output.split('\n'):
         if line.startswith("Instructions"):
             assert expected_instructions == int(line.split()[-1])
+
+
+def test_unimpl():
+    os.putenv('PYTHONPATH', '.:../../pypy/')
+    asm_file = os.path.join(asm_dir, 'unimpl.elf')
+    try:
+        child = subprocess.Popen(['python',
+                                  'epiphany/sim.py',
+                                  '--debug',
+                                  'insts,mem,rf,regdump',
+                                  asm_file],
+                                 stdout=subprocess.PIPE,
+                                 stderr=subprocess.PIPE,
+                                 shell=False)
+        output, error_output = child.communicate()
+    except subprocess.CalledProcessError as excn:
+        # Expect to exit with non-zero return code.
+        assert True, ("Simulator exit with non-zero return code " +
+                       "return code: {0}, cmd: {1}".format(excn.returncode, excn.cmd))
+        assert 'NotImplementedError: UNIMPL16' in error_output
+

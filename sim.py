@@ -10,7 +10,7 @@ from epiphany.instruction import Instruction
 memory_size = 2**18  # 2^8 x 2^10 == 32kB.
 
 def new_memory():
-    return Memory(size=memory_size, byte_storage=False)
+    return Memory(size=memory_size, byte_storage=True)
 
 
 class Epiphany(Sim):
