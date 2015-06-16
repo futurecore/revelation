@@ -1,23 +1,10 @@
-from epiphany.condition_codes import should_branch
-
-# arm-specific utils
-from pydgin.utils import (
-    trim_32,
-#  shifter_operand,
-#  condition_passed,
-#  not_borrow_from,
-#  sext_30,
-#  addressing_mode_2,
-#  addressing_mode_3,
-#  addressing_mode_4,
-)
-
-from arm.utils import (
-    borrow_from,
-    carry_from,
-    overflow_from_add,
-    overflow_from_sub,
-)
+import epiphany.execute_bitwise    as execute_bitwise
+import epiphany.execute_branch     as execute_branch
+import epiphany.execute_iarith     as execute_iarith
+import epiphany.execute_interrupt  as execute_interrupts
+import epiphany.execute_jump       as execute_jump
+import epiphany.execute_load_store as execute_load_store
+import epiphany.execute_mov        as execute_mov
 
 from pydgin.misc import create_risc_decoder
 
@@ -179,388 +166,88 @@ encodings = [
 ]
 
 
-def reg_or_imm(s, inst, is16bit):
-    if is16bit:
-        val = s.rf[inst.rm] if inst.bit0 == 0 else inst.imm11
-    else:
-        val = s.rf[inst.rm] if inst.bit2 == 1 else inst.imm11
-    return val
-
-
-def trim_5(value):
-    return value & 0b11111
-
-
-def signed(value, is16bit):
-  if is16bit and (value & 0x8000) or not is16bit and (value & 0x80000000):
-    twos_complement = ~value + 1
-    return -trim_32(twos_complement)
-  return value
-
+#-----------------------------------------------------------------------
+# Branch instructions
+#-----------------------------------------------------------------------
+execute_bcond32 = execute_branch.make_bcond_executor(False)
+execute_bcond16 = execute_branch.make_bcond_executor(True)
 
 #-----------------------------------------------------------------------
-# nop16
+# Load / store instructions
 #-----------------------------------------------------------------------
-def execute_nop16(s, inst):
-    s.pc += 2
-
+execute_ldstrpmd32 = execute_load_store.execute_ldstrpmd32
 
 #-----------------------------------------------------------------------
-# idle16
+# Jump instructions
 #-----------------------------------------------------------------------
-def execute_idle16(s, inst):
-    """
-        STATUS[0]=0
-        while(!ILAT){
-            PC=PC;
-        }
-    """
-    status = s.rf[reg_map['STATUS']]
-    mask = 0b1111111111111111111111111110
-    status &= mask
-    s.rf[reg_map['STATUS']] = status
-    if not s.rf[reg_map['ILAT']]: # TODO: Use threads here?
-        pass
-    s.pc += 2
-
+execute_jr32   = execute_jump.make_jr_executor(False)
+execute_jr16   = execute_jump.make_jr_executor(True)
+execute_jalr32 = execute_jump.make_jalr_executor(False)
+execute_jalr16 = execute_jump.make_jalr_executor(True)
 
 #-----------------------------------------------------------------------
-# bkpt16 and mbkpt16
+# Bitwise instructions
 #-----------------------------------------------------------------------
-def execute_bkpt16(s, inst):
-    s.rf[reg_map['DEBUGSTATUS']] |= 1
-    s.pc += 2
-    s.running = False
-
-
-def execute_mbkpt16(s, inst):
-    raise NotImplementedError('Multicore not implemented.')
-
-
-#-----------------------------------------------------------------------
-# gie16 and gid16
-#-----------------------------------------------------------------------
-def execute_gie16(s, inst):
-    """Enables all interrupts in ILAT register, dependent on the per bit
-    settings in the IMASK register.
-    TODO: Implement interrupts.
-        STATUS[1]=0
-    """
-    s.rf[reg_map['STATUS']] &= ~(1 << 1)
-    s.pc += 2
-
-
-def execute_gid16(s, inst):
-    """Disable all interrupts.
-        STATUS[1]=1
-    """
-    s.rf[reg_map['STATUS']] |= (1 << 1)
-    s.pc += 2
-
-
-#-----------------------------------------------------------------------
-# sync16
-#-----------------------------------------------------------------------
-def execute_sync16(s, inst):
-    raise NotImplementedError('Interrupts not implemented.')
-
-
-#-----------------------------------------------------------------------
-# rti16
-#-----------------------------------------------------------------------
-def execute_rti16(s, inst):
-    raise NotImplementedError('Interrupts not implemented.')
-
-
-#-----------------------------------------------------------------------
-# trap16
-#-----------------------------------------------------------------------
-def execute_trap16(s, inst):
-    raise NotImplementedError('Interrupts not implemented.')
-
-
-#-----------------------------------------------------------------------
-# wand16
-#-----------------------------------------------------------------------
-def execute_wand16(s, inst):
-    raise NotImplementedError('Multicore not implemented.')
-
-
-#-----------------------------------------------------------------------
-# unimpl16
-#-----------------------------------------------------------------------
-def execute_unimpl16(s, inst):
-    raise NotImplementedError('UNIMPL16')
-
-
-#-----------------------------------------------------------------------
-# add32 and add16 -- with or without immediate.
-#-----------------------------------------------------------------------
-def make_add_executor(is16bit):
-    def execute_add(s, inst):
-        """
-        Operation: RD = RN + <OP2>
-        AN = RD[31]
-        AC = CARRY OUT
-        if ( RD[31:0] == 0 ) { AZ=1 } else { AZ=0 }
-        if (( RD[31] & ~RM[31] & ~RN[31] ) | ( ~RD[31] & RM[31] & RN[31] ))
-        { OV=1 }
-        else { OV=0 }
-        AVS = AVS | AV
-        """
-        if is16bit:
-            inst.bits &= 0xffff
-        result = s.rf[inst.rn] + reg_or_imm(s, inst, is16bit)
-        s.rf[inst.rd] = trim_32(result)
-        s.AN = (result >> 31) & 1
-        s.AZ = trim_32(result) == 0
-        s.AC = carry_from(result)
-        s.AV = overflow_from_add(s.rf[inst.rn], s.rf[inst.rm], result)
-        s.AVS = s.AVS | s.AV
-        s.pc += 2 if is16bit else 4
-    return execute_add
-
-execute_add32 = make_add_executor(False)
-execute_add16 = make_add_executor(True)
-
-
-#-----------------------------------------------------------------------
-# sub32 and sub16 - with or without immediate.
-#-----------------------------------------------------------------------
-def make_sub_executor(is16bit):
-    def execute_sub(s, inst):
-        """
-        RD = RN - <OP2>
-        AN = RD[31]
-        AC = BORROW
-        if (RD[31:0]==0) { AZ=1 } else { AZ=0}
-        if ((RD[31] & ~RM[31] & RN[31]) | (RD[31] & ~RM[31] & RN[31]) )
-        { AV=1 }
-        else { AV=0 }
-        AVS = AVS | AV
-        """
-        if is16bit:
-            inst.bits &= 0xffff
-        result = s.rf[inst.rn] - reg_or_imm(s, inst, is16bit)
-        s.rf[inst.rd] = trim_32(result)
-        s.AN = (result >> 31) & 1
-        s.AC = borrow_from(result)
-        s.AZ = trim_32(result) == 0b0
-        s.AV = overflow_from_sub(s.rf[inst.rn], s.rf[inst.rm], result)
-        s.AVS = s.AVS | s.AV
-        s.pc += 2 if is16bit else 4
-    return execute_sub
-
-execute_sub32 = make_sub_executor(False)
-execute_sub16 = make_sub_executor(True)
-
-
-#-----------------------------------------------------------------------
-# bit1632 - 16 or 32 bit bitwise arithmetic.
-#-----------------------------------------------------------------------
-def make_bit_executor(name, is16bit, imm):
-    def execute_bit(s, inst):
-        """RD = RN <OP> RM
-        AN = RD[31]
-        AV = 0
-        AC = 0
-        If ( RD[31:0] == 0 ) { AZ=1 } else { AZ=0 }
-        """
-        if is16bit:
-            inst.bits &= 0xffff
-        rm = inst.imm5 if imm else s.rf[inst.rm]
-        if name == "and":
-            result = s.rf[inst.rn] & rm
-        elif name == "orr":
-            result = s.rf[inst.rn] | rm
-        elif name == "eor":
-            result = s.rf[inst.rn] ^ rm
-        elif name == "asr":
-            result = signed(s.rf[inst.rn], True) >> trim_5(rm)
-        elif name == "lsr":
-            result = s.rf[inst.rn] >> trim_5(rm)
-        elif name == "lsl":
-            result = s.rf[inst.rn] << trim_5(rm)
-        elif name == "bitr":
-            # The description of this instruction is confused in the ISA
-            # reference. The decode table states that the instruction always
-            # takes an intermediate, but the description of the instruction
-            # states that it does not.
-            width = 8 if is16bit else 32  # TODO: Check register sizes.
-            result_s = '{:0{width}b}'.format(s.rf[inst.rn], width=width)
-            result = int(result_s[::-1], 2)
-        s.rf[inst.rd] = trim_32(result)
-        s.AN = (result >> 31) & 1
-        s.AC = 0
-        s.AV = 0
-        s.AZ = trim_32(result) == 0
-        s.pc += 2 if is16bit else 4
-    return execute_bit
-
 # 16 bit instructions with immediate.
-execute_and16     = make_bit_executor("and", True,  False)
-execute_orr16     = make_bit_executor("orr", True,  False)
-execute_eor16     = make_bit_executor("eor", True,  False)
-execute_asr16     = make_bit_executor("asr", True,  False)
-execute_lsr16     = make_bit_executor("lsr", True,  False)
-execute_lsl16     = make_bit_executor("lsl", True,  False)
+execute_and16     = execute_bitwise.make_bit_executor("and", True,  False)
+execute_orr16     = execute_bitwise.make_bit_executor("orr", True,  False)
+execute_eor16     = execute_bitwise.make_bit_executor("eor", True,  False)
+execute_asr16     = execute_bitwise.make_bit_executor("asr", True,  False)
+execute_lsr16     = execute_bitwise.make_bit_executor("lsr", True,  False)
+execute_lsl16     = execute_bitwise.make_bit_executor("lsl", True,  False)
 # 32 bit instructions without immediate.
-execute_and32     = make_bit_executor("and", False, False)
-execute_orr32     = make_bit_executor("orr", False, False)
-execute_eor32     = make_bit_executor("eor", False, False)
-execute_asr32     = make_bit_executor("asr", False, False)
-execute_lsr32     = make_bit_executor("lsr", False, False)
-execute_lsl32     = make_bit_executor("lsl", False, False)
+execute_and32     = execute_bitwise.make_bit_executor("and", False, False)
+execute_orr32     = execute_bitwise.make_bit_executor("orr", False, False)
+execute_eor32     = execute_bitwise.make_bit_executor("eor", False, False)
+execute_asr32     = execute_bitwise.make_bit_executor("asr", False, False)
+execute_lsr32     = execute_bitwise.make_bit_executor("lsr", False, False)
+execute_lsl32     = execute_bitwise.make_bit_executor("lsl", False, False)
 # 16 bit instructions with immediate.
-execute_lsrimm16  = make_bit_executor("lsr",  True, True)
-execute_lslimm16  = make_bit_executor("lsl",  True, True)
-execute_asrimm16  = make_bit_executor("asr",  True, True)
-execute_bitrimm16 = make_bit_executor("bitr", True, True)
+execute_lsrimm16  = execute_bitwise.make_bit_executor("lsr",  True, True)
+execute_lslimm16  = execute_bitwise.make_bit_executor("lsl",  True, True)
+execute_asrimm16  = execute_bitwise.make_bit_executor("asr",  True, True)
+execute_bitrimm16 = execute_bitwise.make_bit_executor("bitr", True, True)
 # 32 bit instructions with immediate.
-execute_lsrimm32  = make_bit_executor("lsr",  False, True)
-execute_lslimm32  = make_bit_executor("lsl",  False, True)
-execute_asrimm32  = make_bit_executor("asr",  False, True)
-execute_bitrimm32 = make_bit_executor("bitr", False, True)
-
-
-#-----------------------------------------------------------------------
-# ldstrpmd32 - load-store post-modify with displacement.
-#-----------------------------------------------------------------------
-def execute_ldstrpmd32(s, inst):
-    """
-    address=RN;
-    EITHER:
-        RD=memory[address]; (LD)
-    OR:
-        memory[address]=RD; (STR)
-    RN=RN +/- IMM11 << (log2(size_in_bits/8));
-    """
-    address = s.rf[inst.rn]
-    size_in_bits = inst.size
-    if inst.s:     # STORE
-        s.mem.write(address, 0b1 << size_in_bits, s.rf[inst.rd])
-    else:          # LOAD
-        s.rf[inst.rd] = s.mem.read(address, 0b1 << size_in_bits)
-    imm = inst.imm11
-    if inst.sub:  # Subtract
-        s.rf[inst.rn] = address - (imm << size_in_bits)
-    else:
-        s.rf[inst.rn] = address + (imm << size_in_bits)
-
+execute_lsrimm32  = execute_bitwise.make_bit_executor("lsr",  False, True)
+execute_lslimm32  = execute_bitwise.make_bit_executor("lsl",  False, True)
+execute_asrimm32  = execute_bitwise.make_bit_executor("asr",  False, True)
+execute_bitrimm32 = execute_bitwise.make_bit_executor("bitr", False, True)
 
 #-----------------------------------------------------------------------
-# jr32 and jr16 - jump.
+# Integer arithmetic instructions
 #-----------------------------------------------------------------------
-def make_jr_executor(is16bit):
-    def execute_jr(s, inst):
-        """
-        PC = RN;
-        """
-        if is16bit:
-            inst.bits &= 0xffff
-        s.pc = s.rf[inst.rn]
-    return execute_jr
-
-execute_jr32 = make_jr_executor(False)
-execute_jr16 = make_jr_executor(True)
-
+execute_sub32 = execute_iarith.make_sub_executor(False)
+execute_sub16 = execute_iarith.make_sub_executor(True)
+execute_add32 = execute_iarith.make_add_executor(False)
+execute_add16 = execute_iarith.make_add_executor(True)
 
 #-----------------------------------------------------------------------
-# jalr32 and jalr16 - register and link jump.
+# Move instructions
 #-----------------------------------------------------------------------
-def make_jalr_executor(is16bit):
-    def execute_jalr(s, inst):
-        """
-        LR = PC;
-        PC = RN;
-        """
-        if is16bit:
-            inst.bits &= 0xffff
-        s.rf[reg_map['LR']] = s.pc
-        s.pc = s.rf[inst.rn]
-    return execute_jalr
-
-execute_jalr32 = make_jalr_executor(False)
-execute_jalr16 = make_jalr_executor(True)
-
+execute_movcond32 = execute_mov.make_movcond_executor(False)
+execute_movcond16 = execute_mov.make_movcond_executor(True)
+execute_movtimm32 = execute_mov.make_movimm_executor(False, True)
+execute_movimm32  = execute_mov.make_movimm_executor(False, False)
+execute_movimm16  = execute_mov.make_movimm_executor(True, False)
+execute_movts32   = execute_mov.make_mov_executor(False)
+execute_movts16   = execute_mov.make_mov_executor(True)
+execute_movfs32   = execute_mov.make_mov_executor(False)
+execute_movfs16   = execute_mov.make_mov_executor(True)
 
 #-----------------------------------------------------------------------
-# bcon16 and bcond32 - branch on condition.
+# Interrupt and multicore instructions
 #-----------------------------------------------------------------------
-def make_bcond_executor(is16bit):
-    def execute_bcond(s, inst):
-        if is16bit:
-            inst.bits &= 0xffff
-        cond = inst.cond
-        imm = inst.bcond_imm
-        if should_branch(s, cond):
-            s.pc += imm << 1
-        else:
-            s.pc += 2 if is16bit else 4
-    return execute_bcond
-
-execute_bcond32 = make_bcond_executor(False)
-execute_bcond16 = make_bcond_executor(True)
-
-
-#-----------------------------------------------------------------------
-# movcond32 and movcond16 - move on condition.
-#-----------------------------------------------------------------------
-def make_movcond_executor(is16bit):
-    def execute_movcond(s, inst):
-        """
-        IF (Passed) <COND> then
-            RD = RN
-        """
-        if is16bit:
-            inst.bits &= 0xffff
-        rd = inst.rd
-        rn = inst.rn
-        if should_branch(s, inst.cond):
-            s.rf[rd] = s.rf[rn]
-    return execute_movcond
-
-execute_movcond32 = make_movcond_executor(False)
-execute_movcond16 = make_movcond_executor(True)
-
-
-#-----------------------------------------------------------------------
-# movimm32, movtimm32 and movimm16 - move with immediate
-#-----------------------------------------------------------------------
-def make_movimm_executor(is16bit, is_t):
-    def execute_movimm(s, inst):
-        """
-        RD=<imm>
-        """
-        if is16bit:
-            inst.bits &= 0xffff
-        imm = inst.imm16
-        rd = inst.rd
-        s.rf[rd] = (rd | (imm << 16)) if is_t else imm
-    return execute_movimm
-
-execute_movtimm32 = make_movimm_executor(False, True)
-execute_movimm32  = make_movimm_executor(False, False)
-execute_movimm16  = make_movimm_executor(True, False)
-
-#-----------------------------------------------------------------------
-# movts16, movts32, movfs16 and movfs32 - move
-#-----------------------------------------------------------------------
-def make_mov_executor(is16bit):
-    def execute_mov(s, inst):
-        """
-        RD=RN
-        """
-        if is16bit:
-            inst.bits &= 0xffff
-        s.rf[inst.rd] = s.rf[inst.rn]
-    return execute_mov
-
-execute_movts32 = make_mov_executor(False)
-execute_movts16 = make_mov_executor(True)
-execute_movfs32 = make_mov_executor(False)
-execute_movfs16 = make_mov_executor(True)
-
+execute_nop16     = execute_interrupts.execute_nop16
+execute_idle16    = execute_interrupts.execute_idle16
+execute_bkpt16    = execute_interrupts.execute_bkpt16
+execute_mbkpt16   = execute_interrupts.execute_mbkpt16
+execute_gie16     = execute_interrupts.execute_gie16
+execute_gid16     = execute_interrupts.execute_gid16
+execute_sync16    = execute_interrupts.execute_sync16
+execute_rti16     = execute_interrupts.execute_rti16
+execute_wand16    = execute_interrupts.execute_wand16
+execute_trap16    = execute_interrupts.execute_trap16
+execute_unimpl16  = execute_interrupts.execute_unimpl16
 
 #=======================================================================
 # Create Decoder
