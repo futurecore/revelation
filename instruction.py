@@ -20,19 +20,23 @@ class Instruction(object):
         return ((self.bits >> 10) & 0x7) | ((self.bits >> 23) & 0x38)
 
     @property
-    def imm(self):
-        return ((self.bits >> 7) & 0x7) | ((self.bits >> 13) & (0xFF << 3))
+    def imm3(self):
+        return (self.bits >> 8) & 0x7
 
     @property
     def imm5(self):
         return (self.bits >> 5) & 31
 
     @property
-    def mov_imm(self):
+    def imm11(self):
+        return ((self.bits >> 7) & 0x7) | ((self.bits >> 13) & (0xFF << 3))
+
+    @property
+    def imm16(self):
         return ((self.bits >> 5) & 255) | ((self.bits >> 12) & 0xFF00)
 
     @property
-    def bcond(self):
+    def cond(self):
         return (self.bits >> 4) & 15
 
     @property
@@ -40,15 +44,15 @@ class Instruction(object):
         return self.bits >> 8
 
     @property
-    def bits_5_6(self):
+    def size(self):
         return (self.bits >> 5) & 3
 
     @property
-    def sub_bit24(self):
+    def sub(self):
         return (self.bits >> 24) & 1
 
     @property
-    def bit4(self):
+    def s(self):
         return (self.bits >> 4) & 1
 
     @property
@@ -62,4 +66,3 @@ class Instruction(object):
         """Get bit 0 of an instruction.
         """
         return self.bits & 1
-

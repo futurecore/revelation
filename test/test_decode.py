@@ -96,16 +96,16 @@ def test_bit16_imm():
 def test_decode_ldstrpmd32():
     instr = opcode_factory.ldstrpmd32(rd=1, rn=0, sub=1, imm=0b1010101010, bb=0b11, s=1)
     name, executefn = decode(instr)
-    assert Instruction(instr, '').sub_bit24 == 1
-    assert Instruction(instr, '').bit4 == 1
-    assert Instruction(instr, '').bits_5_6 == 0b11
+    assert Instruction(instr, '').sub == 1
+    assert Instruction(instr, '').s == 1
+    assert Instruction(instr, '').size == 0b11
 
 
 def test_decode_add32_immediate_argument():
     instr = Instruction(opcode_factory.add32_immediate(rd=1, rn=0, imm=0b01010101010), '')
     assert instr.rd == 1
     assert instr.rn == 0
-    assert instr.imm == 0b01010101010
+    assert instr.imm11 == 0b01010101010
 
 
 def test_mov_registers():

@@ -181,9 +181,9 @@ encodings = [
 
 def reg_or_imm(s, inst, is16bit):
     if is16bit:
-        val = s.rf[inst.rm] if inst.bit0 == 0 else inst.imm
+        val = s.rf[inst.rm] if inst.bit0 == 0 else inst.imm11
     else:
-        val = s.rf[inst.rm] if inst.bit2 == 1 else inst.imm
+        val = s.rf[inst.rm] if inst.bit2 == 1 else inst.imm11
     return val
 
 
@@ -436,13 +436,13 @@ def execute_ldstrpmd32(s, inst):
     RN=RN +/- IMM11 << (log2(size_in_bits/8));
     """
     address = s.rf[inst.rn]
-    size_in_bits = inst.bits_5_6
-    if inst.bit4:  # STORE
+    size_in_bits = inst.size
+    if inst.s:     # STORE
         s.mem.write(address, 0b1 << size_in_bits, s.rf[inst.rd])
     else:          # LOAD
         s.rf[inst.rd] = s.mem.read(address, 0b1 << size_in_bits)
-    imm = inst.imm
-    if inst.sub_bit24:  # Subtract
+    imm = inst.imm11
+    if inst.sub:  # Subtract
         s.rf[inst.rn] = address - (imm << size_in_bits)
     else:
         s.rf[inst.rn] = address + (imm << size_in_bits)
@@ -491,7 +491,7 @@ def make_bcond_executor(is16bit):
     def execute_bcond(s, inst):
         if is16bit:
             inst.bits &= 0xffff
-        cond = inst.bcond
+        cond = inst.cond
         imm = inst.bcond_imm
         if should_branch(s, cond):
             s.pc += imm << 1
@@ -516,7 +516,7 @@ def make_movcond_executor(is16bit):
             inst.bits &= 0xffff
         rd = inst.rd
         rn = inst.rn
-        if should_branch(s, inst.bcond):
+        if should_branch(s, inst.cond):
             s.rf[rd] = s.rf[rn]
     return execute_movcond
 
@@ -534,7 +534,7 @@ def make_movimm_executor(is16bit, is_t):
         """
         if is16bit:
             inst.bits &= 0xffff
-        imm = inst.mov_imm
+        imm = inst.imm16
         rd = inst.rd
         s.rf[rd] = (rd | (imm << 16)) if is_t else imm
     return execute_movimm
