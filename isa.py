@@ -144,6 +144,11 @@ encodings = [
     ['ldstrpmd32',  'xxxxxx1xxxxxxxxxxxxxxxxxxxxx1100'],  # LD or STR combined.
     ['ldstrdisp16', 'xxxxxxxxxxxxxxxxxxxxxxxxxxxx0100'],  # LD or STR combined.
     ['ldstrdisp32', 'xxxxxx0xxxxxxxxxxxxxxxxxxxxx1100'],  # LD or STR combined.
+    ['ldstrind16',  'xxxxxxxxxxxxxxxxxxxxxxxxxxxx0001'],  # LD or STR combined.
+    ['ldstrind32',  'xxxxxxxxx00xxxxxxxxxxxxxxxxx1001'],  # LD or STR combined.
+    ['ldstrpm16',   'xxxxxxxxxxxxxxxxxxxxxxxxxxxx0101'],  # LD or STR combined.
+    ['ldstrpm32',   'xxxxxxxxx00xxxxxxxxxxxxxxxxx1101'],  # LD or STR combined.
+    ['testset32',   'xxxxxxxxx01xxxxxxxxxxxxxxxx01001'],
     #---------------------------------------------------------------------
     # Jumps and branch conditions
     #---------------------------------------------------------------------
@@ -180,6 +185,11 @@ execute_bcond16 = execute_branch.make_bcond_executor(True)
 execute_ldstrpmd32  = execute_load_store.execute_ldstrpmd32
 execute_ldstrdisp16 = execute_load_store.make_ldstrdisp_executor(True)
 execute_ldstrdisp32 = execute_load_store.make_ldstrdisp_executor(False)
+execute_ldstrind16  = execute_load_store.make_ldstrind_executor(True)
+execute_ldstrind32  = execute_load_store.make_ldstrind_executor(False)
+execute_ldstrpm16   = execute_load_store.make_ldstrpm_executor(True)
+execute_ldstrpm32   = execute_load_store.make_ldstrpm_executor(False)
+execute_testset32   = execute_load_store.testset32
 
 #-----------------------------------------------------------------------
 # Jump instructions

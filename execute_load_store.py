@@ -47,3 +47,28 @@ def make_ldstrdisp_executor(is16bit):
         else:
             s.rf[inst.rn] = address + (inst.imm11 << inst.size)
     return ldstrdisp
+
+
+#-----------------------------------------------------------------------
+# ldstrin16 and ldstrin32 - load or store with index.
+#-----------------------------------------------------------------------
+def make_ldstrind_executor(is16bit):
+    def ldstrind(s, inst):
+        raise NotImplementedError
+    return ldstrind
+
+
+#-----------------------------------------------------------------------
+# ldstrpm16 and ldstrpm32 - load or store post-modify.
+#-----------------------------------------------------------------------
+def make_ldstrpm_executor(is16bit):
+    def ldstrind(s, inst):
+        raise NotImplementedError
+    return ldstrind
+
+
+#-----------------------------------------------------------------------
+# testset32
+#-----------------------------------------------------------------------
+def testset32(s, inst):
+    raise NotImplementedError

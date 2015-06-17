@@ -282,3 +282,46 @@ def make_ldstrdisp32_factory(with_postmodify):
 
 ldstrpmd32  = make_ldstrdisp32_factory(True)
 ldstrdisp32 = make_ldstrdisp32_factory(False)
+
+
+def make_ldstrindex_factory(is16bit):
+    def ldstrindex(rd=0, rn=0, rm=0, sub=0, bb=0, s=0):
+        # Data size
+        # 00=byte, 01=half-word, 10=word, 11=double-word
+        opcode = 0b0001 if is16bit else 0b1001
+        bits_22_23 = 0b00
+        if is16bit:
+            sub &= 0
+        return (opcode | (s << 4) | (bb << 5) | ((rm & 7) << 7) |
+                ((rn & 7) << 10) | ((rd & 7) << 13) |
+                (sub << 20) | (bits_22_23 << 21) |
+                ((rm & 56) << 20) | ((rn & 56) << 23) | ((rd & 56) << 26))
+    return ldstrindex
+
+ldstrind16  = make_ldstrindex_factory(True)
+ldstrind32  = make_ldstrindex_factory(False)
+
+
+def make_ldstrpm_factory(is16bit):
+    def ldstrpm(rd=0, rn=0, rm=0, sub=0, bb=0, s=0):
+        # Data size
+        # 00=byte, 01=half-word, 10=word, 11=double-word
+        opcode = 0b0101 if is16bit else 0b1101
+        bits_22_23 = 0b00
+        return (opcode | (s << 4) | (bb << 5) | ((rm & 7) << 7) |
+                ((rn & 7) << 10) | ((rd & 7) << 13) |
+                (sub << 20) | (bits_22_23 << 21) |
+                ((rm & 56) << 20) | ((rn & 56) << 23) | ((rd & 56) << 26))
+    return ldstrpm
+
+ldstrpm16  = make_ldstrpm_factory(True)
+ldstrpm32  = make_ldstrpm_factory(False)
+
+
+def testset32(rd=0, rn=0, rm=0, sub=0, bb=0):
+        opcode = 0b01001
+        bits_22_23 = 0b01
+        return (opcode | (bb << 5) | ((rm & 7) << 7) |
+                ((rn & 7) << 10) | ((rd & 7) << 13) |
+                (sub << 20) | (bits_22_23 << 21) |
+                ((rm & 56) << 20) | ((rn & 56) << 23) | ((rd & 56) << 26))

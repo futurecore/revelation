@@ -357,6 +357,38 @@ def test_execute_ldstrdisp32(sub, expected):
     assert 42 == state.mem.read(8, 4) # Start address, number of bytes
 
 
+@pytest.mark.parametrize('is16bit', [True, False])
+def test_ldstrindex(is16bit):
+    state = new_state()
+    with pytest.raises(NotImplementedError):
+        if is16bit:
+            instr = opcode_factory.ldstrind16(rd=0, rn=5, rm=7, sub=0, bb=0b10, s=0)
+        else:
+            instr = opcode_factory.ldstrind32(rd=0, rn=5, rm=7, sub=0, bb=0b10, s=0)
+        name, executefn = decode(instr)
+        executefn(state, Instruction(instr, None))
+
+
+@pytest.mark.parametrize('is16bit', [True, False])
+def test_ldstrpm(is16bit):
+    state = new_state()
+    with pytest.raises(NotImplementedError):
+        if is16bit:
+            instr = opcode_factory.ldstrpm16(rd=0, rn=5, rm=7, sub=0, bb=0b10, s=0)
+        else:
+            instr = opcode_factory.ldstrpm32(rd=0, rn=5, rm=7, sub=0, bb=0b10, s=0)
+        name, executefn = decode(instr)
+        executefn(state, Instruction(instr, None))
+
+
+def test_testset32():
+    state = new_state()
+    with pytest.raises(NotImplementedError):
+        instr = opcode_factory.testset32(rd=0, rn=5, rm=7, sub=0, bb=0b10)
+        name, executefn = decode(instr)
+        executefn(state, Instruction(instr, None))
+
+
 @pytest.mark.parametrize('is16bit,val', [(True, 0b111), (False, 0b111111)])
 def test_execute_jump(is16bit, val):
     state = new_state(rf0=val)
