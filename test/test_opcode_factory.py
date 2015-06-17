@@ -131,6 +131,60 @@ def test_bcond16():
     assert bcond16(condition=0b1111, imm=0b11100000) == instr
 
 
+def test_farith16():
+    #       0bdddnnnmmmxxxxxxxdddnnnmmm0000111
+    instr = 0b00000000000000000100010000000111
+    assert fadd16(rd=2, rn=1, rm=0) == instr
+    #       0bdddnnnmmmxxxxxxxdddnnnmmm0010111
+    instr = 0b00000000000000000100010000010111
+    assert fsub16(rd=2, rn=1, rm=0) == instr
+    #       0bdddnnnmmmxxxxxxxdddnnnmmm0100111
+    instr = 0b00000000000000000100010000100111
+    assert fmul16(rd=2, rn=1, rm=0) == instr
+    #       0bdddnnnmmmxxxxxxxdddnnnmmm0110111
+    instr = 0b00000000000000000100010000110111
+    assert fmadd16(rd=2, rn=1, rm=0) == instr
+    #       0bdddnnnmmmxxxxxxxdddnnnmmm1000111
+    instr = 0b00000000000000000100010001000111
+    assert fmsub16(rd=2, rn=1, rm=0) == instr
+    #       0bdddnnnxxxxxxxxxxdddnnn0001010111
+    instr = 0b00000000000000000100010001010111
+    assert float16(rd=2, rn=1) == instr
+    #       0bdddnnnxxxxxxxxxxdddnnn0001100111
+    instr = 0b00000000000000000100010001100111
+    assert fix16(rd=2, rn=1) == instr
+    #       0bdddnnnxxxxxxxxxxdddnnn0001110111
+    instr = 0b00000000000000000100010001110111
+    assert fabs16(rd=2, rn=1) == instr
+
+
+def test_farith32():
+    #       0bdddnnnmmmxxx0111dddnnnmmm0001111
+    instr = 0b00000000000001110100010000001111
+    assert fadd32(rd=2, rn=1, rm=0) == instr
+    #       0bdddnnnmmmxxx0111dddnnnmmm0011111
+    instr = 0b00000000000001110100010000011111
+    assert fsub32(rd=2, rn=1, rm=0) == instr
+    #       0bdddnnnmmmxxx0111dddnnnmmm0101111
+    instr = 0b00000000000001110100010000101111
+    assert fmul32(rd=2, rn=1, rm=0) == instr
+    #       0bdddnnnmmmxxx0111dddnnnmmm0111111
+    instr = 0b00000000000001110100010000111111
+    assert fmadd32(rd=2, rn=1, rm=0) == instr
+    #       0bdddnnnmmmxxx0111dddnnnmmm1001111
+    instr = 0b00000000000001110100010001001111
+    assert fmsub32(rd=2, rn=1, rm=0) == instr
+    #       0bdddnnnxxxxxx0111dddnnn0001011111
+    instr = 0b00000000000001110100010001011111
+    assert float32(rd=2, rn=1) == instr
+    #       0bdddnnnxxxxxx0111dddnnn0001101111
+    instr = 0b00000000000001110100010001101111
+    assert fix32(rd=2, rn=1) == instr
+    #       0bdddnnnxxxxxx0111dddnnn0001111111
+    instr = 0b00000000000001110100010001111111
+    assert fabs32(rd=2, rn=1) == instr
+
+
 def test_movcond32():
     #       0bdddnnnxxxxxx0010dddnnn00cccc1111
     instr = 0b00000000000000100000000001011111

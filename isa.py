@@ -1,5 +1,6 @@
 import epiphany.execute_bitwise    as execute_bitwise
 import epiphany.execute_branch     as execute_branch
+import epiphany.execute_farith     as execute_farith
 import epiphany.execute_iarith     as execute_iarith
 import epiphany.execute_interrupt  as execute_interrupts
 import epiphany.execute_jump       as execute_jump
@@ -170,6 +171,25 @@ encodings = [
     ['movts32',     'xxxxxxxxxxxx0010xxxxxx0100001111'],
     ['movfs16',     'xxxxxxxxxxxxxxxxxxxxxx0100010010'],
     ['movfs32',     'xxxxxxxxxxxx0010xxxxxx0100011111'],
+    #---------------------------------------------------------------------
+    # Floating point and integer arithmetic.
+    #---------------------------------------------------------------------
+    ['fadd16',      'xxxxxxxxxxxxxxxxxxxxxxxxx0000111'],
+    ['fsub16',      'xxxxxxxxxxxxxxxxxxxxxxxxx0010111'],
+    ['fmul16',      'xxxxxxxxxxxxxxxxxxxxxxxxx0100111'],
+    ['fmadd16',     'xxxxxxxxxxxxxxxxxxxxxxxxx0110111'],
+    ['fmsub16',     'xxxxxxxxxxxxxxxxxxxxxxxxx1000111'],
+    ['float16',     'xxxxxxxxxxxxxxxxxxxxxx0001010111'],
+    ['fix16',       'xxxxxxxxxxxxxxxxxxxxxx0001100111'],
+    ['fabs16',      'xxxxxxxxxxxxxxxxxxxxxx0001110111'],
+    ['fadd32',      'xxxxxxxxxxxx0111xxxxxxxxx0001111'],
+    ['fsub32',      'xxxxxxxxxxxx0111xxxxxxxxx0011111'],
+    ['fmul32',      'xxxxxxxxxxxx0111xxxxxxxxx0101111'],
+    ['fmadd32',     'xxxxxxxxxxxx0111xxxxxxxxx0111111'],
+    ['fmsub32',     'xxxxxxxxxxxx0111xxxxxxxxx1001111'],
+    ['float32',     'xxxxxxxxxxxx0111xxxxxx0001011111'],
+    ['fix32',       'xxxxxxxxxxxx0111xxxxxx0001101111'],
+    ['fabs32',      'xxxxxxxxxxxx0111xxxxxx0001111111'],
 ]
 
 
@@ -247,6 +267,26 @@ execute_movts32   = execute_mov.make_mov_executor(False)
 execute_movts16   = execute_mov.make_mov_executor(True)
 execute_movfs32   = execute_mov.make_mov_executor(False)
 execute_movfs16   = execute_mov.make_mov_executor(True)
+
+#---------------------------------------------------------------------
+# Floating point and integer arithmetic.
+#---------------------------------------------------------------------
+execute_fadd16  = execute_farith.make_farith_executor('add', True)
+execute_fsub16  = execute_farith.make_farith_executor('sub', True)
+execute_fmul16  = execute_farith.make_farith_executor('mul', True)
+execute_fmadd16 = execute_farith.make_farith_executor('madd', True)
+execute_fmsub16 = execute_farith.make_farith_executor('msub', True)
+execute_float16 = execute_farith.make_farith_executor('float', True)
+execute_fix16   = execute_farith.make_farith_executor('fix', True)
+execute_fabs16  = execute_farith.make_farith_executor('abs', True)
+execute_fadd32  = execute_farith.make_farith_executor('add', False)
+execute_fsub32  = execute_farith.make_farith_executor('sub', False)
+execute_fmul32  = execute_farith.make_farith_executor('mul', False)
+execute_fmadd32 = execute_farith.make_farith_executor('madd', False)
+execute_fmsub32 = execute_farith.make_farith_executor('msub', False)
+execute_float32 = execute_farith.make_farith_executor('float', False)
+execute_fix32   = execute_farith.make_farith_executor('fix', False)
+execute_fabs32  = execute_farith.make_farith_executor('abs', False)
 
 #-----------------------------------------------------------------------
 # Interrupt and multicore instructions

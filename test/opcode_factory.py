@@ -204,6 +204,76 @@ bcond32 = bcond_factory(False)
 bcond16 = bcond_factory(True)
 
 
+def make_farith32_factory(name):
+    def farith32(rd=0, rn=0, rm=0):
+        bits_16_20 = 0b0111
+        if name == 'add':
+            opcode = 0b0001111
+        elif name == 'sub':
+            opcode = 0b0011111
+        elif name == 'mul':
+            opcode = 0b0101111
+        elif name == 'madd':
+            opcode = 0b0111111
+        elif name == 'msub':
+            opcode = 0b1001111
+        elif name == 'float':
+            opcode = 0b1011111
+        elif name == 'fix':
+            opcode = 0b1101111
+        elif name == 'abs':
+            opcode = 0b1111111
+        else:
+            raise NotImplementedError()
+        return (opcode | ((rm & 7) << 7) | ((rn & 7) << 10) |
+                ((rd & 7) << 13) | (bits_16_20 << 16) |
+                ((rm & 56) << 20) | ((rn & 56) << 23) | ((rd & 56) << 26))
+    return farith32
+
+fadd32  = make_farith32_factory('add')
+fsub32  = make_farith32_factory('sub')
+fmul32  = make_farith32_factory('mul')
+fmadd32 = make_farith32_factory('madd')
+fmsub32 = make_farith32_factory('msub')
+float32 = make_farith32_factory('float')
+fix32   = make_farith32_factory('fix')
+fabs32  = make_farith32_factory('abs')
+
+
+def make_farith16_factory(name):
+    def farith16(rd=0, rn=0, rm=0):
+        if name == 'add':
+            opcode = 0b0000111
+        elif name == 'sub':
+            opcode = 0b0010111
+        elif name == 'mul':
+            opcode = 0b0100111
+        elif name == 'madd':
+            opcode = 0b0110111
+        elif name == 'msub':
+            opcode = 0b1000111
+        elif name == 'float':
+            opcode = 0b1010111
+        elif name == 'fix':
+            opcode = 0b1100111
+        elif name == 'abs':
+            opcode = 0b1110111
+        else:
+            raise NotImplementedError()
+        return (opcode | ((rm & 7) << 7) | ((rn & 7) << 10) |
+                ((rd & 7) << 13))
+    return farith16
+
+fadd16  = make_farith16_factory('add')
+fsub16  = make_farith16_factory('sub')
+fmul16  = make_farith16_factory('mul')
+fmadd16 = make_farith16_factory('madd')
+fmsub16 = make_farith16_factory('msub')
+float16 = make_farith16_factory('float')
+fix16   = make_farith16_factory('fix')
+fabs16  = make_farith16_factory('abs')
+
+
 def movcond32(condition=0, rd=0, rn=0):
     opcode = 0b1111
     bits_16_20 = 0b0010
