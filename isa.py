@@ -142,6 +142,8 @@ encodings = [
     # Loads and stores
     #---------------------------------------------------------------------
     ['ldstrpmd32',  'xxxxxx1xxxxxxxxxxxxxxxxxxxxx1100'],  # LD or STR combined.
+    ['ldstrdisp16', 'xxxxxxxxxxxxxxxxxxxxxxxxxxxx0100'],  # LD or STR combined.
+    ['ldstrdisp32', 'xxxxxx0xxxxxxxxxxxxxxxxxxxxx1100'],  # LD or STR combined.
     #---------------------------------------------------------------------
     # Jumps and branch conditions
     #---------------------------------------------------------------------
@@ -175,7 +177,9 @@ execute_bcond16 = execute_branch.make_bcond_executor(True)
 #-----------------------------------------------------------------------
 # Load / store instructions
 #-----------------------------------------------------------------------
-execute_ldstrpmd32 = execute_load_store.execute_ldstrpmd32
+execute_ldstrpmd32  = execute_load_store.execute_ldstrpmd32
+execute_ldstrdisp16 = execute_load_store.make_ldstrdisp_executor(True)
+execute_ldstrdisp32 = execute_load_store.make_ldstrdisp_executor(False)
 
 #-----------------------------------------------------------------------
 # Jump instructions

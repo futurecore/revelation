@@ -183,15 +183,31 @@ def test_movfs():
     assert movfs32(rd=0, rn='LR') == instr
 
 
+def test_ldstrdisp32():
+    #       0bdddnnn0Siiiiiiiidddnnniiibbs1100
+    instr = 0b00000000010101000000110100111100
+    assert ldstrdisp32(rd=0, rn=3, sub=0b0, imm=0b01010100010, bb=0b01, s=0b1) == instr
+    #       0bdddnnn0Siiiiiiiidddnnniiibbs1100
+    instr = 0b00000001001010100000011010101100
+    assert ldstrdisp32(rd=0, rn=1, sub=0b1, imm=0b00101010101, bb=0b01, s=0b0) == instr
+
+
 def test_ldstrpmd32():
     #       0bdddnnn1Siiiiiiiidddnnniiibbs1100
     instr = 0b00000011001010100000011010111100
-    # (rd, rn, sub, imm, bb, s):
-    assert ldstrpmd32(0, 1, 0b1, 0b00101010101, 0b01, 0b1) == instr
+    assert ldstrpmd32(rd=0, rn=1, sub=0b1, imm=0b00101010101, bb=0b01, s=0b1) == instr
     #       0bdddnnn1Siiiiiiiidddnnniiibbs1100
     instr = 0b00000011001010100000011010101100
-    # (rd, rn, sub, imm, bb, s):
-    assert ldstrpmd32(0, 1, 0b1, 0b00101010101, 0b01, 0b0) == instr
+    assert ldstrpmd32(rd=0, rn=1, sub=0b1, imm=0b00101010101, bb=0b01, s=0b0) == instr
+
+
+def test_ldstrdisp16():
+    #       0bxxxxxxxxxxxxxxxxdddnnniiibbs0100
+    instr = 0b00000000000000001110011010110100
+    assert ldstrdisp16(rd=7, rn=1, imm=0b101, bb=0b01, s=0b1) == instr
+    #       0bxxxxxxxxxxxxxxxxdddnnniiibbs0100
+    instr = 0b00000000000000001110011010100100
+    assert ldstrdisp16(rd=7, rn=1, imm=0b101, bb=0b01, s=0b0) == instr
 
 
 def test_trap16():

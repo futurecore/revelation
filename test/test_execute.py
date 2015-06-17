@@ -310,7 +310,46 @@ def test_execute_strpmd32(sub, expected):
     state = new_state(rf0=42, rf5=8)
     # bb: 00=byte, 01=half-word, 10=word, 11=double-word
     instr = opcode_factory.ldstrpmd32(rd=0, rn=5, sub=sub, imm=1, bb=0b10, s=1)
-    assert Instruction(instr, '').s == 1
+    name, executefn = decode(instr)
+    executefn(state, Instruction(instr, None))
+    expected_state = StateChecker(rf0=42, rf5=expected)
+    expected_state.check(state)
+    assert 42 == state.mem.read(8, 4) # Start address, number of bytes
+
+
+def test_execute_ldstrdisp16():
+    state = new_state(rf5=8)
+    state.mem.write(8, 4, 42) # Start address, number of bytes, value
+    # bb: 00=byte, 01=half-word, 10=word, 11=double-word
+    instr = opcode_factory.ldstrdisp16(rd=0, rn=5, imm=1, bb=0b10, s=0)
+    name, executefn = decode(instr)
+    executefn(state, Instruction(instr, None))
+    expected_state = StateChecker(rf0=42, rf5=12)
+    expected_state.check(state)
+    state = new_state(rf0=42, rf5=8)
+    # bb: 00=byte, 01=half-word, 10=word, 11=double-word
+    instr = opcode_factory.ldstrdisp16(rd=0, rn=5, imm=1, bb=0b10, s=1)
+    name, executefn = decode(instr)
+    executefn(state, Instruction(instr, None))
+    expected_state = StateChecker(rf0=42, rf5=12)
+    expected_state.check(state)
+    assert 42 == state.mem.read(8, 4) # Start address, number of bytes
+
+
+@pytest.mark.parametrize('sub,expected', [(1, 8 - 4),
+                                          (0, 8 + 4)])
+def test_execute_ldstrdisp32(sub, expected):
+    state = new_state(rf5=8)
+    state.mem.write(8, 4, 42) # Start address, number of bytes, value
+    # bb: 00=byte, 01=half-word, 10=word, 11=double-word
+    instr = opcode_factory.ldstrdisp32(rd=0, rn=5, sub=sub, imm=1, bb=0b10, s=0)
+    name, executefn = decode(instr)
+    executefn(state, Instruction(instr, None))
+    expected_state = StateChecker(rf0=42, rf5=expected)
+    expected_state.check(state)
+    state = new_state(rf0=42, rf5=8)
+    # bb: 00=byte, 01=half-word, 10=word, 11=double-word
+    instr = opcode_factory.ldstrdisp32(rd=0, rn=5, sub=sub, imm=1, bb=0b10, s=1)
     name, executefn = decode(instr)
     executefn(state, Instruction(instr, None))
     expected_state = StateChecker(rf0=42, rf5=expected)

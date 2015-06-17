@@ -260,12 +260,25 @@ def movimm16(rd=0, imm=0):
     return (opcode | (imm << 5) | (rd << 13))
 
 
-def ldstrpmd32(rd=0, rn=0, sub=0, imm=0, bb=0, s=0):
+def ldstrdisp16(rd=0, rn=0, imm=0, bb=0, s=0):
     # Data size
     # 00=byte, 01=half-word, 10=word, 11=double-word
-    opcode = 0b1100
-    bit25 = 1
+    opcode = 0b0100
     return (opcode | (s << 4) | (bb << 5) | ((imm & 7) << 7) |
-            ((rn & 7) << 10) | ((rd & 7) << 13) |
-            ((imm & (0xFF << 3)) << 13) | (sub << 24) | (bit25 << 25) |
-            ((rn & 56) << 23) | ((rd & 56) << 26))
+            ((rn & 7) << 10) | ((rd & 7) << 13))
+
+
+def make_ldstrdisp32_factory(with_postmodify):
+    def ldstrdisp32(rd=0, rn=0, sub=0, imm=0, bb=0, s=0):
+        # Data size
+        # 00=byte, 01=half-word, 10=word, 11=double-word
+        opcode = 0b1100
+        bit25 = 1 if with_postmodify else 0
+        return (opcode | (s << 4) | (bb << 5) | ((imm & 7) << 7) |
+                ((rn & 7) << 10) | ((rd & 7) << 13) |
+                ((imm & (0xFF << 3)) << 13) | (sub << 24) | (bit25 << 25) |
+                ((rn & 56) << 23) | ((rd & 56) << 26))
+    return ldstrdisp32
+
+ldstrpmd32  = make_ldstrdisp32_factory(True)
+ldstrdisp32 = make_ldstrdisp32_factory(False)
