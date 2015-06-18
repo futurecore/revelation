@@ -1,4 +1,4 @@
 #include "epiphany-macros.h"
 SET_UP
-    unimpl ;
+    movfs r63, CONFIG ;
 TEAR_DOWN

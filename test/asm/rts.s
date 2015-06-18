@@ -1,4 +1,4 @@
 #include "epiphany-macros.h"
 SET_UP
-    unimpl ;
+    rts ;
 TEAR_DOWN

@@ -7,7 +7,7 @@ asm_dir = os.path.join('epiphany', 'test', 'asm')
 
 @pytest.mark.parametrize("asm,expected_instructions",
                          [('nop.elf', 2),
-                          ('add.elf', 2),
+                          ('add.elf', 4),
                          ])
 def test_asm(asm, expected_instructions):
     os.putenv('PYTHONPATH', '.:../../pypy/')
@@ -25,6 +25,7 @@ def test_asm(asm, expected_instructions):
     assert output, "Output of simulating {0} was empty".format(os.path.join(asm_dir, asm))
     for line in output.split('\n'):
         if line.startswith("Instructions"):
+            print line
             assert expected_instructions == int(line.split()[-1])
 
 
