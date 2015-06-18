@@ -1,99 +1,77 @@
-import os
+from epiphany.sim import Epiphany
+from epiphany.test.machine import StateChecker
+
 import os.path
-import subprocess
 import pytest
 
-asm_dir = os.path.join('epiphany', 'test', 'asm')
+elf_dir = os.path.join('epiphany', 'test', 'asm')
 
-@pytest.mark.parametrize("asm,expected_instructions",
-                         [('add.elf', 4),
-                          ('and.elf', 2),
-                          ('asr.elf', 2),
-                          pytest.mark.xfail(('bcond.elf', 40)),
-                          pytest.mark.xfail(('bitr.elf', 4)),
-                          pytest.mark.xfail(('bl.elf', 2)),
-                          pytest.mark.xfail(('dma_transfer.elf', 1)),
-                          ('eor.elf', 2),
-                          pytest.mark.xfail(('fabs.elf', 2)),
-                          pytest.mark.xfail(('fadd.elf', 2)),
-                          pytest.mark.xfail(('fix.elf', 2)),
-                          pytest.mark.xfail(('float.elf', 2)),
-                          pytest.mark.xfail(('fmadd.elf', 2)),
-                          pytest.mark.xfail(('fmsub.elf', 2)),
-                          pytest.mark.xfail(('fmul.elf', 2)),
-                          pytest.mark.xfail(('fsub.elf', 2)),
-                          ('gid.elf', 2),
-                          ('gie.elf', 2),
-                          pytest.mark.xfail(('hardware_loop.elf', 18)),
-                          pytest.mark.xfail(('iadd.elf', 2)),
-                          ('idle.elf', 2),
-                          pytest.mark.xfail(('imadd.elf', 2)),
-                          pytest.mark.xfail(('imsub.elf', 2)),
-                          pytest.mark.xfail(('imul.elf', 2)),
-                          pytest.mark.xfail(('isub.elf', 2)),
-                          pytest.mark.xfail(('jalr.elf', 3)),
-                          pytest.mark.xfail(('jr.elf', 3)),
-                          pytest.mark.xfail(('ldr_disp.elf', 3)),
-                          pytest.mark.xfail(('ldrdpm.elf', 2)),
-                          pytest.mark.xfail(('ldr_index.elf', 3)),
-                          pytest.mark.xfail(('ldrpm.elf', 2)),
-                          ('lsl.elf', 3),
-                          ('lsr.elf', 3),
-                          pytest.mark.xfail(('mov_cond.elf', 3)),
-                          pytest.mark.xfail(('movfs.elf', 2)),
-                          pytest.mark.xfail(('mov_imm.elf', 2)),
-                          pytest.mark.xfail(('movt.elf', 2)),
-                          pytest.mark.xfail(('movts.elf', 3)),
-                          ('nop.elf', 2),
-                          ('orr.elf', 2),
-                          pytest.mark.xfail(('rti.elf', 2)),
-                          pytest.mark.xfail(('rts.elf', 2)),
-                          pytest.mark.xfail(('str_disp.elf', 3)),
-                          pytest.mark.xfail(('str_dpm.elf', 2)),
-                          pytest.mark.xfail(('str_index.elf', 3)),
-                          pytest.mark.xfail(('str_pm.elf', 2)),
-                          ('sub.elf', 2),
-                          pytest.mark.xfail(('testset.elf', 4)),
-                          pytest.mark.xfail(('trap.elf', 2)),
+@pytest.mark.parametrize("elf,expected",
+                         [('add.elf', StateChecker(pc=10)),
+                          ('and.elf', StateChecker(pc=4)),
+                          ('asr.elf', StateChecker(pc=4)),
+                          pytest.mark.xfail(('bcond.elf', StateChecker())),
+                          pytest.mark.xfail(('bitr.elf', StateChecker())),
+                          pytest.mark.xfail(('bl.elf', StateChecker())),
+                          pytest.mark.xfail(('dma_transfer.elf', StateChecker())),
+                          ('eor.elf', StateChecker(pc=4)),
+                          pytest.mark.xfail(('fabs.elf', StateChecker())),
+                          pytest.mark.xfail(('fadd.elf', StateChecker())),
+                          pytest.mark.xfail(('fix.elf', StateChecker())),
+                          pytest.mark.xfail(('float.elf', StateChecker())),
+                          pytest.mark.xfail(('fmadd.elf', StateChecker())),
+                          pytest.mark.xfail(('fmsub.elf', StateChecker())),
+                          pytest.mark.xfail(('fmul.elf', StateChecker())),
+                          pytest.mark.xfail(('fsub.elf', StateChecker())),
+                          ('gid.elf', StateChecker(pc=4)),
+                          ('gie.elf', StateChecker(pc=4)),
+                          pytest.mark.xfail(('hardware_loop.elf', StateChecker())),
+                          pytest.mark.xfail(('iadd.elf', StateChecker())),
+                          ('idle.elf', StateChecker(pc=4)),
+                          pytest.mark.xfail(('imadd.elf', StateChecker())),
+                          pytest.mark.xfail(('imsub.elf', StateChecker())),
+                          pytest.mark.xfail(('imul.elf', StateChecker())),
+                          pytest.mark.xfail(('isub.elf', StateChecker())),
+                          pytest.mark.xfail(('jalr.elf', StateChecker())),
+                          pytest.mark.xfail(('jr.elf', StateChecker())),
+                          pytest.mark.xfail(('ldr_disp.elf', StateChecker())),
+                          pytest.mark.xfail(('ldrdpm.elf', StateChecker())),
+                          pytest.mark.xfail(('ldr_index.elf', StateChecker())),
+                          pytest.mark.xfail(('ldrpm.elf', StateChecker())),
+                          ('lsl.elf', StateChecker(pc=6)),
+                          ('lsr.elf', StateChecker(pc=6)),
+                          pytest.mark.xfail(('mov_cond.elf', StateChecker())),
+                          pytest.mark.xfail(('movfs.elf', StateChecker())),
+                          pytest.mark.xfail(('mov_imm.elf', StateChecker())),
+                          pytest.mark.xfail(('movt.elf', StateChecker())),
+                          pytest.mark.xfail(('movts.elf', StateChecker())),
+                          ('nop.elf', StateChecker(pc=4)),
+                          ('orr.elf', StateChecker(pc=4)),
+                          pytest.mark.xfail(('rti.elf', StateChecker())),
+                          pytest.mark.xfail(('rts.elf', StateChecker())),
+                          pytest.mark.xfail(('str_disp.elf', StateChecker())),
+                          pytest.mark.xfail(('str_dpm.elf', StateChecker())),
+                          pytest.mark.xfail(('str_index.elf', StateChecker())),
+                          pytest.mark.xfail(('str_pm.elf', StateChecker())),
+                          ('sub.elf', StateChecker(pc=4)),
+                          pytest.mark.xfail(('testset.elf', StateChecker())),
+                          pytest.mark.xfail(('trap.elf', StateChecker(pc=6))),
+                          pytest.mark.xfail(('trap.elf', StateChecker(pc=6))),
                          ])
-def test_asm(asm, expected_instructions):
-    os.putenv('PYTHONPATH', '.:../../pypy/')
-    try:
-        output = subprocess.check_output(['python',
-                                          'epiphany/sim.py',
-                                          '--max-insts',
-                                          '100',
-                                          '--debug',
-                                          'insts,mem,rf,regdump',
-                                          os.path.join(asm_dir, asm)],
-                                         stderr=subprocess.PIPE,
-                                         shell=False)
-    except subprocess.CalledProcessError as excn:
-        assert False, ("Simulator exit with non-zero return code " +
-                       "return code: {0}, cmd: {1}".format(excn.returncode, excn.cmd))
-    assert output, "Output of simulating {0} was empty".format(os.path.join(asm_dir, asm))
-    for line in output.split('\n'):
-        if line.startswith("Instructions"):
-            print line
-            assert expected_instructions == int(line.split()[-1])
+def test_elf(elf, expected):
+    elf_filename = os.path.join(elf_dir, elf)
+    epiphany = Epiphany()
+    with open(elf_filename, 'rb') as elf:
+        epiphany.init_state(elf, elf_filename, '', [], False)
+        epiphany.max_insts = 100
+        epiphany.run()
+        expected.check(epiphany.state)
 
 
 def test_unimpl():
-    os.putenv('PYTHONPATH', '.:../../pypy/')
-    asm_file = os.path.join(asm_dir, 'unimpl.elf')
-    try:
-        child = subprocess.Popen(['python',
-                                  'epiphany/sim.py',
-                                  '--debug',
-                                  'insts,mem,rf,regdump',
-                                  asm_file],
-                                 stdout=subprocess.PIPE,
-                                 stderr=subprocess.PIPE,
-                                 shell=False)
-        output, error_output = child.communicate()
-    except subprocess.CalledProcessError as excn:
-        # Expect to exit with non-zero return code.
-        assert True, ("Simulator exit with non-zero return code " +
-                       "return code: {0}, cmd: {1}".format(excn.returncode, excn.cmd))
-        assert 'NotImplementedError: UNIMPL16' in error_output
-
+    elf_filename = os.path.join(elf_dir, 'unimpl.elf')
+    with pytest.raises(NotImplementedError):
+        epiphany = Epiphany()
+        with open(elf_filename, 'rb') as elf:
+            epiphany.init_state(elf, elf_filename, '', [], False)
+            epiphany.run()
