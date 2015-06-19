@@ -1,12 +1,10 @@
 from pydgin.utils import trim_32
-from epiphany.utils import reg_or_imm
-
-from arm.utils import (
-    borrow_from,
-    carry_from,
-    overflow_from_add,
-    overflow_from_sub,
-)
+from epiphany.utils import (reg_or_imm,
+                            borrow_from,
+                            carry_from,
+                            overflow_from_add,
+                            overflow_from_sub,
+                            )
 
 #-----------------------------------------------------------------------
 # add32 and add16 -- with or without immediate.
