@@ -1,20 +1,28 @@
 language: python
 
-install:
-    - sudo apt-get install wget
-    - pip install -r requirements.txt
-    - pip install coveralls
-    - cd $HOME
-    - wget https://github.com/cornell-brg/pydgin/archive/master.zip
-    - unzip master.zip
-    - mv pydgin-master pydgin
-    - export PYTHONPATH=${PYTHONPATH}:${HOME}/pydgin/
-    - cd $TRAVIS_BUILD_DIR
-
 python:
     - "2.7"
 
+cache: apt
+
+env:
+    - TRANSLATE=false
+
+install:
+    - pip install -r requirements.txt
+    - pip install coveralls
+    - cd ${HOME}
+    - wget https://github.com/cornell-brg/pydgin/archive/master.zip
+    - unzip master.zip
+    - mv pydgin-master pydgin
+    - cd ${HOME}
+    - wget https://bitbucket.org/pypy/pypy/get/default.tar.gz
+    - mkdir pypy && tar xf default.tar.gz -C pypy --strip-components 1
+    - cd $TRAVIS_BUILD_DIR
+    - export PYTHONPATH=${PYTHONPATH}:${HOME}/pydgin/:${HOME}/pypy
+
 script:
     - py.test -n 4 --cov-report term-missing --cov epiphany epiphany/test/
+    - test "$TRANSLATE" == "true" && ${HOME}/pypy/rpython/bin/rpython --opt=jit epiphany/sim.py || true
 
 after_success: coveralls
