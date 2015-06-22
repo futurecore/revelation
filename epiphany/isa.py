@@ -84,9 +84,11 @@ reg_map = {
     'MESHCONFIG'  : 101, # Mesh node configuration
     'COREID'      : 102, # Processor core ID
     'MULTICAST'   : 103, # Multicast configuration
-    'CMESHROUTE'  : 104, # cMesh routing configuration
-    'XMESHROUTE'  : 105, # xMesh routing configuration
-    'RMESHROUTE'  : 106, # rMesh routing configuration
+    'CMESHROUTE'  : 104, # cMesh routing configuration, 12 bits
+    'XMESHROUTE'  : 105, # xMesh routing configuration, 12 bits
+    'RMESHROUTE'  : 106, # rMesh routing configuration, 12 bits
+    # Other control registers
+    'RESETCORE'   : 107, # Write-only, 1 bit
      }
 
 
@@ -94,102 +96,108 @@ reg_map = {
 # Instruction Encodings
 #=======================================================================
 encodings = [
-    ['nop16',       'xxxxxxxxxxxxxxxxxxxxxx0110100010'],
-    ['idle16',      'xxxxxxxxxxxxxxxxxxxxxx0110110010'],
-    ['bkpt16',      'xxxxxxxxxxxxxxxxxxxxxx0111000010'],
-    ['mbkpt16',     'xxxxxxxxxxxxxxxxxxxxxx1111000010'],
-    ['gie16',       'xxxxxxxxxxxxxxxxxxxxxx0110010010'],
-    ['gid16',       'xxxxxxxxxxxxxxxxxxxxxx1110010010'],
-    ['sync16',      'xxxxxxxxxxxxxxxxxxxxxx0111110010'],
-    ['rti16',       'xxxxxxxxxxxxxxxxxxxxxx0111010010'],
-    ['wand16',      'xxxxxxxxxxxxxxxxxxxxxx0110000010'],
-    ['trap16',      'xxxxxxxxxxxxxxxxxxxxxx1111100010'],
-    ['unimpl16',    'xxxxxxxxxxxx1111xxxxxx0000001111'],
     #---------------------------------------------------------------------
-    # Arithmetic
+    # Branch on condition
     #---------------------------------------------------------------------
-    ['add32',       'xxxxxxxxxxxx1010xxxxxxxxx0011111'],
-    ['add32',       'xxxxxxxxxxxxxxxxxxxxxxxxx0011011'],  # with immediate.
-    ['sub32',       'xxxxxxxxxxxx1010xxxxxxxxx0111111'],
-    ['sub32',       'xxxxxxxxxxxxxxxxxxxxxxxxx0111011'],  # with immediate.
-    ['add16',       'xxxxxxxxxxxxxxxxxxxxxxxxx0011010'],
-    ['add16',       'xxxxxxxxxxxxxxxxxxxxxxxxx0010011'],  # with immediate.
-    ['sub16',       'xxxxxxxxxxxxxxxxxxxxxxxxx0111010'],
-    ['sub16',       'xxxxxxxxxxxxxxxxxxxxxxxxx0110011'],  # with immediate.
-    #---------------------------------------------------------------------
-    # Bitwise arithmetic
-    #---------------------------------------------------------------------
-    ['and32',       'xxxxxxxxxxxx1010xxxxxxxxx1011111'],  # AND32
-    ['and16',       'xxxxxxxxxxxxxxxxxxxxxxxxx1011010'],  # AND16
-    ['orr32',       'xxxxxxxxxxxx1010xxxxxxxxx1111111'],  # ORR32
-    ['orr16',       'xxxxxxxxxxxxxxxxxxxxxxxxx1111010'],  # ORR16
-    ['eor32',       'xxxxxxxxxxxx1010xxxxxxxxx0001111'],  # EOR32
-    ['eor16',       'xxxxxxxxxxxxxxxxxxxxxxxxx0001010'],  # EOR16
-    ['asr32',       'xxxxxxxxxxxx1010xxxxxxxxx1101111'],  # ASR32
-    ['asr16',       'xxxxxxxxxxxxxxxxxxxxxxxxx1101010'],  # ASR16
-    ['lsr32',       'xxxxxxxxxxxx1010xxxxxxxxx1001111'],  # LSR32
-    ['lsr16',       'xxxxxxxxxxxxxxxxxxxxxxxxx1001010'],  # LSR16
-    ['lsl32',       'xxxxxxxxxxxx1010xxxxxxxxx0101111'],  # LSL32
-    ['lsl16',       'xxxxxxxxxxxxxxxxxxxxxxxxx0101010'],  # LSL16
-    ['lsrimm32',    'xxxxxxxxxxxx0110xxxxxxxxxxx01111'],  # LSRIMM32
-    ['lslimm32',    'xxxxxxxxxxxx0110xxxxxxxxxxx11111'],  # LSLIMM32
-    ['asrimm32',    'xxxxxxxxxxxx1110xxxxxxxxxxx01111'],  # ASRIMM32
-    ['bitrimm32',   'xxxxxxxxxxxx1110xxxxxxxxxxx11111'],  # BITRIMM32
-    ['lsrimm16',    'xxxxxxxxxxxxxxxxxxxxxxxxxxx00110'],  # LSRIMM16
-    ['lslimm16',    'xxxxxxxxxxxxxxxxxxxxxxxxxxx10110'],  # LSLIMM16
-    ['asrimm16',    'xxxxxxxxxxxxxxxxxxxxxxxxxxx01110'],  # ASRIMM16
-    ['bitrimm16',   'xxxxxxxxxxxxxxxxxxxxxxxxxxx11110'],  # BITRIMM16
+    ['bcond32',     'xxxxxxxx_xxxxxxxx_xxxxxxxx_xxxx1000'],
+    ['bcond16',     'xxxxxxxx_xxxxxxxx_xxxxxxxx_xxxx0000'],
     #--------------------------------------------------------------------
     # Loads and stores
     #---------------------------------------------------------------------
-    ['ldstrpmd32',  'xxxxxx1xxxxxxxxxxxxxxxxxxxxx1100'],  # LD or STR combined.
-    ['ldstrdisp16', 'xxxxxxxxxxxxxxxxxxxxxxxxxxxx0100'],  # LD or STR combined.
-    ['ldstrdisp32', 'xxxxxx0xxxxxxxxxxxxxxxxxxxxx1100'],  # LD or STR combined.
-    ['ldstrind16',  'xxxxxxxxxxxxxxxxxxxxxxxxxxxx0001'],  # LD or STR combined.
-    ['ldstrind32',  'xxxxxxxxx00xxxxxxxxxxxxxxxxx1001'],  # LD or STR combined.
-    ['ldstrpm16',   'xxxxxxxxxxxxxxxxxxxxxxxxxxxx0101'],  # LD or STR combined.
-    ['ldstrpm32',   'xxxxxxxxx00xxxxxxxxxxxxxxxxx1101'],  # LD or STR combined.
-    ['testset32',   'xxxxxxxxx01xxxxxxxxxxxxxxxx01001'],
+    ['ldstrpmd32',  'xxxxxx1x_xxxxxxxx_xxxxxxxx_xxxx1100'],  # LD or STR combined.
+    ['ldstrdisp16', 'xxxxxxxx_xxxxxxxx_xxxxxxxx_xxxx0100'],  # LD or STR combined.
+    ['ldstrdisp32', 'xxxxxx0x_xxxxxxxx_xxxxxxxx_xxxx1100'],  # LD or STR combined.
+    ['ldstrind16',  'xxxxxxxx_xxxxxxxx_xxxxxxxx_xxxx0001'],  # LD or STR combined.
+    ['ldstrind32',  'xxxxxxxx_x00xxxxx_xxxxxxxx_xxxx1001'],  # LD or STR combined.
+    ['ldstrpm16',   'xxxxxxxx_xxxxxxxx_xxxxxxxx_xxxx0101'],  # LD or STR combined.
+    ['ldstrpm32',   'xxxxxxxx_x00xxxxx_xxxxxxxx_xxxx1101'],  # LD or STR combined.
+    ['testset32',   'xxxxxxxx_x01xxxxx_xxxxxxxx_xxx01001'],
     #---------------------------------------------------------------------
-    # Jumps and branch conditions
+    # Arithmetic
     #---------------------------------------------------------------------
-    ['bcond32',     'xxxxxxxxxxxxxxxxxxxxxxxxxxxx1000'],
-    ['bcond16',     'xxxxxxxxxxxxxxxxxxxxxxxxxxxx0000'],
-    ['jr32',        'xxxxxxxxxxxx0010xxxxxx0101001111'],
-    ['jr16',        'xxxxxxxxxxxxxxxxxxxxxx0101000010'],
-    ['jalr32',      'xxxxxxxxxxxx0010xxxxxx0101011111'],
-    ['jalr16',      'xxxxxxxxxxxxxxxxxxxxxx0101010010'],
+    ['add32',       'xxxxxxxx_xxxx1010_xxxxxxxx_x0011111'],
+    ['add32',       'xxxxxxxx_xxxxxxxx_xxxxxxxx_x0011011'],  # with immediate.
+    ['sub32',       'xxxxxxxx_xxxx1010_xxxxxxxx_x0111111'],
+    ['sub32',       'xxxxxxxx_xxxxxxxx_xxxxxxxx_x0111011'],  # with immediate.
+    ['add16',       'xxxxxxxx_xxxxxxxx_xxxxxxxx_x0011010'],
+    ['add16',       'xxxxxxxx_xxxxxxxx_xxxxxxxx_x0010011'],  # with immediate.
+    ['sub16',       'xxxxxxxx_xxxxxxxx_xxxxxxxx_x0111010'],
+    ['sub16',       'xxxxxxxx_xxxxxxxx_xxxxxxxx_x0110011'],  # with immediate.
     #---------------------------------------------------------------------
-    # Moves
+    # Bitwise arithmetic
     #---------------------------------------------------------------------
-    ['movcond32',   'xxxxxxxxxxxx0010xxxxxx00xxxx1111'],
-    ['movcond16',   'xxxxxxxxxxxxxxxxxxxxxx00xxxx0010'],
-    ['movimm32',    'xxx0xxxxxxxxxxxxxxxxxxxxxxx01011'],
-    ['movimm16',    'xxxxxxxxxxxxxxxxxxxxxxxxxxx00011'],
-    ['movtimm32',   'xxx1xxxxxxxxxxxxxxxxxxxxxxx01011'],
-    ['movts16',     'xxxxxxxxxxxxxxxxxxxxxx0100000010'],
-    ['movts32',     'xxxxxxxxxxxx0010xxxxxx0100001111'],
-    ['movfs16',     'xxxxxxxxxxxxxxxxxxxxxx0100010010'],
-    ['movfs32',     'xxxxxxxxxxxx0010xxxxxx0100011111'],
+    ['and32',       'xxxxxxxx_xxxx1010_xxxxxxxx_x1011111'],  # AND32
+    ['and16',       'xxxxxxxx_xxxxxxxx_xxxxxxxx_x1011010'],  # AND16
+    ['orr32',       'xxxxxxxx_xxxx1010_xxxxxxxx_x1111111'],  # ORR32
+    ['orr16',       'xxxxxxxx_xxxxxxxx_xxxxxxxx_x1111010'],  # ORR16
+    ['eor32',       'xxxxxxxx_xxxx1010_xxxxxxxx_x0001111'],  # EOR32
+    ['eor16',       'xxxxxxxx_xxxxxxxx_xxxxxxxx_x0001010'],  # EOR16
+    ['asr32',       'xxxxxxxx_xxxx1010_xxxxxxxx_x1101111'],  # ASR32
+    ['asr16',       'xxxxxxxx_xxxxxxxx_xxxxxxxx_x1101010'],  # ASR16
+    ['lsr32',       'xxxxxxxx_xxxx1010_xxxxxxxx_x1001111'],  # LSR32
+    ['lsr16',       'xxxxxxxx_xxxxxxxx_xxxxxxxx_x1001010'],  # LSR16
+    ['lsl32',       'xxxxxxxx_xxxx1010_xxxxxxxx_x0101111'],  # LSL32
+    ['lsl16',       'xxxxxxxx_xxxxxxxx_xxxxxxxx_x0101010'],  # LSL16
+    ['lsrimm32',    'xxxxxxxx_xxxx0110_xxxxxxxx_xxx01111'],  # LSRIMM32
+    ['lslimm32',    'xxxxxxxx_xxxx0110_xxxxxxxx_xxx11111'],  # LSLIMM32
+    ['asrimm32',    'xxxxxxxx_xxxx1110_xxxxxxxx_xxx01111'],  # ASRIMM32
+    ['bitrimm32',   'xxxxxxxx_xxxx1110_xxxxxxxx_xxx11111'],  # BITRIMM32
+    ['lsrimm16',    'xxxxxxxx_xxxxxxxx_xxxxxxxx_xxx00110'],  # LSRIMM16
+    ['lslimm16',    'xxxxxxxx_xxxxxxxx_xxxxxxxx_xxx10110'],  # LSLIMM16
+    ['asrimm16',    'xxxxxxxx_xxxxxxxx_xxxxxxxx_xxx01110'],  # ASRIMM16
+    ['bitrimm16',   'xxxxxxxx_xxxxxxxx_xxxxxxxx_xxx11110'],  # BITRIMM16
     #---------------------------------------------------------------------
     # Floating point and integer arithmetic.
     #---------------------------------------------------------------------
-    ['fadd16',      'xxxxxxxxxxxxxxxxxxxxxxxxx0000111'],
-    ['fsub16',      'xxxxxxxxxxxxxxxxxxxxxxxxx0010111'],
-    ['fmul16',      'xxxxxxxxxxxxxxxxxxxxxxxxx0100111'],
-    ['fmadd16',     'xxxxxxxxxxxxxxxxxxxxxxxxx0110111'],
-    ['fmsub16',     'xxxxxxxxxxxxxxxxxxxxxxxxx1000111'],
-    ['float16',     'xxxxxxxxxxxxxxxxxxxxxx0001010111'],
-    ['fix16',       'xxxxxxxxxxxxxxxxxxxxxx0001100111'],
-    ['fabs16',      'xxxxxxxxxxxxxxxxxxxxxx0001110111'],
-    ['fadd32',      'xxxxxxxxxxxx0111xxxxxxxxx0001111'],
-    ['fsub32',      'xxxxxxxxxxxx0111xxxxxxxxx0011111'],
-    ['fmul32',      'xxxxxxxxxxxx0111xxxxxxxxx0101111'],
-    ['fmadd32',     'xxxxxxxxxxxx0111xxxxxxxxx0111111'],
-    ['fmsub32',     'xxxxxxxxxxxx0111xxxxxxxxx1001111'],
-    ['float32',     'xxxxxxxxxxxx0111xxxxxx0001011111'],
-    ['fix32',       'xxxxxxxxxxxx0111xxxxxx0001101111'],
-    ['fabs32',      'xxxxxxxxxxxx0111xxxxxx0001111111'],
+    ['fadd16',      'xxxxxxxx_xxxxxxxx_xxxxxxxx_x0000111'],
+    ['fsub16',      'xxxxxxxx_xxxxxxxx_xxxxxxxx_x0010111'],
+    ['fmul16',      'xxxxxxxx_xxxxxxxx_xxxxxxxx_x0100111'],
+    ['fmadd16',     'xxxxxxxx_xxxxxxxx_xxxxxxxx_x0110111'],
+    ['fmsub16',     'xxxxxxxx_xxxxxxxx_xxxxxxxx_x1000111'],
+    ['float16',     'xxxxxxxx_xxxxxxxx_xxxxxx00_01010111'],
+    ['fix16',       'xxxxxxxx_xxxxxxxx_xxxxxx00_01100111'],
+    ['fabs16',      'xxxxxxxx_xxxxxxxx_xxxxxx00_01110111'],
+    ['fadd32',      'xxxxxxxx_xxxx0111_xxxxxxxx_x0001111'],
+    ['fsub32',      'xxxxxxxx_xxxx0111_xxxxxxxx_x0011111'],
+    ['fmul32',      'xxxxxxxx_xxxx0111_xxxxxxxx_x0101111'],
+    ['fmadd32',     'xxxxxxxx_xxxx0111_xxxxxxxx_x0111111'],
+    ['fmsub32',     'xxxxxxxx_xxxx0111_xxxxxxxx_x1001111'],
+    ['float32',     'xxxxxxxx_xxxx0111_xxxxxx00_01011111'],
+    ['fix32',       'xxxxxxxx_xxxx0111_xxxxxx00_01101111'],
+    ['fabs32',      'xxxxxxxx_xxxx0111_xxxxxx00_01111111'],
+    #---------------------------------------------------------------------
+    # Moves.
+    #---------------------------------------------------------------------
+    ['movcond32',   'xxxxxxxx_xxxx0010_xxxxxx00_xxxx1111'],
+    ['movcond16',   'xxxxxxxx_xxxxxxxx_xxxxxx00_xxxx0010'],
+    ['movimm32',    'xxx0xxxx_xxxxxxxx_xxxxxxxx_xxx01011'],
+    ['movimm16',    'xxxxxxxx_xxxxxxxx_xxxxxxxx_xxx00011'],
+    ['movtimm32',   'xxx1xxxx_xxxxxxxx_xxxxxxxx_xxx01011'],
+    ['movts16',     'xxxxxxxx_xxxxxxxx_xxxxxx01_00000010'],
+    ['movts32',     'xxxxxxxx_xxxx0010_xxxxxx01_00001111'],
+    ['movfs16',     'xxxxxxxx_xxxxxxxx_xxxxxx01_00010010'],
+    ['movfs32',     'xxxxxxxx_xxxx0010_xxxxxx01_00011111'],
+    #---------------------------------------------------------------------
+    # Jumps.
+    #---------------------------------------------------------------------
+    ['jr32',        'xxxxxxxx_xxxx0010_xxxxxx01_01001111'],
+    ['jr16',        'xxxxxxxx_xxxxxxxx_xxxxxx01_01000010'],
+    ['jalr32',      'xxxxxxxx_xxxx0010_xxxxxx01_01011111'],
+    ['jalr16',      'xxxxxxxx_xxxxxxxx_xxxxxx01_01010010'],
+    #---------------------------------------------------------------------
+    # Interrupts, multicore and control.
+    #---------------------------------------------------------------------
+    ['nop16',       'xxxxxxxx_xxxxxxxx_xxxxxx01_10100010'],
+    ['idle16',      'xxxxxxxx_xxxxxxxx_xxxxxx01_10110010'],
+    ['bkpt16',      'xxxxxxxx_xxxxxxxx_xxxxxx01_11000010'],
+    ['mbkpt16',     'xxxxxxxx_xxxxxxxx_xxxxxx11_11000010'],
+    ['gie16',       'xxxxxxxx_xxxxxxxx_xxxxxx01_10010010'],
+    ['gid16',       'xxxxxxxx_xxxxxxxx_xxxxxx11_10010010'],
+    ['sync16',      'xxxxxxxx_xxxxxxxx_xxxxxx01_11110010'],
+    ['rti16',       'xxxxxxxx_xxxxxxxx_xxxxxx01_11010010'],
+    ['wand16',      'xxxxxxxx_xxxxxxxx_xxxxxx01_10000010'],
+    ['trap16',      'xxxxxxxx_xxxxxxxx_xxxxxx11_11100010'],
+    ['unimpl16',    'xxxxxxxx_xxxx1111_xxxxxx00_00001111'],
 ]
 
 
@@ -212,12 +220,12 @@ execute_ldstrpm32   = execute_load_store.make_ldstrpm_executor(False)
 execute_testset32   = execute_load_store.testset32
 
 #-----------------------------------------------------------------------
-# Jump instructions
+# Integer arithmetic instructions
 #-----------------------------------------------------------------------
-execute_jr32   = execute_jump.make_jr_executor(False)
-execute_jr16   = execute_jump.make_jr_executor(True)
-execute_jalr32 = execute_jump.make_jalr_executor(False)
-execute_jalr16 = execute_jump.make_jalr_executor(True)
+execute_sub32 = execute_iarith.make_sub_executor(False)
+execute_sub16 = execute_iarith.make_sub_executor(True)
+execute_add32 = execute_iarith.make_add_executor(False)
+execute_add16 = execute_iarith.make_add_executor(True)
 
 #-----------------------------------------------------------------------
 # Bitwise instructions
@@ -247,27 +255,6 @@ execute_lslimm32  = execute_bitwise.make_bit_executor("lsl",  False, True)
 execute_asrimm32  = execute_bitwise.make_bit_executor("asr",  False, True)
 execute_bitrimm32 = execute_bitwise.make_bit_executor("bitr", False, True)
 
-#-----------------------------------------------------------------------
-# Integer arithmetic instructions
-#-----------------------------------------------------------------------
-execute_sub32 = execute_iarith.make_sub_executor(False)
-execute_sub16 = execute_iarith.make_sub_executor(True)
-execute_add32 = execute_iarith.make_add_executor(False)
-execute_add16 = execute_iarith.make_add_executor(True)
-
-#-----------------------------------------------------------------------
-# Move instructions
-#-----------------------------------------------------------------------
-execute_movcond32 = execute_mov.make_movcond_executor(False)
-execute_movcond16 = execute_mov.make_movcond_executor(True)
-execute_movtimm32 = execute_mov.make_movimm_executor(False, True)
-execute_movimm32  = execute_mov.make_movimm_executor(False, False)
-execute_movimm16  = execute_mov.make_movimm_executor(True, False)
-execute_movts32   = execute_mov.make_mov_executor(False)
-execute_movts16   = execute_mov.make_mov_executor(True)
-execute_movfs32   = execute_mov.make_mov_executor(False)
-execute_movfs16   = execute_mov.make_mov_executor(True)
-
 #---------------------------------------------------------------------
 # Floating point and integer arithmetic.
 #---------------------------------------------------------------------
@@ -287,6 +274,27 @@ execute_fmsub32 = execute_farith.make_farith_executor('msub', False)
 execute_float32 = execute_farith.make_farith_executor('float', False)
 execute_fix32   = execute_farith.make_farith_executor('fix', False)
 execute_fabs32  = execute_farith.make_farith_executor('abs', False)
+
+#-----------------------------------------------------------------------
+# Move instructions
+#-----------------------------------------------------------------------
+execute_movcond32 = execute_mov.make_movcond_executor(False)
+execute_movcond16 = execute_mov.make_movcond_executor(True)
+execute_movtimm32 = execute_mov.make_movimm_executor(False, True)
+execute_movimm32  = execute_mov.make_movimm_executor(False, False)
+execute_movimm16  = execute_mov.make_movimm_executor(True, False)
+execute_movts32   = execute_mov.make_mov_executor(False)
+execute_movts16   = execute_mov.make_mov_executor(True)
+execute_movfs32   = execute_mov.make_mov_executor(False)
+execute_movfs16   = execute_mov.make_mov_executor(True)
+
+#-----------------------------------------------------------------------
+# Jump instructions
+#-----------------------------------------------------------------------
+execute_jr32   = execute_jump.make_jr_executor(False)
+execute_jr16   = execute_jump.make_jr_executor(True)
+execute_jalr32 = execute_jump.make_jalr_executor(False)
+execute_jalr16 = execute_jump.make_jalr_executor(True)
 
 #-----------------------------------------------------------------------
 # Interrupt and multicore instructions
