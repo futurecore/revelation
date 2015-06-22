@@ -5,7 +5,7 @@ from epiphany.isa import reg_map
 
 
 def new_state(mem=None, **args):
-    possible_attributes = "AN AZ AC AV AVS BN BZ pc".split()
+    possible_attributes = "AN AZ AC AV AVS BN BV BIS BVS BUS BZ pc".split()
     if mem is None:
         mem = new_memory()
     state = State(mem, Debug(), reset_addr=0x00)
@@ -35,7 +35,7 @@ class StateChecker(object):
     check() tests whether registers and flags of interest are equal to a
     given other state.
     """
-    possible_attributes = "AN AZ AC AV AVS BN BZ pc".split()
+    possible_attributes = "AN AZ AC AV AVS BN BV BIS BVS BUS BZ pc".split()
     def __init__(self, **args):
         self.interesting_state = []
         for attr in self.possible_attributes:
@@ -72,5 +72,5 @@ class StateChecker(object):
                 expected = getattr(self, attr)
                 got = getattr(state, attr)
                 if expected != got:
-                    raise ValueError("Flags %s differ. expected: %s got: %s" %
+                    raise ValueError("Flag %s differs. expected: %s got: %s" %
                                      (attr, expected, got))
