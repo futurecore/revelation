@@ -16,6 +16,7 @@ def make_movcond_executor(is16bit):
         rn = inst.rn
         if should_branch(s, inst.cond):
             s.rf[rd] = s.rf[rn]
+        s.pc += 2 if is16bit else 4
     return execute_movcond
 
 
@@ -32,6 +33,7 @@ def make_movimm_executor(is16bit, is_t):
         imm = inst.imm16
         rd = inst.rd
         s.rf[rd] = (rd | (imm << 16)) if is_t else imm
+        s.pc += 2 if is16bit else 4
     return execute_movimm
 
 
@@ -46,4 +48,5 @@ def make_mov_executor(is16bit):
         if is16bit:
             inst.bits &= 0xffff
         s.rf[inst.rd] = s.rf[inst.rn]
+        s.pc += 2 if is16bit else 4
     return execute_mov

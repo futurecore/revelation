@@ -1,4 +1,4 @@
-from pydgin.utils import trim_32
+import pydgin.utils
 
 
 def reg_or_imm(s, inst, is16bit):
@@ -14,10 +14,50 @@ def trim_5(value):
 
 
 def signed(value, is16bit):
-  if is16bit and (value & 0x8000) or not is16bit and (value & 0x80000000):
-    twos_complement = ~value + 1
-    return -trim_32(twos_complement)
-  return value
+    if is16bit and (value & 0x8000) or not is16bit and (value & 0x80000000):
+        twos_complement = ~value + 1
+        return -pydgin.utils.trim_32(twos_complement)
+    return value
+
+
+def signed_8(value):
+    if value & 0x80:
+        twos_complement = ~value + 1
+        return -pydgin.utils.trim_32(twos_complement)
+    return value
+
+
+def signed_24(value):
+    if value & 0x800000:
+        twos_complement = ~value + 1
+        return -pydgin.utils.trim_32(twos_complement)
+    return value
+
+
+sext_8 = pydgin.utils.sext_8
+
+# def sext_16(value):
+#     """Sign-extended 16 bit number.
+#     """
+#     if value & 0x8000:
+#         return 0xFFFF0000 | value
+#     return value
+
+
+def sext_24(value):
+    """Sign-extended 24 bit number.
+    """
+    if value & 0x800000:
+        return 0xFFFFFF00 | value
+    return value
+
+
+# def sext_32(value):
+#     """Sign-extended 32 bit number.
+#     """
+#     if value & 0x80000000:
+#         return 0x00000000 | value
+#     return value
 
 
 #

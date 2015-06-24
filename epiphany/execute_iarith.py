@@ -26,7 +26,7 @@ def make_add_executor(is16bit):
         result = s.rf[inst.rn] + reg_or_imm(s, inst, is16bit)
         s.rf[inst.rd] = trim_32(result)
         s.AN = (result >> 31) & 1
-        s.AZ = trim_32(result) == 0
+        s.AZ = 1 if trim_32(result) == 0 else 0
         s.AC = carry_from(result)
         s.AV = overflow_from_add(s.rf[inst.rn], s.rf[inst.rm], result)
         s.AVS = s.AVS | s.AV
@@ -55,7 +55,7 @@ def make_sub_executor(is16bit):
         s.rf[inst.rd] = trim_32(result)
         s.AN = (result >> 31) & 1
         s.AC = borrow_from(result)
-        s.AZ = trim_32(result) == 0b0
+        s.AZ = 1 if trim_32(result) == 0 else 0
         s.AV = overflow_from_sub(s.rf[inst.rn], s.rf[inst.rm], result)
         s.AVS = s.AVS | s.AV
         s.pc += 2 if is16bit else 4

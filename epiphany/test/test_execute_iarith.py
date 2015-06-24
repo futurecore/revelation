@@ -68,15 +68,3 @@ def test_sub32_immediate_argument():
     assert instr.rd == 1
     assert instr.rn == 0
     assert instr.imm11 == 0b01010101010
-
-
-@pytest.mark.parametrize('is16bit,imm,expected_pc',
-                         [(False, 0b01111111,  254),
-                          (True,  0b011111111, 510)])
-def test_execute_bcond(is16bit, imm, expected_pc):
-    state = new_state(AZ=1, pc=0)
-    instr = opcode_factory.bcond16(condition=0b0000, imm=imm)
-    name, executefn = decode(instr)
-    executefn(state, Instruction(instr, None))
-    expected_state = StateChecker(pc=expected_pc, AZ=1)
-    expected_state.check(state)

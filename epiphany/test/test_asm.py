@@ -7,12 +7,12 @@ import pytest
 elf_dir = os.path.join('epiphany', 'test', 'asm')
 
 @pytest.mark.parametrize("elf,expected",
-                         [('add.elf', StateChecker(pc=10)),
+                         [('add.elf', StateChecker(pc=16, rf1=110, rf2=7, rf3=105)),
                           ('and.elf', StateChecker(pc=4)),
                           ('asr.elf', StateChecker(pc=4)),
-                          pytest.mark.xfail(('bcond.elf', StateChecker())),
+                          ('bcond.elf', StateChecker(pc=12, rf0=0, rf1=110)),
                           pytest.mark.xfail(('bitr.elf', StateChecker())),
-                          pytest.mark.xfail(('bl.elf', StateChecker())),
+                          ('bl.elf', StateChecker(pc=34, rf14=15, rf15=0, rf16=15)),
                           pytest.mark.xfail(('dma_transfer.elf', StateChecker())),
                           ('eor.elf', StateChecker(pc=4)),
                           pytest.mark.xfail(('fabs.elf', StateChecker())),
@@ -42,7 +42,7 @@ elf_dir = os.path.join('epiphany', 'test', 'asm')
                           ('lsr.elf', StateChecker(pc=6)),
                           pytest.mark.xfail(('mov_cond.elf', StateChecker())),
                           pytest.mark.xfail(('movfs.elf', StateChecker())),
-                          pytest.mark.xfail(('mov_imm.elf', StateChecker())),
+                          ('mov_imm.elf', StateChecker(pc=4, rf0=25)),
                           pytest.mark.xfail(('movt.elf', StateChecker())),
                           pytest.mark.xfail(('movts.elf', StateChecker())),
                           ('nop.elf', StateChecker(pc=4)),
@@ -63,7 +63,7 @@ def test_elf(elf, expected):
     epiphany = Epiphany()
     with open(elf_filename, 'rb') as elf:
         epiphany.init_state(elf, elf_filename, '', [], False)
-        epiphany.max_insts = 100
+        epiphany.max_insts = 250
         epiphany.run()
         expected.check(epiphany.state)
 
