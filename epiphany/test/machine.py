@@ -2,10 +2,12 @@ from pydgin.debug import Debug
 from epiphany.machine import State
 from epiphany.sim import new_memory
 from epiphany.isa import reg_map
+from epiphany.utils import bits2float
+
+possible_attributes = "AN AZ AC AV AVS BN BV BIS BVS BUS BZ pc".split()
 
 
 def new_state(mem=None, **args):
-    possible_attributes = "AN AZ AC AV AVS BN BV BIS BVS BUS BZ pc".split()
     if mem is None:
         mem = new_memory()
     state = State(mem, Debug(), reset_addr=0x00)
@@ -35,16 +37,16 @@ class StateChecker(object):
     check() tests whether registers and flags of interest are equal to a
     given other state.
     """
-    possible_attributes = "AN AZ AC AV AVS BN BV BIS BVS BUS BZ pc".split()
+    epsilon = 0.0001
     def __init__(self, **args):
         self.interesting_state = []
-        for attr in self.possible_attributes:
+        for attr in possible_attributes:
             if attr in args:
                 self.interesting_state.append(attr)
                 setattr(self, attr, args[attr])
         self.expected_registers = []
         for arg, value in args.items():
-            if arg in self.possible_attributes:
+            if arg in possible_attributes:
                 continue
             elif arg.startswith("rf") and arg[2].isdigit():
                 index = int(arg[2:])
@@ -57,20 +59,45 @@ class StateChecker(object):
             else:
                 raise KeyError('No such register: {0}'.format(arg[2:]))
 
+    def check_flags(self, state):
+        """Check all machine flags against an expected state.
+        """
+        for attr in possible_attributes:
+            if attr in self.interesting_state:
+                expected = getattr(self, attr)
+                got = getattr(state, attr)
+                if expected != got:
+                    raise ValueError("Flag %s differs. Expected: %s got: %s" %
+                                     (attr, expected, got))
+
     def check(self, state):
+        """Check all registers and flags against an expected state.
+        """
+        for index, expected in self.expected_registers:
+            got = state.rf[index]
+            if index > 63:
+                print 'INDEX:', index
+                reg_name = (key for key, value in reg_map.items() if value==index).next()
+            else:
+                reg_name = index
+            if expected != got:
+                raise ValueError("Register %s differs. Expected: %s got: %s" %
+                                 (reg_name, expected, got))
+        self.check_flags(state)
+
+    def fp_check(self, state):
+        """Check all registers and flags against an expected state.
+        For registers, convert the contents to a Python float and check that
+        the state and expected state do not differ by more than self.epsilon.
+        """
         for index, expected in self.expected_registers:
             got = state.rf[index]
             if index > 63:
                 reg_name = (key for key, value in reg_map.items() if value==index).next()
             else:
                 reg_name = index
-            if expected != got:
-                raise ValueError("Register %s differs. expected: %s got: %s" %
-                                 (reg_name, expected, got))
-        for attr in self.possible_attributes:
-            if attr in self.interesting_state:
-                expected = getattr(self, attr)
-                got = getattr(state, attr)
-                if expected != got:
-                    raise ValueError("Flag %s differs. expected: %s got: %s" %
-                                     (attr, expected, got))
+            if abs(bits2float(expected) - bits2float(got)) > self.epsilon:
+                raise ValueError("Register %s differs by more than %.4f. Expected: %s got: %s" %
+                                 (reg_name, self.epsilon,
+                                  bits2float(expected), bits2float(got)))
+        self.check_flags(state)

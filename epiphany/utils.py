@@ -1,5 +1,6 @@
 import pydgin.utils
 
+import math
 
 def reg_or_imm(s, inst, is16bit):
     if is16bit:
@@ -72,13 +73,13 @@ def float2bits(flt):
     """Add some Epiphany-specific code to float2bits.
     Checks for NaN and INF.
     """
-    if flt == float('nan'):
+    if math.isnan(flt):
         return float_factory(sign=0, exponent=0xff, mantissa=0x7fffff)
-    elif flt == float('inf'):
+    elif math.isinf(flt) and flt > 0.0:
         return float_factory(sign=0, exponent=0xff, mantissa=0)
-    elif flt == float('-inf'):
+    elif math.isinf(flt) and flt < 0.0:
         return float_factory(sign=1, exponent=0xff, mantissa=0)
-    elif flt == 0:
+    elif flt == 0.0:
         return float_factory(sign=0, exponent=0, mantissa=0)
     return pydgin.utils.float2bits(flt)
 
@@ -114,6 +115,10 @@ def is_nan(bits):
 
 def is_inf(bits):
     return get_exponent(bits) == 0xff and get_mantissa(bits) == 0
+
+
+def is_zero(bits):
+    return get_exponent(bits) == 0 and get_mantissa(bits) == 0
 
 
 #

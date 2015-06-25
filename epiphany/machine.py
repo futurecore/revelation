@@ -9,7 +9,7 @@ from pydgin.storage import RegisterFile
 #-----------------------------------------------------------------------
 class State(object):
     _virtualizable_ = ['pc', 'num_insts', 'AN', 'AZ', 'AC', 'AV',
-                       'AVS', 'BN', 'BZ']
+                       'AVS', 'BN', 'BIS', 'BUS', 'BVS', 'BZ']
 
     def __init__(self, memory, debug, reset_addr=0x00):
         self.pc       = reset_addr
@@ -28,6 +28,10 @@ class State(object):
         self.AVS = 0b0
         self.BN  = 0b0
         self.BZ  = 0b0
+        self.BIS = 0b0
+        self.BUS = 0b0
+        self.BV  = 0b0
+        self.BVS = 0b0
 
         # other registers
         self.pc = 0b0
