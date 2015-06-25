@@ -1,4 +1,5 @@
 #include "epiphany-macros.h"
 SET_UP
-    float r2, r1 ;
+    mov r0, #25
+    float r1, r0
 TEAR_DOWN

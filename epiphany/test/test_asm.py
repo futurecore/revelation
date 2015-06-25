@@ -1,4 +1,5 @@
 from epiphany.sim import Epiphany
+from epiphany.utils import float2bits
 from epiphany.test.machine import StateChecker
 
 import os.path
@@ -15,23 +16,11 @@ elf_dir = os.path.join('epiphany', 'test', 'asm')
                           ('bl.elf', StateChecker(pc=34, rf14=15, rf15=0, rf16=15)),
                           pytest.mark.xfail(('dma_transfer.elf', StateChecker())),
                           ('eor.elf', StateChecker(pc=4)),
-                          pytest.mark.xfail(('fabs.elf', StateChecker())),
-                          pytest.mark.xfail(('fadd.elf', StateChecker())),
-                          pytest.mark.xfail(('fix.elf', StateChecker())),
-                          pytest.mark.xfail(('float.elf', StateChecker())),
-                          pytest.mark.xfail(('fmadd.elf', StateChecker())),
-                          pytest.mark.xfail(('fmsub.elf', StateChecker())),
-                          pytest.mark.xfail(('fmul.elf', StateChecker())),
-                          pytest.mark.xfail(('fsub.elf', StateChecker())),
+                          ('fix.elf', StateChecker(pc=8, rf0=5)),
                           ('gid.elf', StateChecker(pc=4)),
                           ('gie.elf', StateChecker(pc=4)),
                           pytest.mark.xfail(('hardware_loop.elf', StateChecker())),
-                          pytest.mark.xfail(('iadd.elf', StateChecker())),
                           ('idle.elf', StateChecker(pc=4)),
-                          pytest.mark.xfail(('imadd.elf', StateChecker())),
-                          pytest.mark.xfail(('imsub.elf', StateChecker())),
-                          pytest.mark.xfail(('imul.elf', StateChecker())),
-                          pytest.mark.xfail(('isub.elf', StateChecker())),
                           pytest.mark.xfail(('jalr.elf', StateChecker())),
                           pytest.mark.xfail(('jr.elf', StateChecker())),
                           pytest.mark.xfail(('ldr_disp.elf', StateChecker())),
@@ -66,6 +55,89 @@ def test_elf(elf, expected):
         epiphany.max_insts = 250
         epiphany.run()
         expected.check(epiphany.state)
+
+
+@pytest.mark.parametrize("elf,expected",
+                         [('fabs.elf', StateChecker(pc=24,
+                                                    rf0=float2bits(5.0),
+                                                    rf1=float2bits(0.0),
+                                                    rf2=float2bits(-5.0),
+                                                    rf3=float2bits(5.0),
+                                                    rf4=float2bits(0.0),
+                                                    rf5=float2bits(5.0),
+                                                    )),
+                          ('float.elf', StateChecker(pc=6, rf1=float2bits(25.0))),
+                          ('fadd.elf', StateChecker(pc=18,
+                                                    rf0=float2bits(15.0),
+                                                    rf1=float2bits(5.0),
+                                                    rf2=float2bits(5.0),
+                                                    rf3=float2bits(10.0),
+                                                    rf4=float2bits(0.0))),
+                          ('fsub.elf', StateChecker(pc=20,
+                                                    rf0=float2bits(0.0),
+                                                    rf1=float2bits(2.0),
+                                                    rf2=float2bits(5.0),
+                                                    rf3=float2bits(5.0),
+                                                    rf4=float2bits(3.0),
+                                                    rf5=float2bits(-3.0))),
+                          ('fmul.elf', StateChecker(pc=18,
+                                                    rf0=float2bits(0.0),
+                                                    rf1=float2bits(2.0),
+                                                    rf2=float2bits(5.0),
+                                                    rf3=float2bits(0.0),
+                                                    rf4=float2bits(10.0))),
+                          ('fmadd.elf', StateChecker(pc=26,
+                                                     rf0=float2bits(0.0),
+                                                     rf1=float2bits(2.0),
+                                                     rf2=float2bits(5.0),
+                                                     rf3=float2bits(17.0),
+                                                     rf4=float2bits(7.0))),
+                          ('fmsub.elf', StateChecker(pc=26,
+                                                     rf0=float2bits(0.0),
+                                                     rf1=float2bits(2.0),
+                                                     rf2=float2bits(5.0),
+                                                     rf3=float2bits(-3.0),
+                                                     rf4=float2bits(7.0))),
+                          ('iadd.elf', StateChecker(pc=18,
+                                                    rf0=float2bits(15.0),
+                                                    rf1=float2bits(5.0),
+                                                    rf2=float2bits(5.0),
+                                                    rf3=float2bits(10.0),
+                                                    rf4=float2bits(0.0))),
+                          ('isub.elf', StateChecker(pc=20,
+                                                    rf0=float2bits(0.0),
+                                                    rf1=float2bits(2.0),
+                                                    rf2=float2bits(5.0),
+                                                    rf3=float2bits(5.0),
+                                                    rf4=float2bits(3.0),
+                                                    rf5=float2bits(-3.0))),
+                          ('imul.elf', StateChecker(pc=18,
+                                                    rf0=float2bits(0.0),
+                                                    rf1=float2bits(2.0),
+                                                    rf2=float2bits(5.0),
+                                                    rf3=float2bits(0.0),
+                                                    rf4=float2bits(10.0))),
+                          ('imadd.elf', StateChecker(pc=26,
+                                                     rf0=float2bits(0.0),
+                                                     rf1=float2bits(2.0),
+                                                     rf2=float2bits(5.0),
+                                                     rf3=float2bits(17.0),
+                                                     rf4=float2bits(7.0))),
+                          ('imsub.elf', StateChecker(pc=26,
+                                                     rf0=float2bits(0.0),
+                                                     rf1=float2bits(2.0),
+                                                     rf2=float2bits(5.0),
+                                                     rf3=float2bits(-3.0),
+                                                     rf4=float2bits(7.0))),
+                         ])
+def test_fp_elf(elf, expected):
+    elf_filename = os.path.join(elf_dir, elf)
+    epiphany = Epiphany()
+    with open(elf_filename, 'rb') as elf:
+        epiphany.init_state(elf, elf_filename, '', [], False)
+        epiphany.max_insts = 250
+        epiphany.run()
+        expected.fp_check(epiphany.state)
 
 
 def test_unimpl():
