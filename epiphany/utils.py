@@ -61,6 +61,62 @@ def sext_24(value):
 
 
 #
+# Floating point arithmetic.
+#
+
+def float_factory(sign=0, exponent=0, mantissa=0):
+    return (sign << 31) | (exponent << 23) | mantissa
+
+
+def float2bits(flt):
+    """Add some Epiphany-specific code to float2bits.
+    Checks for NaN and INF.
+    """
+    if flt == float('nan'):
+        return float_factory(sign=0, exponent=0xff, mantissa=0x7fffff)
+    elif flt == float('inf'):
+        return float_factory(sign=0, exponent=0xff, mantissa=0)
+    elif flt == float('-inf'):
+        return float_factory(sign=1, exponent=0xff, mantissa=0)
+    elif flt == 0:
+        return float_factory(sign=0, exponent=0, mantissa=0)
+    return pydgin.utils.float2bits(flt)
+
+
+def bits2float(bits):
+    """Add some Epiphany-specific code to bits2float.
+    Checks for NaN and INF.
+    """
+    if is_inf(bits) and (bits >> 31) == 0:
+        return float('inf')
+    elif is_inf(bits) and (bits >> 31) == 1:
+        return float('-inf')
+    elif is_nan(bits):
+        return float('nan')
+    return pydgin.utils.bits2float(bits)
+
+
+def get_mantissa(bits):
+    """Given a value representing a float (in the machine), return the mantissa.
+    """
+    return bits & 0x7fffff
+
+
+def get_exponent(bits):
+    """Given a value representing a float (in the machine), return the exponent.
+    """
+    return (bits >> 23) & 0xff
+
+
+def is_nan(bits):
+    return get_exponent(bits) == 0xff and get_mantissa(bits) != 0
+
+
+def is_inf(bits):
+    return get_exponent(bits) == 0xff and get_mantissa(bits) == 0
+
+
+#
 # Code below from Pydgin ARM simulator, by @dmlockhart and @bie45
 # Code under BSD License: http://choosealicense.com/licenses/bsd-3-clause/
 #
