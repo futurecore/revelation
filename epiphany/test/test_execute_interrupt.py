@@ -73,9 +73,9 @@ def test_execute_multicore_instructions(name, instr):
         executefn(state, Instruction(instr, None))
 
 
-def test_execute_unimpl16():
+def test_execute_unimpl():
     with pytest.raises(NotImplementedError):
         state = new_state()
-        instr = opcode_factory.unimpl16()
+        instr = opcode_factory.unimpl()
         name, executefn = decode(instr)
         executefn(state, Instruction(instr, None))

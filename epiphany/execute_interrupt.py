@@ -89,7 +89,7 @@ def execute_wand16(s, inst):
 
 
 #-----------------------------------------------------------------------
-# unimpl16
+# unimpl
 #-----------------------------------------------------------------------
-def execute_unimpl16(s, inst):
-    raise NotImplementedError('UNIMPL16')
+def execute_unimpl(s, inst):
+    raise NotImplementedError('UNIMPL')
