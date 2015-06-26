@@ -22,7 +22,8 @@ def execute_idle16(s, inst):
     status &= mask
     s.rf[epiphany.isa.reg_map['STATUS']] = status
     if not s.rf[epiphany.isa.reg_map['ILAT']]: # TODO: Use threads here?
-        pass
+        print 'IDLE16 does not wait in this simulator.',
+        print 'Moving to next instruction.'
     s.pc += 2
 
 

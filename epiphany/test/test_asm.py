@@ -20,7 +20,6 @@ elf_dir = os.path.join('epiphany', 'test', 'asm')
                           ('gid.elf', StateChecker(pc=4)),
                           ('gie.elf', StateChecker(pc=4)),
                           pytest.mark.xfail(('hardware_loop.elf', StateChecker())),
-                          ('idle.elf', StateChecker(pc=4)),
                           pytest.mark.xfail(('jalr.elf', StateChecker())),
                           pytest.mark.xfail(('jr.elf', StateChecker())),
                           pytest.mark.xfail(('ldr_disp.elf', StateChecker())),
@@ -138,6 +137,24 @@ def test_fp_elf(elf, expected):
         epiphany.max_insts = 250
         epiphany.run()
         expected.fp_check(epiphany.state)
+
+
+def test_execute_idle16(capsys):
+    elf_filename = os.path.join(elf_dir, 'idle.elf')
+    epiphany = Epiphany()
+    with open(elf_filename, 'rb') as elf:
+        epiphany.init_state(elf, elf_filename, '', [], False)
+        epiphany.state.rfSTATUS = 1
+        epiphany.max_insts = 250
+        epiphany.run()
+        out, err = capsys.readouterr()
+        expected_state = StateChecker(pc=4, rfSTATUS=0)
+        expected_text = ('IDLE16 does not wait in this simulator. ' +
+                         'Moving to next instruction.')
+        expected_state.check(epiphany.state)
+        assert expected_text in out
+        assert err == ''
+        assert not epiphany.state.running  # Set by bkpt16 instruction.
 
 
 def test_unimpl():

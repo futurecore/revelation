@@ -33,13 +33,18 @@ def test_execute_nop16():
     expected_state.check(state)
 
 
-def test_execute_idle16():
+def test_execute_idle16(capsys):
     state = new_state(rfSTATUS=1)
     instr = opcode_factory.idle16()
     name, executefn = decode(instr)
     executefn(state, Instruction(instr, None))
+    out, err = capsys.readouterr()
     expected_state = StateChecker(pc=2, rfSTATUS=0)
+    expected_text = ('IDLE16 does not wait in this simulator. ' +
+                     'Moving to next instruction.')
     expected_state.check(state)
+    assert expected_text in out
+    assert err == ''
     assert state.running
 
 
