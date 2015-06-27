@@ -95,9 +95,38 @@ def test_ldstrpm(is16bit):
         executefn(state, Instruction(instr, None))
 
 
-def test_testset32():
-    state = new_state()
-    with pytest.raises(NotImplementedError):
-        instr = opcode_factory.testset32(rd=0, rn=5, rm=7, sub=0, bb=0b10)
-        name, executefn = decode(instr)
+def test_testset32_zero():
+    state = new_state(rf0=0xFFFF, rf1=0x80002, rf2=0x80002)
+    size = 0b10  # Word
+    state.mem.write(0x00100004, 4, 0x0)
+    instr = opcode_factory.testset32(rd=0, rn=1, rm=2, sub=0, bb=size)
+    name, executefn = decode(instr)
+    executefn(state, Instruction(instr, None))
+    expected_state = StateChecker(rf0=0, rf1=0x80002, rf2=0x80002)
+    expected_state.check(state, memory=[(0x00100004, 4, 0xFFFF)])
+
+
+def test_testset32_nonzero():
+    state = new_state(rf0=0, rf1=0x80002, rf2=0x80002)
+    size = 0b10  # Word
+    state.mem.write(0x00100004, 4, 0xFFFF)
+    instr = opcode_factory.testset32(rd=0, rn=1, rm=2, sub=0, bb=size)
+    name, executefn = decode(instr)
+    executefn(state, Instruction(instr, None))
+    expected_state = StateChecker(rf0=0xFFFF, rf1=0x80002, rf2=0x80002,)
+    expected_state.check(state, memory=[(0x00100004, 4, 0xFFFF)])
+
+
+def test_testset32_fail():
+    expected_text = """testset32 has failed to write to address %s.
+The absolute address used for the test and set instruction must be located
+within the on-chip local memory and must be greater than 0x00100000 (2^20).
+""" % str(hex(0x4))
+    state = new_state(rf0=0, rf1=0x2, rf2=0x2)
+    size = 0b10  # Word
+    state.mem.write(0x00100004, 4, 0xFFFF)
+    instr = opcode_factory.testset32(rd=0, rn=1, rm=2, sub=0, bb=size)
+    name, executefn = decode(instr)
+    with pytest.raises(ValueError) as exninfo:
         executefn(state, Instruction(instr, None))
+    assert expected_text == exninfo.value.message

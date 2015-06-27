@@ -71,4 +71,41 @@ def make_ldstrpm_executor(is16bit):
 # testset32
 #-----------------------------------------------------------------------
 def testset32(s, inst):
-    raise NotImplementedError
+    """From the Epiphany Architecture Reference Manual (c) Adapteva Inc:
+
+    The TESTSET instruction does an atomic "test-if-not-zero", then
+    conditionally writes on any memory location within the Epiphany
+    architecture. The absolute address used for the test and set instruction
+    must be located within the on-chip local memory and must be greater than
+    0x00100000 (2^20).
+
+    The instruction tests the value of a specific memory location
+    and if that value is zero, writes in a new value from the local register
+    file. If the value at the memory location was already set to a non-zero
+    value, then the value is returned to the register file, but the memory
+    location is left unmodified.
+
+    if ([RN+/-RM]) {
+        RD = ([RN+/-RM]);
+    }
+    else{
+        ([RN+/-RM]) = RD
+        RD = 0;
+    }
+    """
+    address = (s.rf[inst.rn] + s.rf[inst.rm] if inst.sub == 0
+               else s.rf[inst.rn] - s.rf[inst.rm])
+    if address <= 0x00100000:
+        fail_msg = """testset32 has failed to write to address %s.
+The absolute address used for the test and set instruction must be located
+within the on-chip local memory and must be greater than 0x00100000 (2^20).
+""" % str(hex(address))
+        raise ValueError(fail_msg)
+    size = {0:1, 2:4, 3:8, 4:16}[inst.size]  # Size in bytes.
+    value = s.mem.read(address, size)
+    if value == 0:
+        s.mem.write(address, size, s.rf[inst.rd])
+        s.rf[inst.rd] = 0
+    else:
+        s.rf[inst.rd] = value
+    s.pc += 4

@@ -47,7 +47,6 @@ elf_dir = os.path.join('epiphany', 'test', 'asm')
         pytest.mark.xfail(('str_index.elf', StateChecker())),
         pytest.mark.xfail(('str_pm.elf', StateChecker())),
         ('sub.elf', StateChecker(pc=(12 + RESET_ADDR), rf0=100, rf1=20, rf2=80, rf3=80)),
-        pytest.mark.xfail(('testset.elf', StateChecker())),
         pytest.mark.xfail(('trap.elf', StateChecker(pc=(6 + RESET_ADDR)))),
        ])
 def test_elf(elf, expected):
@@ -170,6 +169,37 @@ def test_execute_idle16(capsys):
         assert expected_text in out
         assert err == ''
         assert not epiphany.state.running  # Set by bkpt16 instruction.
+
+
+def test_testset32():
+    elf_filename = os.path.join(elf_dir, 'testset.elf')
+    epiphany = Epiphany()
+    with open(elf_filename, 'rb') as elf:
+        if elf == 'movts.elf': print 'MOVTS'
+        epiphany.init_state(elf, elf_filename, '', [], False)
+        epiphany.state.mem.write(0x100004, 4, 0x0)
+        epiphany.max_insts = 10
+        epiphany.run()
+        expected = StateChecker(pc=(22 + RESET_ADDR), AZ=1, rf0=0, rf1=0x100001, rf2=0x3)
+        expected.check(epiphany.state, memory=[(0x100004, 4, 0xFFFF)])
+
+
+def test_testset32_fail():
+    """Check that the testset32 instruction fails if the memory address it
+    is given is too low..
+    """
+    elf_filename = os.path.join(elf_dir, 'testset_fail.elf')
+    expected_text = """testset32 has failed to write to address %s.
+The absolute address used for the test and set instruction must be located
+within the on-chip local memory and must be greater than 0x00100000 (2^20).
+""" % str(hex(0x4))
+    with pytest.raises(ValueError) as expected_exn:
+        epiphany = Epiphany()
+        with open(elf_filename, 'rb') as elf:
+            epiphany.init_state(elf, elf_filename, '', [], False)
+            epiphany.max_insts = 10
+            epiphany.run()
+    assert expected_text == expected_exn.value.message
 
 
 def test_unimpl():

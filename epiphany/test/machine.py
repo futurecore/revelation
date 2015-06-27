@@ -68,7 +68,20 @@ class StateChecker(object):
                     raise ValueError("Flag %s differs. Expected: %s got: %s" %
                                      (attr, expected, got))
 
-    def check(self, state):
+    def check_memory(self, memory, state):
+        """Check whether locations in memory are set as expected.
+        The 'memory' argument should be an iterable containing 3-tuples of
+        address, size (in number of bytes), and expected value.
+        """
+        if memory is None or memory == []:
+            return
+        for (location, size, expected) in memory:
+            got = state.mem.read(location, size)
+            if expected != got:
+                    raise ValueError("Memory location %s differs. Expected: %s got: %s" %
+                                     (location, expected, got))
+
+    def check(self, state, memory=[]):
         """Check all registers and flags against an expected state.
         """
         for index, expected in self.expected_registers:
@@ -81,8 +94,9 @@ class StateChecker(object):
                 raise ValueError("Register %s differs. Expected: %s got: %s" %
                                  (reg_name, expected, got))
         self.check_flags(state)
+        self.check_memory(memory, state)
 
-    def fp_check(self, state):
+    def fp_check(self, state, memory=[]):
         """Check all registers and flags against an expected state.
         For registers, convert the contents to a Python float and check that
         the state and expected state do not differ by more than self.epsilon.
@@ -98,3 +112,4 @@ class StateChecker(object):
                                  (reg_name, self.epsilon,
                                   bits2float(expected), bits2float(got)))
         self.check_flags(state)
+        self.check_memory(memory, state)
