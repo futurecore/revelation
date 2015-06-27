@@ -2,6 +2,7 @@ from pydgin.utils import trim_32
 
 from epiphany.instruction import Instruction
 from epiphany.isa import decode
+from epiphany.machine import RESET_ADDR
 from epiphany.test.machine import StateChecker, new_state
 
 import opcode_factory
@@ -28,7 +29,7 @@ def test_execute_add32sub32(factory, expected):
     instr = factory(rd=2, rn=1, rm=0)
     name, executefn = decode(instr)
     executefn(state, Instruction(instr, None))
-    expected_state = StateChecker(pc=4, **expected)
+    expected_state = StateChecker(pc=(4 + RESET_ADDR), **expected)
     expected_state.check(state)
 
 
@@ -41,7 +42,7 @@ def test_execute_add16sub16(factory, expected):
     instr = factory(rd=2, rn=1, rm=0)
     name, executefn = decode(instr)
     executefn(state, Instruction(instr, None))
-    expected_state = StateChecker(pc=2, **expected)
+    expected_state = StateChecker(pc=(2 + RESET_ADDR), **expected)
     expected_state.check(state)
 
 
@@ -59,7 +60,7 @@ def test_execute_arith32_immediate(opcode, imm, expected):
     instr = opcode(rd=1, rn=0, imm=imm)
     name, executefn = decode(instr)
     executefn(state, Instruction(instr, None))
-    expected_state = StateChecker(pc=4, **expected)
+    expected_state = StateChecker(pc=(4 + RESET_ADDR), **expected)
     expected_state.check(state)
 
 

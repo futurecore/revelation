@@ -1,4 +1,4 @@
 #include "epiphany-macros.h"
 SET_UP
-    gie ; disable interrupts
+    nop
 TEAR_DOWN

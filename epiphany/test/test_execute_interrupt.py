@@ -1,5 +1,6 @@
 from epiphany.instruction import Instruction
 from epiphany.isa import decode
+from epiphany.machine import RESET_ADDR
 from epiphany.test.machine import StateChecker, new_state
 
 import opcode_factory
@@ -29,7 +30,7 @@ def test_execute_nop16():
     instr = opcode_factory.nop16()
     name, executefn = decode(instr)
     executefn(state, Instruction(instr, None))
-    expected_state = StateChecker(pc=2)
+    expected_state = StateChecker(pc=(2 + RESET_ADDR))
     expected_state.check(state)
 
 
@@ -39,7 +40,7 @@ def test_execute_idle16(capsys):
     name, executefn = decode(instr)
     executefn(state, Instruction(instr, None))
     out, err = capsys.readouterr()
-    expected_state = StateChecker(pc=2, rfSTATUS=0)
+    expected_state = StateChecker(pc=(2 + RESET_ADDR), rfSTATUS=0)
     expected_text = ('IDLE16 does not wait in this simulator. ' +
                      'Moving to next instruction.')
     expected_state.check(state)

@@ -216,25 +216,23 @@ def test_movtimm32():
 
 
 def test_movts():
-    assert reg_map['r3'] == 3
-    assert reg_map['LR'] == 14
+    assert reg_map['CONFIG'] == 65
     #       0bxxxxxxxxxxxxxxxxdddnnn0100000010
-    instr = 0b00000000000000000110000100000010
-    assert movts16(rd='r3', rn=0) == instr
+    instr = 0b00000000000000000000000100000010
+    assert movts16(rd='CONFIG', rn=0) == instr
     #       0bdddnnnxxxxxx0010dddnnn0100001111
-    instr = 0b00100000000000101100000100001111
-    assert movts32(rd='LR', rn=0) == instr
+    instr = 0b00000000000000100000000100001111
+    assert movts32(rd='CONFIG', rn=0) == instr
 
 
 def test_movfs():
-    assert reg_map['r3'] == 3
-    assert reg_map['LR'] == 14
+    assert reg_map['CONFIG'] == 65
     #       0bdddnnnxxxxxxxxxxdddnnn0100010010
-    instr = 0b00000000000000000000110100010010
-    assert movfs16(rd=0, rn='r3') == instr
+    instr = 0b00000000000000000000000100010010
+    assert movfs16(rd=0, rn='CONFIG') == instr
     #       0bdddnnnxxxxxx0010dddnnn0100011111
-    instr = 0b00000100000000100001100100011111
-    assert movfs32(rd=0, rn='LR') == instr
+    instr = 0b00000000000000100000000100011111
+    assert movfs32(rd=0, rn='CONFIG') == instr
 
 
 def test_ldstrpmd32():

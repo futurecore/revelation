@@ -1,14 +1,15 @@
-#include "epiphany_macros.h"
+#include "epiphany-macros.h"
 SET_UP
-        mov r1, %low(loop_start) ;
-        movt r1, %high(loop_start) ;
-        movts ls, r1 ;         // setting loop start address
-        mov r1, %low(loop_end) ;
-        movt r1, %high(loop_end) ;
-        movts le, r1 ;         // setting loop end address
-        mov r1, #0x10 ;
-        movts lc, r1 ;         // setting loop count
-        gid ;                  // disabling interrupts
+    mov r0, #100
+    mov r1, %low(loop_start) ;
+    movt r1, %high(loop_start) ;
+    movts ls, r1 ;             // setting loop start address
+    mov r1, %low(loop_end) ;
+    movt r1, %high(loop_end) ;
+    movts le, r1 ;             // setting loop end address
+    mov r1, #0x10 ;
+    movts lc, r1 ;             // setting loop count
+    gid ;                      // disabling interrupts
     .balignw 8,0x01a2 ;        // align to 8-byte boundary
     loop_start:
         add.l r1, r1, r0 ;     // first instruction in loop

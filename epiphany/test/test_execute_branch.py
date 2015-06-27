@@ -1,5 +1,6 @@
 from epiphany.instruction import Instruction
 from epiphany.isa import decode
+from epiphany.machine import RESET_ADDR
 from epiphany.test.machine import new_state, StateChecker
 
 import opcode_factory
@@ -30,13 +31,12 @@ def test_execute_bcond(is16bit, cond, imm, expected_pc):
 
 @pytest.mark.parametrize('is16bit', [True, False])
 def test_branch_link(is16bit):
-    print 'BL'
-    state = new_state(pc=4)
+    state = new_state()
     cond = 0b1111  # Condition code for branch-and-link
     factory = opcode_factory.bcond16 if is16bit else opcode_factory.bcond32
     instr = factory(condition=cond, imm=0b00011000)
     name, executefn = decode(instr)
     executefn(state, Instruction(instr, None))
-    expected_LR = 6 if is16bit else 8
-    expected = StateChecker(rfLR=expected_LR, pc=(4 + (0b00011000 << 1)))
+    expected_LR = (2 if is16bit else 4) + RESET_ADDR
+    expected = StateChecker(rfLR=expected_LR, pc=(RESET_ADDR + (0b00011000 << 1)))
     expected.check(state)

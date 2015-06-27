@@ -1,4 +1,4 @@
 #include "epiphany-macros.h"
 SET_UP
-    rti ;
+    idle ; Not implemented in this simulator.
 TEAR_DOWN

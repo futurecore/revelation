@@ -282,11 +282,11 @@ execute_movcond32 = execute_mov.make_movcond_executor(False)
 execute_movcond16 = execute_mov.make_movcond_executor(True)
 execute_movtimm32 = execute_mov.make_movimm_executor(False, True)
 execute_movimm32  = execute_mov.make_movimm_executor(False, False)
-execute_movimm16  = execute_mov.make_movimm_executor(True, False)
-execute_movts32   = execute_mov.make_mov_executor(False)
-execute_movts16   = execute_mov.make_mov_executor(True)
-execute_movfs32   = execute_mov.make_mov_executor(False)
-execute_movfs16   = execute_mov.make_mov_executor(True)
+execute_movimm16  = execute_mov.make_movimm_executor(True,  False)
+execute_movts32   = execute_mov.make_mov_executor(False, rd_is_special=True)
+execute_movts16   = execute_mov.make_mov_executor(True,  rd_is_special=True)
+execute_movfs32   = execute_mov.make_mov_executor(False, rn_is_special=True)
+execute_movfs16   = execute_mov.make_mov_executor(True,  rn_is_special=True)
 
 #-----------------------------------------------------------------------
 # Jump instructions

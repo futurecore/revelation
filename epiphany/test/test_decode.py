@@ -75,8 +75,8 @@ import pytest
                           ('movimm16',    opcode_factory.movimm16(rd=0b1111, imm=0)),
                           ('movfs32',     opcode_factory.movfs32(rd=0b110, rn='LR')),
                           ('movfs16',     opcode_factory.movfs16(rd=0b110, rn='r1')),
-                          ('movts32',     opcode_factory.movts32(rd='LR', rn=0b011)),
-                          ('movts16',     opcode_factory.movts16(rd='r1', rn=0)),
+                          ('movts32',     opcode_factory.movts32(rd='CONFIG', rn=0b011)),
+                          ('movts16',     opcode_factory.movts16(rd='CONFIG', rn=0)),
                           ('gie16',       opcode_factory.gie16()),
                           ('gid16',       opcode_factory.gid16()),
                           ('nop16',       opcode_factory.nop16()),
@@ -132,20 +132,15 @@ def test_decode_add32_immediate_argument():
 
 
 def test_mov_registers():
-    from epiphany.isa import reg_map
-    instr = Instruction(opcode_factory.movfs16(rd=0, rn='SP'), '')
+    instr = Instruction(opcode_factory.movfs16(rd=0, rn='CONFIG'), '')
     assert instr.rd == 0
-    assert instr.rn == reg_map['SP']
-    instr = Instruction(opcode_factory.movfs32(rd=0, rn='SP'), '')
+    assert instr.rn == 0  # 65 - 65
+    instr = Instruction(opcode_factory.movfs32(rd=0, rn='pc'), '')
     assert instr.rd == 0
-    assert instr.rn == reg_map['SP']
-    instr = Instruction(opcode_factory.movts16(rd='r1', rn=0), '')
-    assert instr.rd == reg_map['r1']
+    assert instr.rn == 2  # 67 - 65
+    instr = Instruction(opcode_factory.movts16(rd='CONFIG', rn=0), '')
+    assert instr.rd == 0  # 65 - 65
     assert instr.rn == 0
-    instr = Instruction(opcode_factory.movts16(rd='SP', rn=0), '')
-    assert instr.rd == reg_map['SP']
+    instr = Instruction(opcode_factory.movts32(rd='pc', rn=0), '')
+    assert instr.rd == 2  # 67 -65
     assert instr.rn == 0
-    instr = Instruction(opcode_factory.movts32(rd='SP', rn=0), '')
-    assert instr.rd == reg_map['SP']
-    assert instr.rn == 0
-

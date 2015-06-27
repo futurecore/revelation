@@ -15,6 +15,6 @@ SET_UP
             sub r15, r15, #1
             bne _loop
         add r16, r16, r14
-        b lr  ; branch back to callee
+        rts  ; branch back to callee
     _end:
 TEAR_DOWN

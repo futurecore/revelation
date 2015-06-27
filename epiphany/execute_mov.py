@@ -40,13 +40,15 @@ def make_movimm_executor(is16bit, is_t):
 #-----------------------------------------------------------------------
 # movts16, movts32, movfs16 and movfs32 - move
 #-----------------------------------------------------------------------
-def make_mov_executor(is16bit):
+def make_mov_executor(is16bit, rd_is_special=False, rn_is_special=False):
     def execute_mov(s, inst):
         """
         RD=RN
         """
         if is16bit:
             inst.bits &= 0xffff
-        s.rf[inst.rd] = s.rf[inst.rn]
+        rd = inst.rd + 65 if rd_is_special else inst.rd
+        rn = inst.rn + 65 if rn_is_special else inst.rn
+        s.rf[rd] = s.rf[rn]
         s.pc += 2 if is16bit else 4
     return execute_mov

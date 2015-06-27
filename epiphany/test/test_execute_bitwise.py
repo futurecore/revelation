@@ -2,6 +2,7 @@ from pydgin.utils import trim_32
 
 from epiphany.instruction import Instruction
 from epiphany.isa import decode
+from epiphany.machine import RESET_ADDR
 from epiphany.test.machine import StateChecker, new_state
 
 import opcode_factory
@@ -21,7 +22,7 @@ def test_execute_logical_shift_right(rn, rm, is16bit):
     executefn(state, Instruction(instr, None))
     expected_state = StateChecker(AZ=(False if rn < 0 else True), # 1 >> 5 == 0
                                   AV=0, AC=0,
-                                  pc=(2 if is16bit else 4),
+                                  pc=((2 if is16bit else 4) + RESET_ADDR),
                                   rf2=(0b1111 if rn < 0 else 0))
     expected_state.check(state)
 
@@ -39,7 +40,7 @@ def test_execute_logical_shift_right_imm(rn, imm, is16bit):
     executefn(state, Instruction(instr, None))
     expected_state = StateChecker(AZ=(False if rn < 0 else True), # 1 >> 5 == 0
                                   AV=0, AC=0,
-                                  pc=(2 if is16bit else 4),
+                                  pc=((2 if is16bit else 4) + RESET_ADDR),
                                   rf2=(0b1111 if rn < 0 else 0))
     expected_state.check(state)
 
@@ -57,7 +58,7 @@ def test_execute_arith_shift_right(rn, rm, is16bit):
     executefn(state, Instruction(instr, None))
     expected_state = StateChecker(AZ=(False if rn < 0 else True), # 1 >> 5 == 0
                                   AV=0, AC=0,
-                                  pc=(2 if is16bit else 4),
+                                  pc=((2 if is16bit else 4) + RESET_ADDR),
                                   rf2=(trim_32(-1) if rn < 0 else 0))
     expected_state.check(state)
 
@@ -75,7 +76,7 @@ def test_execute_arith_shift_right_imm(rn, imm, is16bit):
     executefn(state, Instruction(instr, None))
     expected_state = StateChecker(AZ=(False if rn < 0 else True), # 1 >> 5 == 0
                                   AV=0, AC=0,
-                                  pc=(2 if is16bit else 4),
+                                  pc=((2 if is16bit else 4) + RESET_ADDR),
                                   rf2=(trim_32(-1) if rn < 0 else 0))
     expected_state.check(state)
 
@@ -90,7 +91,7 @@ def test_execute_shift_left(factory, is16bit):
     name, executefn = decode(instr)
     executefn(state, Instruction(instr, None))
     expected_state = StateChecker(AZ=0, AN=0, AC=0, AV=0,
-                                  pc=(2 if is16bit else 4),
+                                  pc=((2 if is16bit else 4) + RESET_ADDR),
                                   rf2=7 << 5)
     expected_state.check(state)
 
@@ -105,7 +106,7 @@ def test_execute_shift_left_immediate(factory, is16bit):
     name, executefn = decode(instr)
     executefn(state, Instruction(instr, None))
     expected_state = StateChecker(AZ=0, AN=0, AC=0, AV=0,
-                                  pc=(2 if is16bit else 4),
+                                  pc=((2 if is16bit else 4) + RESET_ADDR),
                                   rf2=7 << 5)
     expected_state.check(state)
 
@@ -128,7 +129,7 @@ def test_execute_bitr_immediate(bits, expected, is16bit):
     executefn(state, Instruction(instr, None))
     expected_state = StateChecker(AZ=0, AC=0, AV=0,
 #                                  AN=0,
-                                  pc=(2 if is16bit else 4),
+                                  pc=((2 if is16bit else 4) + RESET_ADDR),
                                   rf2=expected)
     expected_state.check(state)
 
@@ -142,7 +143,8 @@ def test_execute_bitwise32(factory, expected):
     instr = factory(rd=2, rn=1, rm=0)
     name, executefn = decode(instr)
     executefn(state, Instruction(instr, None))
-    expected_state = StateChecker(AZ=0, AV=0, AC=0, pc=4, rf2=expected)
+    expected_state = StateChecker(AZ=0, AV=0, AC=0, pc=(4 + RESET_ADDR),
+                                  rf2=expected)
     expected_state.check(state)
 
 
@@ -155,6 +157,6 @@ def test_execute_bitwise16(factory, expected):
     instr = factory(rd=2, rn=1, rm=0)
     name, executefn = decode(instr)
     executefn(state, Instruction(instr, None))
-    expected_state = StateChecker(AZ=0, AV=0, AC=0, pc=2, rf2=expected)
+    expected_state = StateChecker(AZ=0, AV=0, AC=0, pc=(2 + RESET_ADDR),
+                                  rf2=expected)
     expected_state.check(state)
-

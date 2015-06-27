@@ -13,4 +13,3 @@ SET_UP
     fmadd r3, r2, r1 ; 17 = 7 + (5 * 2)
     fmadd r4, r2, r0 ;  7 = 7 + (5 * 0)
 TEAR_DOWN
-

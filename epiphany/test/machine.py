@@ -10,12 +10,10 @@ possible_attributes = "AN AZ AC AV AVS BN BV BIS BVS BUS BZ pc".split()
 def new_state(mem=None, **args):
     if mem is None:
         mem = new_memory()
-    state = State(mem, Debug(), reset_addr=0x00)
+    state = State(mem, Debug())
     for attr in possible_attributes:
         if attr in args:
             setattr(state, attr, args[attr])
-        else:
-            setattr(state, attr, 0b0)
     for arg, value in args.items():
         if arg in possible_attributes:
             continue
@@ -76,7 +74,6 @@ class StateChecker(object):
         for index, expected in self.expected_registers:
             got = state.rf[index]
             if index > 63:
-                print 'INDEX:', index
                 reg_name = (key for key, value in reg_map.items() if value==index).next()
             else:
                 reg_name = index

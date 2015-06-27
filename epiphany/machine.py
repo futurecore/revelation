@@ -4,6 +4,8 @@
 
 from pydgin.storage import RegisterFile
 
+RESET_ADDR = 0x58
+
 #-----------------------------------------------------------------------
 # State
 #-----------------------------------------------------------------------
@@ -11,7 +13,7 @@ class State(object):
     _virtualizable_ = ['pc', 'num_insts', 'AN', 'AZ', 'AC', 'AV',
                        'AVS', 'BN', 'BIS', 'BUS', 'BVS', 'BZ']
 
-    def __init__(self, memory, debug, reset_addr=0x00):
+    def __init__(self, memory, debug, reset_addr=RESET_ADDR):
         self.pc       = reset_addr
         self.rf       = RegisterFile(constant_zero=False, num_regs=107)
         self.mem      = memory
@@ -33,8 +35,7 @@ class State(object):
         self.BV  = 0b0
         self.BVS = 0b0
 
-        # other registers
-        self.pc = 0b0
+        # Other registers
         self.status = 0
         self.num_insts = 0
         self.stats_en = False

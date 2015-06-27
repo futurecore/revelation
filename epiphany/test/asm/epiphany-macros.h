@@ -1,8 +1,8 @@
 .macro SET_UP
-.global main  // gcc needs this to create a valid elf
- main:
+.global _start
+_start:
 .endm
 
 .macro TEAR_DOWN
-    bkpt // Terminate the program by calling setting a breakpoint.
+    bkpt // Terminate the program by setting a breakpoint.
 .endm

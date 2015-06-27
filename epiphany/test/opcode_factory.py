@@ -303,8 +303,8 @@ movtimm32 = make_movimm32(True)
 def make_mov_factory(is16bit, is_from):
     # TODO: Find out what M0 and M1 are for.
     def mov(rd=0, rn=0):
-        rn = reg_map[rn] if is_from else rn
-        rd = reg_map[rd] if not is_from else rd
+        rn = (reg_map[rn] - 65) if is_from else rn
+        rd = (reg_map[rd] - 65) if not is_from else rd
         if is16bit and is_from:
             opcode = 0b0100010010
         elif is16bit and not is_from:
