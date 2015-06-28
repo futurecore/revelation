@@ -36,6 +36,10 @@ class Instruction(object):
         return ((self.bits >> 5) & 255) | ((self.bits >> 12) & 0xFF00)
 
     @property
+    def t5(self):
+        return (self.bits >> 10) & 31
+
+    @property
     def cond(self):
         return (self.bits >> 4) & 15
 

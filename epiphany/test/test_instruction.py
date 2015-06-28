@@ -78,6 +78,17 @@ def test_imm16():
     assert 0 == inst.imm16
 
 
+def test_t5():
+    #      0bxxxxxxxxxxxxxxxxx11111xxxxxxxxxx
+    bits = 0b00000000000000000111110000000000
+    inst = Instruction(bits, '')
+    assert 31 == inst.t5
+    #      0bxxxxxxxxxxxxxxxxx00000xxxxxxxxxx
+    bits = 0b11111111111111111000001111111111
+    inst = Instruction(bits, '')
+    assert 0 == inst.t5
+
+
 def test_cond():
     #      0bxxxxxxxxxxxxxxxxxxxxxxxxccccxxxx
     bits = 0b00000000000000000000000011110000

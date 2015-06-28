@@ -88,7 +88,27 @@ def execute_rti16(s, inst):
 # trap16
 #-----------------------------------------------------------------------
 def execute_trap16(s, inst):
-    raise NotImplementedError('Interrupts not implemented.')
+    import pydgin.syscalls
+    syscall_funcs = {
+        2: pydgin.syscalls.syscall_open,
+        3: pydgin.syscalls.syscall_close,
+        4: pydgin.syscalls.syscall_read,
+        5: pydgin.syscalls.syscall_write,
+        6: pydgin.syscalls.syscall_lseek,
+        7: pydgin.syscalls.syscall_unlink,
+       10: pydgin.syscalls.syscall_fstat,
+       15: pydgin.syscalls.syscall_stat,
+    }
+    if inst.t5 == 3:  # Exit.
+        syscall_handler = pydgin.syscalls.syscall_exit
+    elif inst.t5 == 7:
+        syscall_handler = syscall_funcs[s.rf[3]]
+    else:
+        print 'WARNING: syscall not implemented: %d' % inst.t5
+        s.pc += 2
+        return
+    retval, errno = syscall_handler(s, s.rf[0], s.rf[1], s.rf[2])
+    s.pc += 2
 
 
 #-----------------------------------------------------------------------

@@ -68,12 +68,27 @@ def test_execute_rti16():
     expected_state.check(state)
 
 
-@pytest.mark.parametrize('name,instr', [('trap16', opcode_factory.trap16(0b111111))])
-def test_execute_interrupt_instructions(name, instr):
-    with pytest.raises(NotImplementedError):
-        state = new_state()
-        name, executefn = decode(instr)
-        executefn(state, Instruction(instr, None))
+def test_execute_trap16():
+    state = new_state()
+    instr = opcode_factory.trap16(trap=3)  # Exit.
+    name, executefn = decode(instr)
+    executefn(state, Instruction(instr, None))
+    assert not state.running
+    # FIXME: Test other syscalls.
+
+
+def test_execute_trap_warning(capsys):
+    state = new_state()
+    instr = opcode_factory.trap16(trap=0b11111)
+    name, executefn = decode(instr)
+    executefn(state, Instruction(instr, None))
+    out, err = capsys.readouterr()
+    expected_state = StateChecker(pc=(2 + RESET_ADDR))
+    expected_text = ('WARNING: syscall not implemented: 31')
+    expected_state.check(state)
+    assert expected_text in out
+    assert err == ''
+    assert state.running
 
 
 @pytest.mark.parametrize('name,instr', [('mbkpt16',  opcode_factory.mbkpt16()),
