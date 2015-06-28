@@ -6,7 +6,7 @@ SET_UP
     mov r15, #5
     mov r16, #0
     bl _my_func ; save PC to LR and jump to _my_func
-    b _end
+    TEAR_DOWN  ; Sets breakpoint.
     _my_func:
         mov r14, #0
         mov r16, #0
@@ -15,6 +15,4 @@ SET_UP
             sub r15, r15, #1
             bne _loop
         add r16, r16, r14
-        rts  ; branch back to callee
-    _end:
-TEAR_DOWN
+    rts  ; branch back to callee

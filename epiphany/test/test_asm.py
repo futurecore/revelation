@@ -14,7 +14,7 @@ elf_dir = os.path.join('epiphany', 'test', 'asm')
         ('asr.elf', StateChecker(pc=(10 +  + RESET_ADDR), rf0=1, rf1=5, rf2=0, rf3=0)),
         ('bcond.elf', StateChecker(pc=(12 + RESET_ADDR), rf0=0, rf1=110)),
         ('bitr.elf', StateChecker(pc=(6 + RESET_ADDR), rf0=170, rf1=85)),
-        pytest.mark.xfail(('bl.elf', StateChecker(pc=(34 + RESET_ADDR), rf14=15, rf15=0, rf16=15))),
+        ('bl.elf', StateChecker(rf14=15, rf15=0, rf16=15)),
         pytest.mark.xfail(('dma_transfer.elf', StateChecker())),
         ('eor.elf', StateChecker(pc=(8 + RESET_ADDR), rf0=5, rf1=7, rf2=2)),
         ('fix.elf', StateChecker(pc=(8 + RESET_ADDR), rf0=5)),
