@@ -21,7 +21,7 @@ def make_bcond_executor(is16bit):
         cond = inst.cond
         imm = inst.bcond_imm
         if cond == 0b1111:  # Branch and link (BL).
-            s.rf[epiphany.isa.reg_map['LR']] = s.pc + 2 if is16bit else s.pc + 4
+            s.rf[epiphany.isa.reg_map['LR']] = (s.pc + 2) if is16bit else (s.pc + 4)
         if should_branch(s, cond):
             s.pc += (sext_8(signed_8(imm)) << 1) if is16bit else (sext_24(signed_24(imm)) << 1)
         else:

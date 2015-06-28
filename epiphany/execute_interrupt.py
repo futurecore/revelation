@@ -72,7 +72,16 @@ def execute_sync16(s, inst):
 # rti16
 #-----------------------------------------------------------------------
 def execute_rti16(s, inst):
-    raise NotImplementedError('Interrupts not implemented.')
+    """
+    IPEND[_i_] = 0; where _i_ is the current interrupt level being serviced
+    STATUS[1] = 0;
+    PC = IRET;
+    <execute instruction at PC>
+    """
+    # FIXME: Set IPEND.
+    mask = 0xFFFFFFFD
+    s.rf[epiphany.isa.reg_map['STATUS']] &= mask
+    s.pc = s.rf[epiphany.isa.reg_map['IRET']]
 
 
 #-----------------------------------------------------------------------

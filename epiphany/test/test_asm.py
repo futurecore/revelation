@@ -14,7 +14,7 @@ elf_dir = os.path.join('epiphany', 'test', 'asm')
         ('asr.elf', StateChecker(pc=(10 +  + RESET_ADDR), rf0=1, rf1=5, rf2=0, rf3=0)),
         ('bcond.elf', StateChecker(pc=(12 + RESET_ADDR), rf0=0, rf1=110)),
         ('bitr.elf', StateChecker(pc=(6 + RESET_ADDR), rf0=170, rf1=85)),
-        ('bl.elf', StateChecker(rf14=15, rf15=0, rf16=15)),
+        ('bl.elf', StateChecker(pc=114, rf0=15, rf1=0, rf2=15)),
         pytest.mark.xfail(('dma_transfer.elf', StateChecker())),
         ('eor.elf', StateChecker(pc=(8 + RESET_ADDR), rf0=5, rf1=7, rf2=2)),
         ('fix.elf', StateChecker(pc=(8 + RESET_ADDR), rf0=5)),
@@ -35,7 +35,7 @@ elf_dir = os.path.join('epiphany', 'test', 'asm')
         ('nop.elf', StateChecker(pc=(4 + RESET_ADDR))),
         ('orr.elf', StateChecker(pc=(8 + RESET_ADDR), rf0=5, rf1=7, rf2=7)),
         pytest.mark.xfail(('rti.elf', StateChecker())),
-        pytest.mark.xfail(('rts.elf', StateChecker())),
+        ('rts.elf', StateChecker(pc=110, rf1=100, rf2=200, rf3=300, rfLR=90)),
         ('sub.elf', StateChecker(pc=(12 + RESET_ADDR), rf0=100, rf1=20, rf2=80, rf3=80)),
         pytest.mark.xfail(('trap.elf', StateChecker(pc=(6 + RESET_ADDR)))),
        ])

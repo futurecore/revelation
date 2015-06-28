@@ -1,18 +1,20 @@
 #include "epiphany-macros.h"
 SET_UP
-    ; Temporary register - r14
-    ; Function argument  - r15
-    ; Function return    - r16
-    mov r15, #5
-    mov r16, #0
+    ; Temporary register - r0
+    ; Function argument  - r1
+    ; Function return    - r2
+    mov r1, #5
+    mov r2, #0
     bl _my_func ; save PC to LR and jump to _my_func
-    TEAR_DOWN  ; Sets breakpoint.
+    b _end
     _my_func:
-        mov r14, #0
-        mov r16, #0
+        mov r0, #0
+        mov r2, #0
         _loop:
-            add r14, r14, r15
-            sub r15, r15, #1
+            add r0, r0, r1
+            sub r1, r1, #1
             bne _loop
-        add r16, r16, r14
-    rts  ; branch back to callee
+        add r2, r0, #0
+        rts  ; branch back to callee
+    _end:
+TEAR_DOWN  ; Sets breakpoint.

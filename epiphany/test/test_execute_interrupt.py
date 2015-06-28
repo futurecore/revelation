@@ -59,8 +59,16 @@ def test_execute_bkpt16():
     assert not state.running
 
 
-@pytest.mark.parametrize('name,instr', [('rti16',  opcode_factory.rti16()),
-                                        ('trap16', opcode_factory.trap16(0b111111))])
+def test_execute_rti16():
+    state = new_state(rfIRET=224, rfSTATUS=0b10, pc=0)
+    instr = opcode_factory.rti16()
+    name, executefn = decode(instr)
+    executefn(state, Instruction(instr, None))
+    expected_state = StateChecker(pc=224, rfIRET=224, rfSTATUS=0b00)
+    expected_state.check(state)
+
+
+@pytest.mark.parametrize('name,instr', [('trap16', opcode_factory.trap16(0b111111))])
 def test_execute_interrupt_instructions(name, instr):
     with pytest.raises(NotImplementedError):
         state = new_state()
