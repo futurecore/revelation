@@ -4,7 +4,7 @@ except ImportError:
     we_are_translated = lambda : False
 
 
-def should_branch(s, cond):
+def condition_passed(s, cond):
     if cond == 0b0000:    # BEQ
         return bool(s.AZ)
     elif cond == 0b0001:  # BNE

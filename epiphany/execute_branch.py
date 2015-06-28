@@ -1,4 +1,4 @@
-from epiphany.condition_codes import should_branch
+from epiphany.condition_codes import condition_passed
 from epiphany.utils import signed_8, signed_24, sext_8, sext_24
 
 import epiphany.isa
@@ -22,7 +22,7 @@ def make_bcond_executor(is16bit):
         imm = inst.bcond_imm
         if cond == 0b1111:  # Branch and link (BL).
             s.rf[epiphany.isa.reg_map['LR']] = (s.pc + 2) if is16bit else (s.pc + 4)
-        if should_branch(s, cond):
+        if condition_passed(s, cond):
             s.pc += (sext_8(signed_8(imm)) << 1) if is16bit else (sext_24(signed_24(imm)) << 1)
         else:
             s.pc += 2 if is16bit else 4

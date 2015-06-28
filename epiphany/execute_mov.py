@@ -1,4 +1,4 @@
-from epiphany.condition_codes import should_branch
+from epiphany.condition_codes import condition_passed
 
 
 #-----------------------------------------------------------------------
@@ -14,7 +14,7 @@ def make_movcond_executor(is16bit):
             inst.bits &= 0xffff
         rd = inst.rd
         rn = inst.rn
-        if should_branch(s, inst.cond):
+        if condition_passed(s, inst.cond):
             s.rf[rd] = s.rf[rn]
         s.pc += 2 if is16bit else 4
     return execute_movcond
