@@ -25,6 +25,7 @@ elf_dir = os.path.join('epiphany', 'test', 'asm')
                       rf4=100, rf5=100, rf6=100, rf7=100, rf8=100, rfSTATUS=0b00)),
         ('jalr.elf', StateChecker(pc=(10 + RESET_ADDR), rf3=100, rfLR=0x5c)),
         ('jr.elf', StateChecker(pc=(14 + RESET_ADDR), rf0=3, rf1=1, rf2=2)),
+        ('low_high.elf', StateChecker(pc=(10 + RESET_ADDR), rf3=0xFFFFFFFF)),
         ('lsl.elf', StateChecker(pc=(10 + RESET_ADDR), rf0=5, rf1=7, rf2=640, rf3=640)),
         ('lsr.elf', StateChecker(pc=(10 + RESET_ADDR), rf0=3, rf1=1, rf2=1, rf3=1)),
         ('mov_cond.elf', StateChecker(pc=(14 + RESET_ADDR), rf0=0, rf1=15, rf2=15, rf3=15)),
