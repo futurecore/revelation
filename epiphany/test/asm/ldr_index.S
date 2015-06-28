@@ -1,5 +1,7 @@
 #include "epiphany-macros.h"
 SET_UP
-    ldrb r31, [r2, r1]   ; loads byte
-    ldr r0, [r2, r1]     ; loads word
+    mov  r1, %low(0x00100004)
+    movt r1, %high(0x00100004)
+    mov  r2, #0
+    ldr r0, [r1,+r2]     ; loads word
 TEAR_DOWN

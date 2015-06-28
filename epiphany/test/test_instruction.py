@@ -111,6 +111,17 @@ def test_sub():
     assert 0 == inst.sub
 
 
+def test_sub20():
+    #      0bxxxxxxxxxxxSxxxxxxxxxxxxxxxxxxxx
+    bits = 0b00000000000100000000000000000000
+    inst = Instruction(bits, '')
+    assert 1 == inst.sub20
+    #      0bxxxxxxxxxxxSxxxxxxxxxxxxxxxxxxxx
+    bits = 0b11111111111011111111111111111111
+    inst = Instruction(bits, '')
+    assert 0 == inst.sub20
+
+
 def test_size():
     #      0bxxxxxxxxxxxxxxxxxxxxxxxxxbbxxxxx
     bits = 0b00000000000000000000000001100000

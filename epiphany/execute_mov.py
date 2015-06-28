@@ -30,9 +30,7 @@ def make_movimm_executor(is16bit, is_t):
         """
         if is16bit:
             inst.bits &= 0xffff
-        imm = inst.imm16
-        rd = inst.rd
-        s.rf[rd] = (rd | (imm << 16)) if is_t else imm
+        s.rf[inst.rd] = (s.rf[inst.rd] | (inst.imm16 << 16)) if is_t else inst.imm16
         s.pc += 2 if is16bit else 4
     return execute_movimm
 

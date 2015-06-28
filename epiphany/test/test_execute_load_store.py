@@ -6,93 +6,130 @@ import opcode_factory
 import pytest
 
 
-@pytest.mark.parametrize('sub,expected', [(1, 8 - 4), (0, 8 + 4)])
-def test_execute_ldpmd32(sub, expected):
+@pytest.mark.parametrize('sub,address', [(1, 8 - 4),
+                                         (0, 8 + 4),
+                                         (1, 8 - 4),
+                                         (0, 8 + 4)])
+def test_execute_ldr_disp_pm(sub, address):
+    # Load.
     state = new_state(rf5=8)
-    state.mem.write(8, 4, 42) # Start address, number of bytes, value
+    state.mem.write(address, 4, 42) # Start address, number of bytes, value
     # bb: 00=byte, 01=half-word, 10=word, 11=double-word
     instr = opcode_factory.ldstrpmd32(rd=0, rn=5, sub=sub, imm=1, bb=0b10, s=0)
-    assert Instruction(instr, '').s == 0
     name, executefn = decode(instr)
     executefn(state, Instruction(instr, None))
-    expected_state = StateChecker(rf0=42, rf5=expected)
+    expected_state = StateChecker(rf0=42, rf5=address)
     expected_state.check(state)
 
 
-@pytest.mark.parametrize('sub,expected', [(1, 8 - 4), (0, 8 + 4)])
-def test_execute_strpmd32(sub, expected):
-    state = new_state(rf0=42, rf5=8)
+@pytest.mark.parametrize('sub,expected', [(1, 8 - 4),
+                                          (0, 8 + 4),
+                                          (1, 8 - 4),
+                                          (0, 8 + 4)])
+def test_execute_str_disp_pm(sub, expected):
+    # Store.
+    state = new_state(rf0=0xFFFFFFFF, rf5=8)
     # bb: 00=byte, 01=half-word, 10=word, 11=double-word
     instr = opcode_factory.ldstrpmd32(rd=0, rn=5, sub=sub, imm=1, bb=0b10, s=1)
     name, executefn = decode(instr)
     executefn(state, Instruction(instr, None))
-    expected_state = StateChecker(rf0=42, rf5=expected)
-    expected_state.check(state)
-    assert 42 == state.mem.read(8, 4) # Start address, number of bytes
+    address = 8 - (1 << 2) if sub else 8 + (1 << 2)
+    expected_state = StateChecker(rf0=0xFFFFFFFF, rf5=address)
+    expected_state.check(state, memory=[(address, 4, 0xFFFFFFFF)])
 
 
-def test_execute_ldstrdisp16():
-    state = new_state(rf5=8)
-    state.mem.write(8, 4, 42) # Start address, number of bytes, value
+@pytest.mark.parametrize('is16bit,sub,address', [(False, 1, 8 - (1 << 2)),
+                                                 (False, 0, 8 + (1 << 2)),
+                                                 (True,  0, 8 + (1 << 2))])
+def test_execute_ldr_disp(is16bit, sub, address):
+    # Load.
+    state = new_state(rf0=0, rf5=8)
+    state.mem.write(address, 4, 0xFFFFFFFF) # Start address, number of bytes, value
     # bb: 00=byte, 01=half-word, 10=word, 11=double-word
-    instr = opcode_factory.ldstrdisp16(rd=0, rn=5, imm=1, bb=0b10, s=0)
+    if is16bit:
+        instr = opcode_factory.ldstrdisp16(rd=0, rn=5, imm=1, bb=0b10, s=0)
+    else:
+        instr = opcode_factory.ldstrdisp32(rd=0, rn=5, sub=sub, imm=1, bb=0b10, s=0)
     name, executefn = decode(instr)
     executefn(state, Instruction(instr, None))
-    expected_state = StateChecker(rf0=42, rf5=12)
+    expected_state = StateChecker(rf0=0xFFFFFFFF, rf5=8)
     expected_state.check(state)
-    state = new_state(rf0=42, rf5=8)
-    # bb: 00=byte, 01=half-word, 10=word, 11=double-word
-    instr = opcode_factory.ldstrdisp16(rd=0, rn=5, imm=1, bb=0b10, s=1)
-    name, executefn = decode(instr)
-    executefn(state, Instruction(instr, None))
-    expected_state = StateChecker(rf0=42, rf5=12)
-    expected_state.check(state)
-    assert 42 == state.mem.read(8, 4) # Start address, number of bytes
 
 
-@pytest.mark.parametrize('sub,expected', [(1, 8 - 4),
-                                          (0, 8 + 4)])
-def test_execute_ldstrdisp32(sub, expected):
-    state = new_state(rf5=8)
-    state.mem.write(8, 4, 42) # Start address, number of bytes, value
+@pytest.mark.parametrize('is16bit,sub,expected', [(False, 1, 8 - (1 << 2)),
+                                                  (False, 0, 8 + (1 << 2)),
+                                                  (True,  0, 8 + (1 << 2))])
+def test_execute_str_disp(is16bit, sub, expected):
+    # Store.
+    state = new_state(rf0=0xFFFFFFFF, rf5=8)
     # bb: 00=byte, 01=half-word, 10=word, 11=double-word
-    instr = opcode_factory.ldstrdisp32(rd=0, rn=5, sub=sub, imm=1, bb=0b10, s=0)
+    if is16bit:
+        instr = opcode_factory.ldstrdisp16(rd=0, rn=5, imm=1, bb=0b10, s=1)
+    else:
+        instr = opcode_factory.ldstrdisp32(rd=0, rn=5, sub=sub, imm=1, bb=0b10, s=1)
     name, executefn = decode(instr)
     executefn(state, Instruction(instr, None))
-    expected_state = StateChecker(rf0=42, rf5=expected)
-    expected_state.check(state)
-    state = new_state(rf0=42, rf5=8)
-    # bb: 00=byte, 01=half-word, 10=word, 11=double-word
-    instr = opcode_factory.ldstrdisp32(rd=0, rn=5, sub=sub, imm=1, bb=0b10, s=1)
-    name, executefn = decode(instr)
-    executefn(state, Instruction(instr, None))
-    expected_state = StateChecker(rf0=42, rf5=expected)
-    expected_state.check(state)
-    assert 42 == state.mem.read(8, 4) # Start address, number of bytes
+    address = 8 - (1 << 2) if sub else 8 + (1 << 2)
+    expected_state = StateChecker(rf0=0xFFFFFFFF, rf5=8)
+    expected_state.check(state, memory=[(address, 4, 0xFFFFFFFF)])
 
 
 @pytest.mark.parametrize('is16bit', [True, False])
-def test_ldstrindex(is16bit):
-    state = new_state()
-    with pytest.raises(NotImplementedError):
-        if is16bit:
-            instr = opcode_factory.ldstrind16(rd=0, rn=5, rm=7, sub=0, bb=0b10, s=0)
-        else:
-            instr = opcode_factory.ldstrind32(rd=0, rn=5, rm=7, sub=0, bb=0b10, s=0)
-        name, executefn = decode(instr)
-        executefn(state, Instruction(instr, None))
+def test_ldr_index(is16bit):
+    # Load.
+    state = new_state(rf0=0, rf5=8, rf6=8)
+    state.mem.write(16, 4, 0xFFFFFFFF)
+    if is16bit:
+        instr = opcode_factory.ldstrind16(rd=0, rn=5, rm=6, bb=0b10, s=0)
+    else:
+        instr = opcode_factory.ldstrind32(rd=0, rn=5, rm=6, sub=0, bb=0b10, s=0)
+    name, executefn = decode(instr)
+    executefn(state, Instruction(instr, None))
+    expected_state = StateChecker(rf0=0xFFFFFFFF, rf5=8, rf6=8)
+    expected_state.check(state)
 
 
 @pytest.mark.parametrize('is16bit', [True, False])
-def test_ldstrpm(is16bit):
-    state = new_state()
-    with pytest.raises(NotImplementedError):
-        if is16bit:
-            instr = opcode_factory.ldstrpm16(rd=0, rn=5, rm=7, sub=0, bb=0b10, s=0)
-        else:
-            instr = opcode_factory.ldstrpm32(rd=0, rn=5, rm=7, sub=0, bb=0b10, s=0)
-        name, executefn = decode(instr)
-        executefn(state, Instruction(instr, None))
+def test_str_index(is16bit):
+    # Store.
+    state = new_state(rf0=0xFFFFFFFF, rf5=8, rf6=8)
+    if is16bit:
+        instr = opcode_factory.ldstrind16(rd=0, rn=5, rm=6, bb=0b10, s=1)
+    else:
+        instr = opcode_factory.ldstrind32(rd=0, rn=5, rm=6, sub=0, bb=0b10, s=1)
+    name, executefn = decode(instr)
+    executefn(state, Instruction(instr, None))
+    expected_state = StateChecker(rf0=0xFFFFFFFF, rf5=8, rf6=8)
+    expected_state.check(state, memory=[(16, 4, 0xFFFFFFFF)])
+
+
+@pytest.mark.parametrize('is16bit', [True, False])
+def test_ldr_pm(is16bit):
+    # Load.
+    state = new_state(rf0=0, rf5=8, rf6=8)
+    state.mem.write(16, 4, 0xFFFFFFFF)
+    if is16bit:
+        instr = opcode_factory.ldstrpm16(rd=0, rn=5, rm=6, bb=0b10, s=0)
+    else:
+        instr = opcode_factory.ldstrpm32(rd=0, rn=5, rm=6, sub=0, bb=0b10, s=0)
+    name, executefn = decode(instr)
+    executefn(state, Instruction(instr, None))
+    expected_state = StateChecker(rf0=0xFFFFFFFF, rf5=16, rf6=8)
+    expected_state.check(state)
+
+
+@pytest.mark.parametrize('is16bit', [True, False])
+def test_str_pm(is16bit):
+    # Store.
+    state = new_state(rf0=0xFFFFFFFF, rf5=8, rf6=8)
+    if is16bit:
+        instr = opcode_factory.ldstrpm16(rd=0, rn=5, rm=6, bb=0b10, s=1)
+    else:
+        instr = opcode_factory.ldstrpm32(rd=0, rn=5, rm=6, sub=0, bb=0b10, s=1)
+    name, executefn = decode(instr)
+    executefn(state, Instruction(instr, None))
+    expected_state = StateChecker(rf0=0xFFFFFFFF, rf5=16, rf6=8)
+    expected_state.check(state, memory=[(16, 4, 0xFFFFFFFF)])
 
 
 def test_testset32_zero():

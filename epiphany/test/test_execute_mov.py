@@ -32,7 +32,7 @@ def test_execute_movimm(is16bit, is_to, imm):
         instr = opcode_factory.movimm32(rd=2, imm=imm)
     name, executefn = decode(instr)
     executefn(state, Instruction(instr, None))
-    expected_t = 2 | (imm << 16)
+    expected_t = 0 | (imm << 16)
     pc_expected = (2 if is16bit else 4) + RESET_ADDR
     expected_state = StateChecker(pc=pc_expected, rf2=expected_t) if is_to else StateChecker(pc=pc_expected, rf2=imm)
     expected_state.check(state)

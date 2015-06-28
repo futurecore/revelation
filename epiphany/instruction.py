@@ -52,6 +52,10 @@ class Instruction(object):
         return (self.bits >> 24) & 1
 
     @property
+    def sub20(self):
+        return (self.bits >> 20) & 1
+
+    @property
     def s(self):
         return (self.bits >> 4) & 1
 
