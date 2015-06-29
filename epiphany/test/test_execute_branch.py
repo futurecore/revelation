@@ -6,6 +6,16 @@ from epiphany.test.machine import new_state, StateChecker
 import opcode_factory
 import pytest
 
+@pytest.mark.parametrize('is16bit', [True, False])
+def test_infinite_loop(is16bit):
+    state = new_state(AZ=1, pc=0)
+    factory = opcode_factory.bcond16 if is16bit else opcode_factory.bcond32
+    # Branch unconditionally to instruction at pc=0.
+    instr = factory(condition=0, imm=0)
+    name, executefn = decode(instr)
+    with pytest.raises(RuntimeError):
+        executefn(state, Instruction(instr, None))
+
 
 @pytest.mark.parametrize('is16bit,cond,imm,expected_pc',
                          [# BEQ (never branches here).
