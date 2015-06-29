@@ -1,3 +1,4 @@
+from pydgin.debug import Debug
 from pydgin.sim import init_sim
 
 from epiphany.machine import RESET_ADDR
@@ -11,6 +12,8 @@ class MockEpiphany(Epiphany):
 
     def __init__(self):
         Epiphany.__init__(self)
+        self.debug = Debug()
+        Debug.global_enabled = True
 
     def init_state(self, instructions, **args):
         """Load the program into a memory object.
@@ -22,7 +25,7 @@ class MockEpiphany(Epiphany):
             num_bytes = width / 8
             mem.write(RESET_ADDR + written_so_far, num_bytes, data)
             written_so_far += num_bytes
-        self.state = new_state(mem=mem, **args)
+        self.state = new_state(mem=mem, debug=self.debug, **args)
         self.max_insts = len(instructions)
 
 init_sim(MockEpiphany())

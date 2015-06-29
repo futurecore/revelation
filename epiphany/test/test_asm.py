@@ -46,7 +46,7 @@ def test_elf(elf, expected):
     elf_filename = os.path.join(elf_dir, elf)
     epiphany = Epiphany()
     with open(elf_filename, 'rb') as elf:
-        epiphany.init_state(elf, elf_filename, '', [], False)
+        epiphany.init_state(elf, elf_filename, '', [], False, is_test=True)
         epiphany.max_insts = 250
         epiphany.run()
         expected.check(epiphany.state)
@@ -135,7 +135,7 @@ def test_fp_elf(elf, expected):
     elf_filename = os.path.join(elf_dir, elf)
     epiphany = Epiphany()
     with open(elf_filename, 'rb') as elf:
-        epiphany.init_state(elf, elf_filename, '', [], False)
+        epiphany.init_state(elf, elf_filename, '', [], False, is_test=True)
         epiphany.max_insts = 250
         epiphany.run()
         expected.fp_check(epiphany.state)
@@ -157,7 +157,7 @@ def test_load(elf, expected):
     elf_filename = os.path.join(elf_dir, elf)
     epiphany = Epiphany()
     with open(elf_filename, 'rb') as elf:
-        epiphany.init_state(elf, elf_filename, '', [], False)
+        epiphany.init_state(elf, elf_filename, '', [], False, is_test=True)
         epiphany.state.mem.write(0x00100004, 4, 0xFFFFFFFF)
         epiphany.max_insts = 250
         epiphany.run()
@@ -176,7 +176,7 @@ def test_store(elf, expected):
     elf_filename = os.path.join(elf_dir, elf)
     epiphany = Epiphany()
     with open(elf_filename, 'rb') as elf:
-        epiphany.init_state(elf, elf_filename, '', [], False)
+        epiphany.init_state(elf, elf_filename, '', [], False, is_test=True)
         epiphany.state.mem.write(0x00100004, 4, 0xFFFFFFFF)
         epiphany.max_insts = 250
         epiphany.run()
@@ -188,7 +188,7 @@ def test_testset32():
     epiphany = Epiphany()
     with open(elf_filename, 'rb') as elf:
         if elf == 'movts.elf': print 'MOVTS'
-        epiphany.init_state(elf, elf_filename, '', [], False)
+        epiphany.init_state(elf, elf_filename, '', [], False, is_test=True)
         epiphany.state.mem.write(0x100004, 4, 0x0)
         epiphany.max_insts = 10
         epiphany.run()
@@ -208,7 +208,7 @@ within the on-chip local memory and must be greater than 0x00100000 (2^20).
     with pytest.raises(ValueError) as expected_exn:
         epiphany = Epiphany()
         with open(elf_filename, 'rb') as elf:
-            epiphany.init_state(elf, elf_filename, '', [], False)
+            epiphany.init_state(elf, elf_filename, '', [], False, is_test=True)
             epiphany.max_insts = 10
             epiphany.run()
     assert expected_text == expected_exn.value.message
@@ -220,7 +220,7 @@ def test_execute_idle16(capsys):
     elf_filename = os.path.join(elf_dir, 'idle.elf')
     epiphany = Epiphany()
     with open(elf_filename, 'rb') as elf:
-        epiphany.init_state(elf, elf_filename, '', [], False)
+        epiphany.init_state(elf, elf_filename, '', [], False, is_test=True)
         epiphany.state.rfSTATUS = 1
         epiphany.max_insts = 250
         epiphany.run()
@@ -241,5 +241,5 @@ def test_unimpl():
     with pytest.raises(NotImplementedError):
         epiphany = Epiphany()
         with open(elf_filename, 'rb') as elf:
-            epiphany.init_state(elf, elf_filename, '', [], False)
+            epiphany.init_state(elf, elf_filename, '', [], False, is_test=True)
             epiphany.run()

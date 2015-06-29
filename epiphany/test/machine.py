@@ -7,10 +7,10 @@ from epiphany.utils import bits2float
 possible_attributes = "AN AZ AC AV AVS BN BV BIS BVS BUS BZ pc".split()
 
 
-def new_state(mem=None, **args):
+def new_state(mem=None, debug=Debug(), **args):
     if mem is None:
         mem = new_memory()
-    state = State(mem, Debug())
+    state = State(mem, debug)
     for attr in possible_attributes:
         if attr in args:
             setattr(state, attr, args[attr])
