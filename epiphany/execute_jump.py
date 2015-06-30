@@ -2,29 +2,17 @@ import epiphany.isa
 
 #-----------------------------------------------------------------------
 # jr32 and jr16 - jump.
-#-----------------------------------------------------------------------
-def make_jr_executor(is16bit):
-    def execute_jr(s, inst):
-        """
-        PC = RN;
-        """
-        if is16bit:
-            inst.bits &= 0xffff
-        s.pc = s.rf[inst.rn]
-    return execute_jr
-
-
-#-----------------------------------------------------------------------
 # jalr32 and jalr16 - register and link jump.
 #-----------------------------------------------------------------------
-def make_jalr_executor(is16bit):
-    def execute_jalr(s, inst):
+def make_jr_executor(is16bit, save_lr):
+    def execute_jr(s, inst):
         """
-        LR = PC;
+        LR = PC + 2 (16 bit) 4 (32 bit)    JALR only.
         PC = RN;
         """
         if is16bit:
             inst.bits &= 0xffff
-        s.rf[epiphany.isa.reg_map['LR']] = s.pc
+        if save_lr:
+            s.rf[epiphany.isa.reg_map['LR']] = s.pc + (2 if is16bit else 4)
         s.pc = s.rf[inst.rn]
-    return execute_jalr
+    return execute_jr

@@ -23,5 +23,6 @@ def test_execute_jump_and_link(is16bit, val):
     instr = opcode_factory.jalr16(rn=0) if is16bit else opcode_factory.jalr32(0)
     name, executefn = decode(instr)
     executefn(state, Instruction(instr, None))
-    expected_state = StateChecker(pc=val, rfLR=RESET_ADDR)
+    expected_lr = RESET_ADDR + (2 if is16bit else 4)
+    expected_state = StateChecker(pc=val, rfLR=expected_lr)
     expected_state.check(state)

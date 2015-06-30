@@ -23,7 +23,7 @@ elf_dir = os.path.join('epiphany', 'test', 'asm')
         ('hardware_loop.elf',
          StateChecker(pc=(68 + RESET_ADDR), rf0=100, rf1=116, rf2=100, rf3=100,
                       rf4=100, rf5=100, rf6=100, rf7=100, rf8=100, rfSTATUS=0b00)),
-        ('jalr.elf', StateChecker(pc=(10 + RESET_ADDR), rf3=100, rfLR=0x5c)),
+        ('jalr.elf', StateChecker(pc=(10 + RESET_ADDR), rf3=100, rfLR=0x5e)),
         ('jr.elf', StateChecker(pc=(14 + RESET_ADDR), rf0=3, rf1=1, rf2=2)),
         ('low_high.elf', StateChecker(pc=(10 + RESET_ADDR), rf3=0xFFFFFFFF)),
         ('lsl.elf', StateChecker(pc=(10 + RESET_ADDR), rf0=5, rf1=7, rf2=640, rf3=640)),

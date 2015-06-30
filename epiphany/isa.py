@@ -291,10 +291,10 @@ execute_movfs16   = execute_mov.make_mov_executor(True,  rn_is_special=True)
 #-----------------------------------------------------------------------
 # Jump instructions
 #-----------------------------------------------------------------------
-execute_jr32   = execute_jump.make_jr_executor(False)
-execute_jr16   = execute_jump.make_jr_executor(True)
-execute_jalr32 = execute_jump.make_jalr_executor(False)
-execute_jalr16 = execute_jump.make_jalr_executor(True)
+execute_jr32   = execute_jump.make_jr_executor(False, save_lr=False)
+execute_jr16   = execute_jump.make_jr_executor(True,  save_lr=False)
+execute_jalr32 = execute_jump.make_jr_executor(False, save_lr=True)
+execute_jalr16 = execute_jump.make_jr_executor(True,  save_lr=True)
 
 #-----------------------------------------------------------------------
 # Interrupt and multicore instructions
