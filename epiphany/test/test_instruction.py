@@ -34,12 +34,12 @@ def test_rm():
 
 
 def test_imm3():
-    #      0bxxxxxxxxxxxxxxxxxxxxxiiixxxxxxxx
-    bits = 0b00000000000000000000011100000000
+    #      0bxxxxxxxxxxxxxxxxxxxxxxiiixxxxxxx
+    bits = 0b00000000000000000000001110000000
     inst = Instruction(bits, '')
     assert 7 == inst.imm3
-    #      0bxxxxxxxxxxxxxxxxxxxxxiiixxxxxxxx
-    bits = 0b11111111111111111111100011111111
+    #      0bxxxxxxxxxxxxxxxxxxxxxxiiixxxxxxx
+    bits = 0b11111111111111111111110001111111
     inst = Instruction(bits, '')
     assert 0 == inst.imm3
 

@@ -1,5 +1,6 @@
 from epiphany.condition_codes import condition_passed
-from epiphany.utils import signed_8, signed_24, sext_8, sext_24
+from epiphany.utils import signed, sext_8, sext_24
+from pydgin.utils import trim_32
 
 import epiphany.isa
 
@@ -25,9 +26,10 @@ def make_bcond_executor(is16bit):
                                 'Instruction at pc=%s is attempting to ' +
                                 'branch unconditionally to itself.') % hex(s.pc))
         if cond == 0b1111:  # Branch and link (BL).
-            s.rf[epiphany.isa.reg_map['LR']] = (s.pc + 2) if is16bit else (s.pc + 4)
+            s.rf[epiphany.isa.reg_map['LR']] = s.pc + (2 if is16bit else 4)
         if condition_passed(s, cond):
-            s.pc += (sext_8(signed_8(imm)) << 1) if is16bit else (sext_24(signed_24(imm)) << 1)
+            offset = (signed(sext_8(imm)) << 1) if is16bit else (signed(sext_24(imm)) << 1)
+            s.pc = trim_32(s.pc + offset)
         else:
             s.pc += 2 if is16bit else 4
     return execute_bcond

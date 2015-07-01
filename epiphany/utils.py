@@ -2,47 +2,32 @@ import pydgin.utils
 
 import math
 
+signed = pydgin.utils.signed
+sext_8 = pydgin.utils.sext_8
+
+
 def reg_or_imm(s, inst, is16bit):
     if is16bit:
-        val = s.rf[inst.rm] if inst.bit0 == 0 else inst.imm11
+        val = s.rf[inst.rm] if inst.bit0 == 0 else signed(sext_3(inst.imm3))
     else:
-        val = s.rf[inst.rm] if inst.bit2 == 1 else inst.imm11
+        val = s.rf[inst.rm] if inst.bit2 == 1 else signed(sext_11(inst.imm11))
     return val
 
 
-def trim_5(value):
-    return value & 0b11111
-
-
-def signed(value, is16bit):
-    if is16bit and (value & 0x8000) or not is16bit and (value & 0x80000000):
-        twos_complement = ~value + 1
-        return -pydgin.utils.trim_32(twos_complement)
+def sext_3(value):
+    """Sign-extended 3 bit number.
+    """
+    if value & 0x7:
+        return 0XFFFFFFF8 | value
     return value
 
 
-def signed_8(value):
-    if value & 0x80:
-        twos_complement = ~value + 1
-        return -pydgin.utils.trim_32(twos_complement)
+def sext_11(value):
+    """Sign-extended 11 bit number.
+    """
+    if value & 0x400:
+        return 0xfffff800 | value
     return value
-
-
-def signed_24(value):
-    if value & 0x800000:
-        twos_complement = ~value + 1
-        return -pydgin.utils.trim_32(twos_complement)
-    return value
-
-
-sext_8 = pydgin.utils.sext_8
-
-# def sext_16(value):
-#     """Sign-extended 16 bit number.
-#     """
-#     if value & 0x8000:
-#         return 0xFFFF0000 | value
-#     return value
 
 
 def sext_24(value):
@@ -51,15 +36,6 @@ def sext_24(value):
     if value & 0x800000:
         return 0xFFFFFF00 | value
     return value
-
-
-# def sext_32(value):
-#     """Sign-extended 32 bit number.
-#     """
-#     if value & 0x80000000:
-#         return 0x00000000 | value
-#     return value
-
 
 #
 # Floating point arithmetic.
@@ -168,4 +144,3 @@ def overflow_from_add( a, b, result ):
 #
 def overflow_from_sub( a, b, result ):
   return (a >> 31 != b >> 31) & (a >> 31 != (result>>31)&1)
-

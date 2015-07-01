@@ -21,7 +21,7 @@ class Instruction(object):
 
     @property
     def imm3(self):
-        return (self.bits >> 8) & 0x7
+        return (self.bits >> 7) & 0x7
 
     @property
     def imm5(self):

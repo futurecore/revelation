@@ -1,9 +1,9 @@
 from pydgin.utils import trim_32
-from epiphany.utils import (reg_or_imm,
-                            borrow_from,
+from epiphany.utils import (borrow_from,
                             carry_from,
                             overflow_from_add,
                             overflow_from_sub,
+                            reg_or_imm,
                             )
 
 #-----------------------------------------------------------------------
@@ -56,6 +56,10 @@ def make_sub_executor(is16bit):
         s.AN = (result >> 31) & 1
         s.AC = borrow_from(result)
         s.AZ = 1 if trim_32(result) == 0 else 0
+
+        print ('RN:', s.rf[inst.rn], 'RM:', reg_or_imm(s, inst, is16bit),
+               '\nSUB:', s.rf[inst.rn], '-', reg_or_imm(s, inst, is16bit),
+               ' =', result, 'setting AZ=', s.AZ)
         s.AV = overflow_from_sub(s.rf[inst.rn], s.rf[inst.rm], result)
         s.AVS = s.AVS | s.AV
         s.pc += 2 if is16bit else 4

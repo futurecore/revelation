@@ -1,5 +1,5 @@
 from pydgin.utils import trim_32
-from epiphany.utils import trim_5, signed
+from epiphany.utils import signed
 
 #-----------------------------------------------------------------------
 # bit1632 - 16 or 32 bit bitwise arithmetic.
@@ -22,11 +22,11 @@ def make_bit_executor(name, is16bit, imm):
         elif name == "eor":
             result = s.rf[inst.rn] ^ rm
         elif name == "asr":
-            result = signed(s.rf[inst.rn], True) >> trim_5(rm)
+            result = signed(s.rf[inst.rn]) >> rm
         elif name == "lsr":
-            result = s.rf[inst.rn] >> trim_5(rm)
+            result = s.rf[inst.rn] >> rm
         elif name == "lsl":
-            result = s.rf[inst.rn] << trim_5(rm)
+            result = s.rf[inst.rn] << rm
         elif name == "bitr":
             # The description of this instruction is confused in the ISA
             # reference. The decode table states that the instruction always

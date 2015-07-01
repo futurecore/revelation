@@ -1,4 +1,5 @@
 from epiphany.utils import bits2float, float2bits, get_exponent
+from pydgin.utils import trim_32
 
 import math
 
@@ -42,7 +43,7 @@ def make_farith_executor(name, is16bit, is_unary=False):
             result = abs(rn)
         # 'result' is always a Python float.
         # RD = RN <OP> RM
-        s.rf[inst.rd] = result if name == 'fix' else float2bits(result)
+        s.rf[inst.rd] = trim_32(result if name == 'fix' else float2bits(result))
         # BN = RD[31]
         s.BN = 1 if result < 0.0 else 0
         # if (RD[30:0] == 0) { BZ=1 } else { BZ=0 }

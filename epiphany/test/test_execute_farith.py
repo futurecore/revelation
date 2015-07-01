@@ -10,11 +10,11 @@ import pytest
 @pytest.mark.parametrize('is16bit,rn,ex',
     [(True,  1, StateChecker(rf0=7, BZ=0, BN=0, BIS=0)),
      (True,  2, StateChecker(rf0=0, BZ=1, BN=0, BIS=0)),
-     (True,  3, StateChecker(rf0=-1, BZ=0, BN=1, BIS=0)),
+     (True,  3, StateChecker(rf0=0xffffffff, BZ=0, BN=1, BIS=0)),
      (True,  4, StateChecker(rf0=0xffffffff, BZ=0, BN=0, BIS=1)),
      (False, 1, StateChecker(rf0=7, BZ=0, BN=0, BIS=0)),
      (False, 2, StateChecker(rf0=0, BZ=1, BN=0, BIS=0)),
-     (False, 3, StateChecker(rf0=-1, BZ=0, BN=1, BIS=0)),
+     (False, 3, StateChecker(rf0=0xffffffff, BZ=0, BN=1, BIS=0)),
      (False, 4, StateChecker(rf0=0xffffffff, BZ=0, BN=0, BIS=1)),
     ])
 def test_execute_farith_fix(is16bit, rn, ex):

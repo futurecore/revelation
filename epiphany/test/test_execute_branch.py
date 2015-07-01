@@ -17,7 +17,7 @@ def test_infinite_loop(is16bit):
         executefn(state, Instruction(instr, None))
 
 
-@pytest.mark.parametrize('is16bit,cond,imm,expected_pc',
+@pytest.mark.parametrize('is16bit,cond,imm,offset',
                          [# BEQ (never branches here).
                           (False, 0b0000, 63,  (63 << 1)),
                           (True,  0b0000, 127, (127 << 1)),
@@ -29,13 +29,13 @@ def test_infinite_loop(is16bit):
                           (False, 0b1110, pow(2, 24) - 1, (-1 << 1)),
                           (True,  0b1110, pow(2, 8) - 1, (-1 << 1)),
                           ])
-def test_execute_bcond(is16bit, cond, imm, expected_pc):
-    state = new_state(AZ=1, pc=0)
+def test_execute_bcond(is16bit, cond, imm, offset):
+    state = new_state(AZ=1, pc=90)
     factory = opcode_factory.bcond16 if is16bit else opcode_factory.bcond32
     instr = factory(condition=cond, imm=imm)
     name, executefn = decode(instr)
     executefn(state, Instruction(instr, None))
-    expected_state = StateChecker(pc=expected_pc, AZ=1)
+    expected_state = StateChecker(pc=(90 + offset), AZ=1)
     expected_state.check(state)
 
 

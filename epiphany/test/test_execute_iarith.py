@@ -64,6 +64,32 @@ def test_execute_arith32_immediate(opcode, imm, expected):
     expected_state.check(state)
 
 
+def test_sub16_imm():
+    state = new_state(rf2=0, rf1=0)
+    bits = opcode_factory.sub16_immediate(rd=2, rn=1, imm=0b0)
+    name, executefn = decode(bits)
+    instr = Instruction(bits, '')
+    assert instr.rd == 2
+    assert instr.rn == 1
+    assert instr.imm3 == 0
+    executefn(state, instr)
+    expected_state = StateChecker(rf2=0, rf1=0)
+    expected_state.check(state)
+
+
+def test_sub16_neg_imm():
+    state = new_state(rf2=0, rf1=0)
+    bits = opcode_factory.sub16_immediate(rd=2, rn=1, imm=0b111)
+    name, executefn = decode(bits)
+    instr = Instruction(bits, '')
+    assert instr.rd == 2
+    assert instr.rn == 1
+    assert instr.imm3 == 0b111
+    executefn(state, instr)
+    expected_state = StateChecker(rf2=1, rf1=0)
+    expected_state.check(state)
+
+
 def test_sub32_immediate_argument():
     instr = Instruction(opcode_factory.sub32_immediate(rd=1, rn=0, imm=0b01010101010), '')
     assert instr.rd == 1
