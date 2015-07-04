@@ -2,6 +2,7 @@
 
 [![Build Status](https://travis-ci.org/futurecore/epiphany-simulator.svg?branch=master)](https://travis-ci.org/futurecore/epiphany-simulator)
 [![Coverage Status](https://coveralls.io/repos/futurecore/epiphany-simulator/badge.svg?branch=master)](https://coveralls.io/r/futurecore/epiphany-simulator?branch=master)
+[![Code Health](https://landscape.io/github/futurecore/epiphany-simulator/master/landscape.svg?style=flat)](https://landscape.io/github/futurecore/epiphany-simulator/master)
 
 This directory contains work in progress towards a simulator for the Adapteva Epiphany chip.
 
