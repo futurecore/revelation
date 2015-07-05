@@ -4,6 +4,8 @@ import epiphany.isa
 # nop16
 #-----------------------------------------------------------------------
 def execute_nop16(s, inst):
+    """The instruction does nothing, but holds an instruction slot.
+    """
     s.pc += 2
 
 
@@ -31,12 +33,19 @@ def execute_idle16(s, inst):
 # bkpt16 and mbkpt16
 #-----------------------------------------------------------------------
 def execute_bkpt16(s, inst):
+    """The BKPT instruction causes the processor to halt and wait for external
+    inputs. The instruction is only be used by the debugging tools such as
+    GDB and should not be user software. The instruction is included here
+    only for the purpose of reference.
+    """
     s.rf[epiphany.isa.reg_map['DEBUGSTATUS']] |= 1
     s.pc += 2
     s.running = False
 
 
 def execute_mbkpt16(s, inst):
+    """Halts all cores within the group (sets DEBUGSTATUS[0] to 1).
+    """
     raise NotImplementedError('Multicore not implemented.')
 
 
@@ -65,6 +74,8 @@ def execute_gid16(s, inst):
 # sync16
 #-----------------------------------------------------------------------
 def execute_sync16(s, inst):
+    """Sets the ILAT[0] of all cores within a work group to 1.
+    """
     raise NotImplementedError('Interrupts not implemented.')
 
 
@@ -88,16 +99,21 @@ def execute_rti16(s, inst):
 # trap16
 #-----------------------------------------------------------------------
 def execute_trap16(s, inst):
+    """The TRAP instruction causes the processor to halt and wait for external
+    inputs. The immediate field within the instruction opcode is not processed
+    by the hardware but can be used by software such as a debugger or
+    operating system to find out the reason for the TRAP instruction.
+    """
     import pydgin.syscalls
     syscall_funcs = {
-        2: pydgin.syscalls.syscall_open,
-        3: pydgin.syscalls.syscall_close,
-        4: pydgin.syscalls.syscall_read,
-        5: pydgin.syscalls.syscall_write,
-        6: pydgin.syscalls.syscall_lseek,
-        7: pydgin.syscalls.syscall_unlink,
-       10: pydgin.syscalls.syscall_fstat,
-       15: pydgin.syscalls.syscall_stat,
+        2:  pydgin.syscalls.syscall_open,
+        3:  pydgin.syscalls.syscall_close,
+        4:  pydgin.syscalls.syscall_read,
+        5:  pydgin.syscalls.syscall_write,
+        6:  pydgin.syscalls.syscall_lseek,
+        7:  pydgin.syscalls.syscall_unlink,
+        10: pydgin.syscalls.syscall_fstat,
+        15: pydgin.syscalls.syscall_stat,
     }
     if inst.t5 == 3:  # Exit.
         syscall_handler = pydgin.syscalls.syscall_exit
@@ -115,6 +131,9 @@ def execute_trap16(s, inst):
 # wand16
 #-----------------------------------------------------------------------
 def execute_wand16(s, inst):
+    """
+    STATUS[3] = 1
+    """
     raise NotImplementedError('Multicore not implemented.')
 
 
@@ -122,4 +141,6 @@ def execute_wand16(s, inst):
 # unimpl
 #-----------------------------------------------------------------------
 def execute_unimpl(s, inst):
+    """Not implemented.
+    """
     raise NotImplementedError('UNIMPL')

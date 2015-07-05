@@ -6,11 +6,12 @@ signed = pydgin.utils.signed
 sext_8 = pydgin.utils.sext_8
 
 
-def reg_or_imm(s, inst, is16bit):
+def reg_or_imm(state, inst, is16bit):
     if is16bit:
-        val = s.rf[inst.rm] if inst.bit0 == 0 else signed(sext_3(inst.imm3))
+        val = state.rf[inst.rm] if inst.bit0 == 0 else signed(sext_3(inst.imm3))
     else:
-        val = s.rf[inst.rm] if inst.bit2 == 1 else signed(sext_11(inst.imm11))
+        val = (state.rf[inst.rm] if inst.bit2 == 1
+               else signed(sext_11(inst.imm11)))
     return val
 
 
@@ -109,8 +110,8 @@ def is_zero(bits):
 #
 #   if   result > (2**32 - 1)
 #
-def carry_from( result ):
-  return result > 0xFFFFFFFF
+def carry_from(result):
+    return result > 0xFFFFFFFF
 
 #-----------------------------------------------------------------------
 # borrow_from
@@ -119,8 +120,8 @@ def carry_from( result ):
 #
 #  if result < 0
 #
-def borrow_from( result ):
-  return result < 0
+def borrow_from(result):
+    return result < 0
 
 
 #-----------------------------------------------------------------------
@@ -131,8 +132,8 @@ def borrow_from( result ):
 #   if   operand_a[31] == operand_b[31] and
 #    and operand_a[31] != result[31]
 #
-def overflow_from_add( a, b, result ):
-  return (a >> 31 == b >> 31) & (a >> 31 != (result>>31)&1)
+def overflow_from_add(opa, opb, result):
+    return (opa >> 31 == opb >> 31) & (opa >> 31 != (result>>31)&1)
 
 #-----------------------------------------------------------------------
 # overflow_from_sub
@@ -142,5 +143,5 @@ def overflow_from_add( a, b, result ):
 #   if   operand_a[31] != operand_b[31]
 #    and operand_a[31] != result[31]
 #
-def overflow_from_sub( a, b, result ):
-  return (a >> 31 != b >> 31) & (a >> 31 != (result>>31)&1)
+def overflow_from_sub(opa, opb, result):
+    return (opa >> 31 != opb >> 31) & (opa >> 31 != (result>>31)&1)

@@ -55,7 +55,8 @@ def make_farith_executor(name, is16bit, is_unary=False):
             s.BUS = 1
         # if (RM or RN == NAN) { BIS=1 } else { BIS=BIS }
         if ((is_unary and math.isnan(rn)) or
-            (not is_unary) and (math.isnan(rn) or math.isnan(rm))):
+                (not is_unary) and
+                (math.isnan(rn) or math.isnan(rm))):
             s.BIS = 1
         # BVS = BVS | BV;
         s.BVS = s.BVS | s.BV
