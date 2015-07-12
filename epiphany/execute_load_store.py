@@ -12,14 +12,14 @@ def execute_ldstrpmd32(s, inst):
         memory[address] = RD; (STR)
     RN = RN +/- IMM11 << (log2(size_in_bits/8));
     """
-    address = (s.rf[inst.rn] - (inst.imm11 << inst.size) if inst.sub
-               else s.rf[inst.rn] + (inst.imm11 << inst.size))
+    new_rn = (s.rf[inst.rn] - (inst.imm11 << inst.size) if inst.sub
+              else s.rf[inst.rn] + (inst.imm11 << inst.size))
     size = {0:1, 1:2, 2:4, 3:8}[inst.size]  # Size in bytes.
     if inst.s:     # STORE
-        s.mem.write(address, size, s.rf[inst.rd])
+        s.mem.write(s.rf[inst.rn], size, s.rf[inst.rd])
     else:          # LOAD
-        s.rf[inst.rd] = s.mem.read(address, size)
-    s.rf[inst.rn] = trim_32(address)
+        s.rf[inst.rd] = s.mem.read(s.rf[inst.rn], size)
+    s.rf[inst.rn] = trim_32(new_rn)
     s.pc += 4
 
 
@@ -39,8 +39,8 @@ def make_ldstrdisp_executor(is16bit):
         if is16bit:
             inst.bits &= 0xffff
         size = {0:1, 1:2, 2:4, 3:8}[inst.size]  # Size in bytes.
-        imm = (inst.imm3 << inst.size) if is16bit else (inst.imm11 << inst.size)
-        address = (s.rf[inst.rn] - imm if inst.sub else s.rf[inst.rn] + imm)
+        offset = (inst.imm3 << inst.size) if is16bit else (inst.imm11 << inst.size)
+        address = (s.rf[inst.rn] - offset if inst.sub else s.rf[inst.rn] + offset)
         if inst.s:  # STORE
             s.mem.write(address, size, s.rf[inst.rd])
         else:       # LOAD

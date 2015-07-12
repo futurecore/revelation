@@ -6,36 +6,35 @@ import opcode_factory
 import pytest
 
 
-@pytest.mark.parametrize('sub,address', [(1, 8 - 4),
-                                         (0, 8 + 4),
-                                         (1, 8 - 4),
-                                         (0, 8 + 4)])
-def test_execute_ldr_disp_pm(sub, address):
+@pytest.mark.parametrize('sub,new_rn', [(1, 8 - 4),
+                                        (0, 8 + 4),
+                                        (1, 8 - 4),
+                                        (0, 8 + 4)])
+def test_execute_ldr_disp_pm(sub, new_rn):
     # Load.
     state = new_state(rf5=8)
-    state.mem.write(address, 4, 42) # Start address, number of bytes, value
+    state.mem.write(8, 4, 42) # Start address, number of bytes, value
     # bb: 00=byte, 01=half-word, 10=word, 11=double-word
     instr = opcode_factory.ldstrpmd32(rd=0, rn=5, sub=sub, imm=1, bb=0b10, s=0)
     name, executefn = decode(instr)
     executefn(state, Instruction(instr, None))
-    expected_state = StateChecker(rf0=42, rf5=address)
+    expected_state = StateChecker(rf0=42, rf5=new_rn)
     expected_state.check(state)
 
 
-@pytest.mark.parametrize('sub,expected', [(1, 8 - 4),
-                                          (0, 8 + 4),
-                                          (1, 8 - 4),
-                                          (0, 8 + 4)])
-def test_execute_str_disp_pm(sub, expected):
+@pytest.mark.parametrize('sub,new_rn', [(1, 8 - 4),
+                                        (0, 8 + 4),
+                                        (1, 8 - 4),
+                                        (0, 8 + 4)])
+def test_execute_str_disp_pm(sub, new_rn):
     # Store.
     state = new_state(rf0=0xFFFFFFFF, rf5=8)
     # bb: 00=byte, 01=half-word, 10=word, 11=double-word
     instr = opcode_factory.ldstrpmd32(rd=0, rn=5, sub=sub, imm=1, bb=0b10, s=1)
     name, executefn = decode(instr)
     executefn(state, Instruction(instr, None))
-    address = 8 - (1 << 2) if sub else 8 + (1 << 2)
-    expected_state = StateChecker(rf0=0xFFFFFFFF, rf5=address)
-    expected_state.check(state, memory=[(address, 4, 0xFFFFFFFF)])
+    expected_state = StateChecker(rf0=0xFFFFFFFF, rf5=new_rn)
+    expected_state.check(state, memory=[(8, 4, 0xFFFFFFFF)])
 
 
 @pytest.mark.parametrize('is16bit,sub,address', [(False, 1, 8 - (1 << 2)),
