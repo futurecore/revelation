@@ -5,7 +5,7 @@
 from pydgin.machine import Machine
 from pydgin.storage import RegisterFile
 
-RESET_ADDR = 0x58
+RESET_ADDR = 0
 
 #-----------------------------------------------------------------------
 # State
