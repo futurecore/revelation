@@ -8,9 +8,9 @@ sext_8 = pydgin.utils.sext_8
 
 def reg_or_imm(state, inst, is16bit):
     if is16bit:
-        val = state.rf[inst.rm] if inst.bit0 == 0 else signed(sext_3(inst.imm3))
+        val = signed(state.rf[inst.rm]) if inst.bit0 == 0 else signed(sext_3(inst.imm3))
     else:
-        val = (state.rf[inst.rm] if inst.bit2 == 1
+        val = (signed(state.rf[inst.rm]) if inst.bit2 == 1
                else signed(sext_11(inst.imm11)))
     return val
 
@@ -35,7 +35,7 @@ def sext_24(value):
     """Sign-extended 24 bit number.
     """
     if value & 0x800000:
-        return 0xFFFFFF00 | value
+        return 0xFF000000 | value
     return value
 
 #
