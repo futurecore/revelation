@@ -18,7 +18,7 @@ def reg_or_imm(state, inst, is16bit):
 def sext_3(value):
     """Sign-extended 3 bit number.
     """
-    if value & 0x7:
+    if value & 0x4:
         return 0XFFFFFFF8 | value
     return value
 
