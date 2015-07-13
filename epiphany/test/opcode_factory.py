@@ -300,11 +300,12 @@ movimm32  = make_movimm32(False)
 movtimm32 = make_movimm32(True)
 
 
-def make_mov_factory(is16bit, is_from):
+def make_mov_special_factory(is16bit, is_from):
+    # Note that in the MOV 'special' instructions rd and rn are swapped.
     # TODO: Find out what M0 and M1 are for.
     def mov(rd=0, rn=0):
-        rn = (reg_map[rn] - 65) if is_from else rn
-        rd = (reg_map[rd] - 65) if not is_from else rd
+        rn = (reg_map[rn] - 64) if not is_from else rn
+        rd = (reg_map[rd] - 64) if is_from else rd
         if is16bit and is_from:
             opcode = 0b0100010010
         elif is16bit and not is_from:
@@ -319,10 +320,10 @@ def make_mov_factory(is16bit, is_from):
                 ((rn & 56) << 23) | ((rd & 56) << 26))
     return mov
 
-movts16  = make_mov_factory(True,  False)
-movts32  = make_mov_factory(False, False)
-movfs16  = make_mov_factory(True,  True)
-movfs32  = make_mov_factory(False, True)
+movts16  = make_mov_special_factory(True,  False)
+movts32  = make_mov_special_factory(False, False)
+movfs16  = make_mov_special_factory(True,  True)
+movfs32  = make_mov_special_factory(False, True)
 
 
 def movimm16(rd=0, imm=0):

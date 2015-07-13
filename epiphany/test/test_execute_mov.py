@@ -44,21 +44,20 @@ def test_execute_movimm(is16bit, is_to, imm):
                                               (False, True)
                                            ])
 def test_execute_mov_special(is16bit, is_from):
+    # Note that in the MOV 'special' instructions rd and rn are swapped.
     state = new_state(rf0=5, rfCONFIG=7)
     if is_from and is16bit:
-        instr = opcode_factory.movfs16(rd=0, rn='CONFIG')
+        instr = opcode_factory.movfs16(rn=0, rd='CONFIG')
         expected_state = StateChecker(pc=(2 + RESET_ADDR), rf0=7, rfCONFIG=7)
     elif is_from and (not is16bit):
-        instr = opcode_factory.movfs32(rd=0, rn='CONFIG')
+        instr = opcode_factory.movfs32(rn=0, rd='CONFIG')
         expected_state = StateChecker(pc=(4 + RESET_ADDR), rf0=7, rfCONFIG=7)
     elif (not is_from) and is16bit:
-        instr = opcode_factory.movts16(rd='CONFIG', rn=0)
+        instr = opcode_factory.movts16(rn='CONFIG', rd=0)
         expected_state = StateChecker(pc=(2 + RESET_ADDR), rf0=5, rfCONFIG=5)
     elif (not is_from) and (not is16bit):
-        instr = opcode_factory.movts32(rd='CONFIG', rn=0)
+        instr = opcode_factory.movts32(rn='CONFIG', rd=0)
         expected_state = StateChecker(pc=(4 + RESET_ADDR), rf0=5, rfCONFIG=5)
     name, executefn = decode(instr)
     executefn(state, Instruction(instr, None))
     expected_state.check(state)
-
-
