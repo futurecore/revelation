@@ -4,6 +4,7 @@ from epiphany.utils import (borrow_from,
                             overflow_from_add,
                             overflow_from_sub,
                             reg_or_imm,
+                            signed,
                             )
 
 #-----------------------------------------------------------------------
@@ -23,7 +24,7 @@ def make_add_executor(is16bit):
         """
         if is16bit:
             inst.bits &= 0xffff
-        result = s.rf[inst.rn] + reg_or_imm(s, inst, is16bit)
+        result = signed(s.rf[inst.rn]) + reg_or_imm(s, inst, is16bit)
         s.rf[inst.rd] = trim_32(result)
         s.AN = (result >> 31) & 1
         s.AZ = 1 if trim_32(result) == 0 else 0
@@ -51,7 +52,7 @@ def make_sub_executor(is16bit):
         """
         if is16bit:
             inst.bits &= 0xffff
-        result = s.rf[inst.rn] - reg_or_imm(s, inst, is16bit)
+        result = signed(s.rf[inst.rn]) - reg_or_imm(s, inst, is16bit)
         s.rf[inst.rd] = trim_32(result)
         s.AN = (result >> 31) & 1
         s.AC = borrow_from(result)
