@@ -230,7 +230,7 @@ execute_add16 = execute_iarith.make_add_executor(True)
 #-----------------------------------------------------------------------
 # Bitwise instructions
 #-----------------------------------------------------------------------
-# 16 bit instructions with immediate.
+# 16 bit instructions without immediate.
 execute_and16     = execute_bitwise.make_bit_executor("and", True,  False)
 execute_orr16     = execute_bitwise.make_bit_executor("orr", True,  False)
 execute_eor16     = execute_bitwise.make_bit_executor("eor", True,  False)
