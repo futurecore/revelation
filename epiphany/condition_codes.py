@@ -10,29 +10,29 @@ def condition_passed(s, cond):
     elif cond == 0b0001:  # BNE
         return not bool(s.AZ)
     elif cond == 0b0010:  # BGTU
-        return ~s.AZ & s.AC
+        return (not bool(s.AZ)) and bool(s.AC)
     elif cond == 0b0011:  # BGTEU
-        return s.AC
+        return bool(s.AC)
     elif cond == 0b0100:  # BLTEU
-        return s.AZ | ~s.AC
+        return bool(s.AZ) or (not bool(s.AC))
     elif cond == 0b0101:  # BLTU
-        return ~s.AC
+        return not bool(s.AC)
     elif cond == 0b0110:  # BGT
-        return ~s.AZ & (s.AV == s.AN)
+        return (not bool(s.AZ)) and (s.AV == s.AN)
     elif cond == 0b0111:  # BGTE
         return s.AV == s.AN
     elif cond == 0b1000:  # BLT
         return s.AV != s.AN
     elif cond == 0b1001:  # BLTE
-        return s.AZ | (s.AV != s.AN)
+        return bool(s.AZ) or (s.AV != s.AN)
     elif cond == 0b1010:  # BBEQ
-        return s.BZ
+        return bool(s.BZ)
     elif cond == 0b1011:  # BBNE
-        return ~s.BZ
+        return not bool(s.BZ)
     elif cond == 0b1100:  # BBLT
-        return s.BN & ~s.BZ
+        return bool(s.BN) and (not bool(s.BZ))
     elif cond == 0b1101:  # BBLTE
-        return s.BN | s.BZ
+        return bool(s.BN) or bool(s.BZ)
     elif cond == 0b1110:  # B (unconditional branch)
         return True
     elif cond == 0b1111:  # BL (branch and link)
