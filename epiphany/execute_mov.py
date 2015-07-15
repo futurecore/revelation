@@ -52,8 +52,6 @@ def make_mov_executor(is16bit, rd_is_special=False, rn_is_special=False):
         elif rn_is_special:
             rn = inst.rd + 64
             rd = inst.rn
-        else:
-            rd = inst.rd
         s.rf[rd] = s.rf[rn]
         s.pc += 2 if is16bit else 4
     return execute_mov
