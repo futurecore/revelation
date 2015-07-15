@@ -4,9 +4,26 @@ from epiphany.utils import (get_exponent,
                             float2bits,
                             is_nan,
                             is_inf,
-                            is_zero)
+                            is_zero,
+                            sext_3,
+                            sext_11,
+                            sext_24)
 
 import math
+
+def test_sign_extend_3bit():
+    assert sext_3(0b011) == 0b011
+    assert sext_3(0b111) == 0xFFFFFFFF
+
+
+def test_sign_extend_11bit():
+    assert sext_11(0b01111111111) == 0b01111111111
+    assert sext_11(0b11111111111) == 0xFFFFFFFF
+
+
+def test_sign_extend_24bit():
+    assert sext_24(0b011111111111111111111111) == 0b011111111111111111111111
+    assert sext_24(0b111111111111111111111111) == 0xFFFFFFFF
 
 
 def test_get_mantissa():
