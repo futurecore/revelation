@@ -1,5 +1,7 @@
 #include "epiphany-macros.h"
-SET_UP
-    mov  r0, #170
-    bitr r1, r0 ; r1 gets 85
+.global _main
+_main:
+    mov r0, %low(0x87654321)
+    movt r0, %high(0x87654321)
+    bitr r0, r0               ; r0 gets 0x84C2A6B1
 TEAR_DOWN

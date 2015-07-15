@@ -1,5 +1,6 @@
 #include "epiphany-macros.h"
-SET_UP
+.global _main
+_main:
     mov  r1, %low(0x00100000)
     movt r1, %high(0x00100000)
     ldr r0, [r1, #1]  ; loads word

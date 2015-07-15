@@ -1,5 +1,6 @@
 #include "epiphany-macros.h"
-SET_UP
+.global _main
+_main:
     ; This testset should fail, as the absolute address used for the test and
     ; set instruction must be located within the on-chip local memory and must
     ; be greater than 0x00100000 (2^20).

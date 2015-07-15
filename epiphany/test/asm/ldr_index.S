@@ -1,5 +1,6 @@
 #include "epiphany-macros.h"
-SET_UP
+.global _main
+_main:
     mov  r1, %low(0x00100004)
     movt r1, %high(0x00100004)
     mov  r2, #0

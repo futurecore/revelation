@@ -1,5 +1,6 @@
 #include "epiphany-macros.h"
-SET_UP
+.global _main
+_main:
     mov r0, #100
     mov r1, %low(loop_start) ;
     movt r1, %high(loop_start) ;

@@ -1,5 +1,6 @@
 #include "epiphany-macros.h"
-SET_UP
+.global _main
+_main:
     mov r0, #0
     mov r1, #1
     and r2, r1, r1 ; 1 = 1 & 1

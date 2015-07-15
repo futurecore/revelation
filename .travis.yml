@@ -17,7 +17,7 @@ install:
 - cd $TRAVIS_BUILD_DIR
 - export PYTHONPATH=${PYTHONPATH}:${HOME}/pydgin/:${HOME}/pypy
 script:
-- py.test -n 4 --cov-report term-missing --cov epiphany epiphany/test/ -k-test_asm
+- py.test -n 4 --cov-report term-missing --cov epiphany epiphany/test/
 - test "$TRANSLATE" == "true" && ${HOME}/pypy/rpython/bin/rpython --opt=jit epiphany/sim.py
   || true
 after_success: coveralls

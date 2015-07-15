@@ -1,5 +1,6 @@
 #include "epiphany-macros.h"
-SET_UP
+.global _main
+_main:
     bl _my_func ; save PC to LR and jump to _my_func
     nop
     nop

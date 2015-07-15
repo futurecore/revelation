@@ -1,6 +1,7 @@
 #include "epiphany-macros.h"
-SET_UP
+.global _main
+_main:
     mov r0, #7
-    movts CONFIG, r0  ; copies r0 to CONFIG register
-    movfs r63, CONFIG ; copies CONFIG register to r63
+    movts IRET, r0  ; copies r0 IRET register
+    movfs r63, IRET ; copies IRET register to r63
 TEAR_DOWN

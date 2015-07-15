@@ -1,5 +1,6 @@
 #include "epiphany-macros.h"
-SET_UP
+.global _main
+_main:
     mov  r0, %low(_laba)
 ;    movt r0, %high(_laba)
     jalr r0        ; save pc in lr and jump to _laba

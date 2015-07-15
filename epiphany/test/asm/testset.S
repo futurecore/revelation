@@ -1,5 +1,6 @@
 #include "epiphany-macros.h"
-SET_UP
+.global _main
+_main:
     ; Example of trying to lock on value in memory.
     ; A more realistic example would loop until the testset is successful.
     mov r0, #0xFFFF

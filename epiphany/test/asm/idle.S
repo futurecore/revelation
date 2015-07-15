@@ -1,4 +1,5 @@
 #include "epiphany-macros.h"
-SET_UP
+.global _main
+_main:
     idle ; Not implemented in this simulator.
 TEAR_DOWN

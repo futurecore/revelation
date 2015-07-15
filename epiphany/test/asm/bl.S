@@ -1,5 +1,6 @@
 #include "epiphany-macros.h"
-SET_UP
+.global _main
+_main:
     ; Temporary register - r0
     ; Function argument  - r1
     ; Function return    - r2

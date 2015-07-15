@@ -1,4 +1,5 @@
 #include "epiphany-macros.h"
-SET_UP
+.global _main
+_main:
     trap 0 ; Halt processor to prepare for write
 TEAR_DOWN
