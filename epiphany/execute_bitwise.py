@@ -32,13 +32,14 @@ def make_bit_executor(name, is16bit, imm):
             # reference. The decode table states that the instruction always
             # takes an intermediate, but the description of the instruction
             # states that it does not.
-            width = 8 if is16bit else 32  # TODO: Check register sizes.
-            result_s = '{:0{width}b}'.format(s.rf[inst.rn], width=width)
-            result = int(result_s[::-1], 2)
+            result = 0
+            for i in range(32):
+                if (s.rf[inst.rn] & (1 << i)):
+                    result |= (1 << (32 - 1 - i))
         s.rf[inst.rd] = trim_32(result)
         s.AN = (result >> 31) & 1
         s.AC = 0
         s.AV = 0
-        s.AZ = trim_32(result) == 0
+        s.AZ = 1 if trim_32(result) == 0 else 0
         s.pc += 2 if is16bit else 4
     return execute_bit

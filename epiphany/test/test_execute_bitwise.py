@@ -112,8 +112,12 @@ def test_execute_shift_left_immediate(factory, is16bit):
 
 
 @pytest.mark.parametrize('bits,expected,is16bit',
-                         [(0b10101010, 0b01010101, True),
-                          (0b01010101, 0b10101010, True),
+                         [(0b10101010101010101010101010101010,
+                           0b01010101010101010101010101010101,
+                           True),
+                          (0b01010101010101010101010101010101,
+                           0b10101010101010101010101010101010,
+                           True),
                           (0b10101010101010101010101010101010,
                            0b01010101010101010101010101010101,
                            False),
@@ -121,14 +125,13 @@ def test_execute_shift_left_immediate(factory, is16bit):
                            0b10101010101010101010101010101010,
                            False),
                           ])
-def test_execute_bitr_immediate(bits, expected, is16bit):
+def test_execute_bitr(bits, expected, is16bit):
     state = new_state(rf0=0, rf1=bits)
     instr = (opcode_factory.bitr16_immediate(rd=2, rn=1, imm=0) if is16bit
              else opcode_factory.bitr32_immediate(rd=2, rn=1, imm=0))
     name, executefn = decode(instr)
     executefn(state, Instruction(instr, None))
     expected_state = StateChecker(AZ=0, AC=0, AV=0,
-#                                  AN=0,
                                   pc=((2 if is16bit else 4) + RESET_ADDR),
                                   rf2=expected)
     expected_state.check(state)

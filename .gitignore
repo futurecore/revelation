@@ -1,3 +1,5 @@
+pydgin-epiphany-jit
+pydgin-epiphany-nojit
 .coverage
 *~
 *.pyc

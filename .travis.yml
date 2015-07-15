@@ -3,7 +3,7 @@ python:
 - '2.7'
 cache: apt
 env:
-- TRANSLATE=false
+- TRANSLATE=true
 install:
 - pip install -r requirements.txt
 - pip install coveralls
