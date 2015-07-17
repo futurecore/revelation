@@ -3,6 +3,8 @@
 [![Build Status](https://travis-ci.org/futurecore/revelation.svg?branch=master)](https://travis-ci.org/futurecore/revelation)
 [![Coverage Status](https://coveralls.io/repos/futurecore/revelation/badge.svg?branch=master&service=github)](https://coveralls.io/github/futurecore/revelation?branch=master)
 [![Code Health](https://landscape.io/github/futurecore/revelation/master/landscape.svg?style=flat)](https://landscape.io/github/futurecore/revelation/master)
+[![Documentation Status](https://readthedocs.org/projects/revelation/badge/?version=latest)](https://readthedocs.org/projects/revelation/?badge=latest)
+
 
 This project contains **work in progress** towards a simulator for the Adapteva Epiphany chip.
 Details of the Epiphany design and ISA can be found in the [Architecture Reference](http://adapteva.com/docs/epiphany_arch_ref.pdf).
