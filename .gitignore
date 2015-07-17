@@ -5,3 +5,4 @@ pydgin-epiphany-nojit
 *.pyc
 *-c
 *.swp
+docs/_build
