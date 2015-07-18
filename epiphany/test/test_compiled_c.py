@@ -7,6 +7,7 @@ elf_dir = os.path.join('epiphany', 'test', 'c')
 
 
 @pytest.mark.parametrize("elf_file,expected", [('nothing.elf',   176),
+                                               ('fib.elf',       441),
                                               ])
 def test_compiled_c(elf_file, expected, capsys):
     """Test an ELF file that has been compiled from a C function.
