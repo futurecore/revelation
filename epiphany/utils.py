@@ -127,21 +127,16 @@ def borrow_from(result):
 #-----------------------------------------------------------------------
 # overflow_from_add
 #-----------------------------------------------------------------------
-# OverflowFrom - Add (ref: ARM DDI 0100I - Glossary-11)
-#
-#   if   operand_a[31] == operand_b[31] and
-#    and operand_a[31] != result[31]
-#
-def overflow_from_add(opa, opb, result):
-    return (opa >> 31 == opb >> 31) & (opa >> 31 != (result>>31)&1)
+#    if (( RD[31] & ~RM[31] & ~RN[31] ) | ( ~RD[31] & RM[31] & RN[31] ))
+def overflow_from_add(rn, rm, rd):
+    return ((((rd >> 31) & 1) & ((rn >> 31) & 0) & ((rm >> 31) & 0)) |
+            (((rd >> 31) & 0) & ((rn >> 31) & 1) & ((rm >> 31) & 1)))
+
 
 #-----------------------------------------------------------------------
 # overflow_from_sub
 #-----------------------------------------------------------------------
-# OverflowFrom - Sub (ref: ARM DDI 0100I - Glossary-11)
-#
-#   if   operand_a[31] != operand_b[31]
-#    and operand_a[31] != result[31]
-#
-def overflow_from_sub(opa, opb, result):
-    return (opa >> 31 != opb >> 31) & (opa >> 31 != (result>>31)&1)
+#   if ((RD[31] & ~RM[31] & RN[31]) | (RD[31] & ~RM[31] & RN[31]) )
+def overflow_from_sub(rn, rm, rd):
+    return ((((rd >> 31) & 1) & ((rn >> 31) & 1) & ((rm >> 31) & 0))  |
+            (((rd >> 31) & 1) & ((rn >> 31) & 0) & ((rm >> 31) & 1)))
