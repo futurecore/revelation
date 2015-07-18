@@ -51,9 +51,9 @@ def test_execute_add16sub16(factory, expected):
                          [(opcode_factory.add32_immediate, 0b01010101010,
                            dict(AZ=0, rf1=(0b01010101010 + 5))),
                           (opcode_factory.sub32_immediate, 0b01010101010,
-                           dict(AZ=0, AN=1, AC=1, rf1=trim_32(5 - 0b01010101010))),
+                           dict(AZ=0, AN=1, AC=0, rf1=trim_32(5 - 0b01010101010))),
                           (opcode_factory.sub32_immediate, 0b00000000101,
-                           dict(AZ=1, AN=0, AC=0, rf1=0)),
+                           dict(AZ=1, AN=0, AC=1, rf1=0)),
                          ])
 def test_execute_arith32_immediate(opcode, imm, expected):
     state = new_state(rf0=5)

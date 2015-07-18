@@ -26,11 +26,11 @@ def make_add_executor(is16bit):
             inst.bits &= 0xffff
         result = signed(s.rf[inst.rn]) + reg_or_imm(s, inst, is16bit)
         s.rf[inst.rd] = trim_32(result)
-        s.AN = (result >> 31) & 1
-        s.AZ = 1 if trim_32(result) == 0 else 0
+        s.AN = bool((result >> 31) & 1)
+        s.AZ = True if trim_32(result) == 0 else False
         s.AC = carry_from(result)
-        s.AV = overflow_from_add(s.rf[inst.rn], s.rf[inst.rm], result)
-        s.AVS = s.AVS | s.AV
+        s.AV = bool(overflow_from_add(s.rf[inst.rn], s.rf[inst.rm], result))
+        s.AVS = s.AVS or s.AV
         s.pc += 2 if is16bit else 4
     return execute_add
 
@@ -54,10 +54,10 @@ def make_sub_executor(is16bit):
             inst.bits &= 0xffff
         result = signed(s.rf[inst.rn]) - reg_or_imm(s, inst, is16bit)
         s.rf[inst.rd] = trim_32(result)
-        s.AN = (result >> 31) & 1
-        s.AC = borrow_from(result)
-        s.AZ = 1 if trim_32(result) == 0 else 0
-        s.AV = overflow_from_sub(s.rf[inst.rn], s.rf[inst.rm], result)
-        s.AVS = s.AVS | s.AV
+        s.AN = bool((result >> 31) & 1)
+        s.AC = not borrow_from(result)
+        s.AZ = True if trim_32(result) == 0 else False
+        s.AV = bool(overflow_from_sub(s.rf[inst.rn], s.rf[inst.rm], result))
+        s.AVS = s.AVS or s.AV
         s.pc += 2 if is16bit else 4
     return execute_sub

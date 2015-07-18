@@ -37,9 +37,9 @@ def make_bit_executor(name, is16bit, imm):
                 if (s.rf[inst.rn] & (1 << i)):
                     result |= (1 << (32 - 1 - i))
         s.rf[inst.rd] = trim_32(result)
-        s.AN = (result >> 31) & 1
-        s.AC = 0
-        s.AV = 0
-        s.AZ = 1 if trim_32(result) == 0 else 0
+        s.AN = bool((result >> 31) & 1)
+        s.AC = False
+        s.AV = False
+        s.AZ = True if trim_32(result) == 0 else False
         s.pc += 2 if is16bit else 4
     return execute_bit

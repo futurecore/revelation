@@ -6,33 +6,33 @@ except ImportError:
 
 def condition_passed(s, cond):
     if cond == 0b0000:    # BEQ
-        return bool(s.AZ)
+        return s.AZ
     elif cond == 0b0001:  # BNE
-        return not bool(s.AZ)
+        return not s.AZ
     elif cond == 0b0010:  # BGTU
-        return (not bool(s.AZ)) and bool(s.AC)
+        return (not s.AZ) and s.AC
     elif cond == 0b0011:  # BGTEU
-        return bool(s.AC)
+        return s.AC
     elif cond == 0b0100:  # BLTEU
-        return bool(s.AZ) or (not bool(s.AC))
+        return s.AZ or (not s.AC)
     elif cond == 0b0101:  # BLTU
-        return not bool(s.AC)
+        return not s.AC
     elif cond == 0b0110:  # BGT
-        return (not bool(s.AZ)) and (s.AV == s.AN)
+        return (not s.AZ) and (s.AV == s.AN)
     elif cond == 0b0111:  # BGTE
         return s.AV == s.AN
     elif cond == 0b1000:  # BLT
         return s.AV != s.AN
     elif cond == 0b1001:  # BLTE
-        return bool(s.AZ) or (s.AV != s.AN)
+        return s.AZ or (s.AV != s.AN)
     elif cond == 0b1010:  # BBEQ
-        return bool(s.BZ)
+        return s.BZ
     elif cond == 0b1011:  # BBNE
-        return not bool(s.BZ)
+        return not s.BZ
     elif cond == 0b1100:  # BBLT
-        return bool(s.BN) and (not bool(s.BZ))
+        return s.BN and (not s.BZ)
     elif cond == 0b1101:  # BBLTE
-        return bool(s.BN) or bool(s.BZ)
+        return s.BN or s.BZ
     elif cond == 0b1110:  # B (unconditional branch)
         return True
     elif cond == 0b1111:  # BL (branch and link)

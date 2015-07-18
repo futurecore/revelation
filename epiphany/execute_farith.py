@@ -45,20 +45,20 @@ def make_farith_executor(name, is16bit, is_unary=False):
         # RD = RN <OP> RM
         s.rf[inst.rd] = trim_32(result if name == 'fix' else float2bits(result))
         # BN = RD[31]
-        s.BN = 1 if result < 0.0 else 0
+        s.BN = True if result < 0.0 else False
         # if (RD[30:0] == 0) { BZ=1 } else { BZ=0 }
-        s.BZ = 1 if abs(result) < 0.0001 else 0
+        s.BZ = True if abs(result) < 0.0001 else False
         # if (UnbiasedExponent(RD) > 127) { BUV=1 } else { BV=0 }
-        s.BUV = 1 if get_exponent(s.rf[inst.rd]) > 127 else 0
+        s.BUV = True if get_exponent(s.rf[inst.rd]) > 127 else False
         # if (UbiasedExponent(RD) < -126) { BUS=1 } else { BUS=BUS }
         if get_exponent(s.rf[inst.rd]) > 127:
-            s.BUS = 1
+            s.BUS = True
         # if (RM or RN == NAN) { BIS=1 } else { BIS=BIS }
         if ((is_unary and math.isnan(rn)) or
                 (not is_unary) and
                 (math.isnan(rn) or math.isnan(rm))):
-            s.BIS = 1
+            s.BIS = True
         # BVS = BVS | BV;
-        s.BVS = s.BVS | s.BV
+        s.BVS = s.BVS or s.BV
         s.pc += 2 if is16bit else 4
     return farith
