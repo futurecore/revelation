@@ -9,7 +9,22 @@ See below for instructions on how to compile the code to an executable.
 Simulating an Epiphany ELF file
 -------------------------------
 
-If you are running Revelation as a Python script, the file `epiphany/sim.py <https://github.com/futurecore/revelation/blob/master/epiphany/sim.py>`_ is the entry point to the simulator:
+If you are running Revelation as a Python script, you need to have the `Pydgin module <https://github.com/cornell-brg/pydgin>`_ available on your ``PYTHONPATH``.
+At present, Pydgin is not available on PyPI, so you have to do this by hand:
+
+.. code-block:: bash
+
+  $ cd $HOME
+  $ wget https://github.com/cornell-brg/pydgin/archive/master.zip
+  $ unzip master.zip
+  $ mv pydgin-master/ pydgin
+  $ export PYTHONPATH=${PYTHONPATH}:$HOME/pydgin/:.
+
+
+You may want to add the last line to your ``~/.bashrc`` or similar.
+
+
+The file `epiphany/sim.py <https://github.com/futurecore/revelation/blob/master/epiphany/sim.py>`_ is the entry point to the simulator:
 
 .. code-block:: bash
 
