@@ -16,4 +16,5 @@ You can read more about Pydgin in this paper:
 
   quickstart
   contributing
+  ambiguities
   notes
