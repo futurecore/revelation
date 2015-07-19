@@ -115,15 +115,22 @@ def execute_trap16(s, inst):
         10: pydgin.syscalls.syscall_fstat,
         15: pydgin.syscalls.syscall_stat,
     }
+    # TODO: Should retval and errno be stored somewhere?
     if inst.t5 == 3:  # Exit.
         syscall_handler = pydgin.syscalls.syscall_exit
-    elif inst.t5 == 7:
+        retval, errno = syscall_handler(s, s.rf[0], s.rf[1], s.rf[2])
+    elif inst.t5 == 4:
+        if s.debug.enabled('syscalls'):
+            print 'TRAP: Assertion SUCCEEDED.'
+    elif inst.t5 == 5:
+        if s.debug.enabled('syscalls'):
+            print 'TRAP: Assertion FAILED.'
+    elif inst.t5 == 7: # Initiate system call.
         syscall_handler = syscall_funcs[s.rf[3]]
+        retval, errno = syscall_handler(s, s.rf[0], s.rf[1], s.rf[2])
     else:
-        print 'WARNING: syscall not implemented: %d' % inst.t5
-        s.pc += 2
-        return
-    retval, errno = syscall_handler(s, s.rf[0], s.rf[1], s.rf[2])
+        print ('WARNING: syscall not implemented: %d. Should be unreachable' %
+               inst.t5)
     s.pc += 2
 
 

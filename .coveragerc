@@ -12,9 +12,13 @@ exclude_lines =
     .*we_are_translated.*
     def init_state
 
+    # Don't complain about assertions in syscalls -- special code fore debuggers
+    inst.t5 == 4
+    inst.t5 == 5
+
     # Don't complain if non-runnable code isn't run:
     if 0:
     if __name__ == .__main__.:
-    
+
     # Don't complain about code that executes if pypy is not on the PYTHONPATH.
     except ImportError:
