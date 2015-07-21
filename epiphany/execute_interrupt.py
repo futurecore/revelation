@@ -1,3 +1,5 @@
+from pydgin.utils import trim_32
+
 import epiphany.isa
 
 #-----------------------------------------------------------------------
@@ -128,6 +130,9 @@ def execute_trap16(s, inst):
     elif inst.t5 == 7: # Initiate system call.
         syscall_handler = syscall_funcs[s.rf[3]]
         retval, errno = syscall_handler(s, s.rf[0], s.rf[1], s.rf[2])
+        # Undocumented:
+        s.rf[0] = trim_32(retval)
+        s.rf[3] = errno
     else:
         print ('WARNING: syscall not implemented: %d. Should be unreachable' %
                inst.t5)
