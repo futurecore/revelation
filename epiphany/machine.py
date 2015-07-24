@@ -22,17 +22,17 @@ class State(Machine):
                          reset_addr=RESET_ADDR)
 
         # Epiphany-specific flags.
-        self.AN  = 0b0
-        self.AZ  = 0b0
-        self.AC  = 0b0
-        self.AV  = 0b0
-        self.AVS = 0b0
-        self.BN  = 0b0
-        self.BZ  = 0b0
-        self.BIS = 0b0
-        self.BUS = 0b0
-        self.BV  = 0b0
-        self.BVS = 0b0
+        self.AN  = False
+        self.AZ  = False
+        self.AC  = False
+        self.AV  = False
+        self.AVS = False
+        self.BN  = False
+        self.BZ  = False
+        self.BIS = False
+        self.BUS = False
+        self.BV  = False
+        self.BVS = False
 
     def set_register(self, index, value):
         self.rf[index] = value
@@ -44,4 +44,4 @@ class State(Machine):
         if self.debug.enabled('flags'):
             print ('AN=%s AZ=%s AC=%s AV=%s AVS=%s BN=%s BZ=%s BIS=%s BUS=%s BV=%s BVS=%s ' %
                    (self.AN, self.AZ, self.AC, self.AV, self.AVS,
-                    self.BN, self.BZ, self.BIS, self.BUS, self.BV, self.BVS))
+                    self.BN, self.BZ, self.BIS, self.BUS, self.BV, self.BVS)),
