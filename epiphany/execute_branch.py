@@ -32,4 +32,5 @@ def make_bcond_executor(is16bit):
             s.pc = trim_32(s.pc + offset)
         else:
             s.pc += 2 if is16bit else 4
+        s.debug_flags()
     return execute_bcond

@@ -16,6 +16,7 @@ def make_movcond_executor(is16bit):
         rn = inst.rn
         if condition_passed(s, inst.cond):
             s.rf[rd] = s.rf[rn]
+        s.debug_flags()
         s.pc += 2 if is16bit else 4
     return execute_movcond
 

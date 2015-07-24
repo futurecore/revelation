@@ -41,5 +41,6 @@ def make_bit_executor(name, is16bit, imm):
         s.AC = False
         s.AV = False
         s.AZ = True if trim_32(result) == 0 else False
+        s.debug_flags()
         s.pc += 2 if is16bit else 4
     return execute_bit

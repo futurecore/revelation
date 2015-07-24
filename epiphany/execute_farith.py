@@ -60,5 +60,6 @@ def make_farith_executor(name, is16bit, is_unary=False):
             s.BIS = True
         # BVS = BVS | BV;
         s.BVS = s.BVS or s.BV
+        s.debug_flags()
         s.pc += 2 if is16bit else 4
     return farith

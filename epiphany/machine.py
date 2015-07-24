@@ -37,5 +37,11 @@ class State(Machine):
     def set_register(self, index, value):
         self.rf[index] = value
 
-    def fetch_pc( self ):
+    def fetch_pc(self):
         return self.pc
+
+    def debug_flags(self):
+        if self.debug.enabled('flags'):
+            print ('AN=%s AZ=%s AC=%s AV=%s AVS=%s BN=%s BZ=%s BIS=%s BUS=%s BV=%s BVS=%s ' %
+                   (self.AN, self.AZ, self.AC, self.AV, self.AVS,
+                    self.BN, self.BZ, self.BIS, self.BUS, self.BV, self.BVS))
