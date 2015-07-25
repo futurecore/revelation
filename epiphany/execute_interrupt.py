@@ -116,9 +116,24 @@ def execute_trap16(s, inst):
         7:  pydgin.syscalls.syscall_unlink,
         10: pydgin.syscalls.syscall_fstat,
         15: pydgin.syscalls.syscall_stat,
+#       19: get_time_of_day,  # TODO r0 = time pointer, r1 = timezone pointer
+        21: pydgin.syscalls.syscall_link,
     }
-    # TODO: Should retval and errno be stored somewhere?
-    if inst.t5 == 3:  # Exit.
+    # Undocumented traps: 0, 1, 2, 6. These are listed as "Reserved" in
+    # the reference manual, but have been reported to appear in real programs.
+    if inst.t5 == 0 or inst.t5 == 1 or inst.t5 == 2 or inst.t5 == 6:
+        if inst.t5 == 0:  # Write.
+            syscall_handler = syscall_funcs[5]
+        elif inst.t5 == 1:  # Read.
+            syscall_handler = syscall_funcs[4]
+        elif inst.t5 == 2:  # Open.
+            syscall_handler = syscall_funcs[2]
+        else:  # Close.
+            syscall_handler = syscall_funcs[3]
+        retval, errno = syscall_handler(s, s.rf[0], s.rf[1], s.rf[2])
+        s.rf[0] = trim_32(retval)
+        s.rf[3] = errno
+    elif inst.t5 == 3:  # Exit.
         syscall_handler = pydgin.syscalls.syscall_exit
         retval, errno = syscall_handler(s, s.rf[0], s.rf[1], s.rf[2])
     elif inst.t5 == 4:
