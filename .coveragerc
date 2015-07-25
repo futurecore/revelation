@@ -12,6 +12,11 @@ exclude_lines =
     .*we_are_translated.*
     def init_state
 
+    # Don't complain about not generating debug output.
+    if self.debug.enabled('flags'):
+    s.debug_flags()
+    print
+
     # Don't complain about assertions in syscalls -- special code fore debuggers
     inst.t5 == 4
     inst.t5 == 5
