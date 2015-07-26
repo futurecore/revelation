@@ -222,10 +222,10 @@ execute_testset32   = execute_load_store.testset32
 #-----------------------------------------------------------------------
 # Integer arithmetic instructions
 #-----------------------------------------------------------------------
-execute_sub32 = execute_iarith.make_sub_executor(False)
-execute_sub16 = execute_iarith.make_sub_executor(True)
-execute_add32 = execute_iarith.make_add_executor(False)
-execute_add16 = execute_iarith.make_add_executor(True)
+execute_sub32 = execute_iarith.make_addsub_executor(False, 'sub')
+execute_sub16 = execute_iarith.make_addsub_executor(True, 'sub')
+execute_add32 = execute_iarith.make_addsub_executor(False, 'add')
+execute_add16 = execute_iarith.make_addsub_executor(True, 'add')
 
 #-----------------------------------------------------------------------
 # Bitwise instructions
