@@ -1,26 +1,30 @@
 language: python
+
 python:
-- '2.7'
-cache: apt
+    - '2.7'
+
 env:
-- TRANSLATE=true
+    - TRANSLATE=true
+
 install:
-- pip install -r requirements.txt
-- pip install coveralls
-- cd ${HOME}
-- wget https://github.com/cornell-brg/pydgin/archive/master.zip
-- unzip master.zip
-- mv pydgin-master pydgin
-- cd ${HOME}
-- wget https://bitbucket.org/pypy/pypy/get/default.tar.gz
-- mkdir pypy && tar xf default.tar.gz -C pypy --strip-components 1
-- cd $TRAVIS_BUILD_DIR
-- export PYTHONPATH=${PYTHONPATH}:${HOME}/pydgin/:${HOME}/pypy
+    - pip install -r requirements.txt
+    - pip install coveralls
+    - cd ${HOME}
+    - wget https://github.com/cornell-brg/pydgin/archive/master.zip
+    - unzip master.zip
+    - mv pydgin-master pydgin
+    - cd ${HOME}
+    - wget https://bitbucket.org/pypy/pypy/get/default.tar.gz
+    - mkdir pypy && tar xf default.tar.gz -C pypy --strip-components 1
+    - cd $TRAVIS_BUILD_DIR
+    - export PYTHONPATH=${PYTHONPATH}:${HOME}/pydgin/:${HOME}/pypy
+
 script:
-- py.test -n 4 --cov-report term-missing --cov epiphany epiphany/test/
-- test "$TRANSLATE" == "true" && ${HOME}/pypy/rpython/bin/rpython --opt=jit epiphany/sim.py
-  || true
+    - py.test -n 4 --cov-report term-missing --cov epiphany epiphany/test/
+    - test "$TRANSLATE" == "true" && ${HOME}/pypy/rpython/bin/rpython --opt=jit epiphany/sim.py || true
+
 after_success: coveralls
+
 notifications:
-  slack:
-    secure: dBy5lkieNPYSmVhBOKXbHKCpgVJLQiuB0K89JmypE03FpRZSJKv1rwz/LG/herCgNOhwJ3/u/VEMEyfucLrkIYsgJjBcxU+Fby//iRZ9IroLLJr9J/xYG53kaMMsmyvohKSBdgl7IPqkwRRWB58Ac9iOvNmZPYsGwxqCHR7pRbHDiR0GmewdpLIylPFsU3G7Q6yGRdoFzTCawM3TYHwkKQOs1gFkBkAcB6LwxH3ZwIN/8caVm2fwU8Edn7nnzJ6vq/od2W2smgRQPfOwUk5FhEagqYQV7DB4Yu5Kx3wug3lWNEEk95KENnQZ7zU+1NjA7e5EERNvXNmdxNmxnaoZeRxj5mjS8PcERMNQd6i5nWOvWXYHhwBvy9CuZ9xBMr3G4TYLEwAo2SrD31h7pmsoHf9rRGOs9Z8P9/zr54M2G0qHoUoyfhah1c3DwnZBuepRzQzBn4i3eUyBKrLADAMQteGKwxKsWyvQybsomOyfpZA/g1cKLszTMoWNLl6S9OaBLjVTYlncwl3qI8Wvjs/pXICmxPuB0in6rAY3KakWo/6ls+QBlergAFTrPGqCH9MutlHICGfxztRaTPWYWRQnJlze896WVE5oGrtn35AUAWaB6ckQOGAAvnkslD4VQaZXxbrvcK0luszVF8OkFqBlPrFjq0cu+iYoNaTMZGusPyA=
+    slack:
+        secure: dBy5lkieNPYSmVhBOKXbHKCpgVJLQiuB0K89JmypE03FpRZSJKv1rwz/LG/herCgNOhwJ3/u/VEMEyfucLrkIYsgJjBcxU+Fby//iRZ9IroLLJr9J/xYG53kaMMsmyvohKSBdgl7IPqkwRRWB58Ac9iOvNmZPYsGwxqCHR7pRbHDiR0GmewdpLIylPFsU3G7Q6yGRdoFzTCawM3TYHwkKQOs1gFkBkAcB6LwxH3ZwIN/8caVm2fwU8Edn7nnzJ6vq/od2W2smgRQPfOwUk5FhEagqYQV7DB4Yu5Kx3wug3lWNEEk95KENnQZ7zU+1NjA7e5EERNvXNmdxNmxnaoZeRxj5mjS8PcERMNQd6i5nWOvWXYHhwBvy9CuZ9xBMr3G4TYLEwAo2SrD31h7pmsoHf9rRGOs9Z8P9/zr54M2G0qHoUoyfhah1c3DwnZBuepRzQzBn4i3eUyBKrLADAMQteGKwxKsWyvQybsomOyfpZA/g1cKLszTMoWNLl6S9OaBLjVTYlncwl3qI8Wvjs/pXICmxPuB0in6rAY3KakWo/6ls+QBlergAFTrPGqCH9MutlHICGfxztRaTPWYWRQnJlze896WVE5oGrtn35AUAWaB6ckQOGAAvnkslD4VQaZXxbrvcK0luszVF8OkFqBlPrFjq0cu+iYoNaTMZGusPyA=
