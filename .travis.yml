@@ -6,9 +6,13 @@ python:
 env:
     - TRANSLATE=true
 
+cache:
+    directories:
+        - $HOME/.cache/pip
+
 install:
+    - pip install --disable-pip-version-check --upgrade pip
     - pip install -r requirements.txt
-    - pip install coveralls
     - cd ${HOME}
     - wget https://github.com/cornell-brg/pydgin/archive/master.zip
     - unzip master.zip
