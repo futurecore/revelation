@@ -16,9 +16,18 @@ def execute_ldstrpmd32(s, inst):
               else s.rf[inst.rn] + (inst.imm11 << inst.size))
     size = {0:1, 1:2, 2:4, 3:8}[inst.size]  # Size in bytes.
     if inst.s:     # STORE
-        s.mem.write(s.rf[inst.rn], size, s.rf[inst.rd])
+        if size == 8:  # 64 bit store.
+            s.mem.write(s.rf[inst.rn],     4, s.rf[inst.rd])
+            s.mem.write(s.rf[inst.rn] + 4, 4, s.rf[inst.rd + 1])
+        else:
+            s.mem.write(s.rf[inst.rn], size, s.rf[inst.rd])
     else:          # LOAD
-        s.rf[inst.rd] = s.mem.read(s.rf[inst.rn], size)
+        if size == 8:  # 64 bit load.
+            value = s.mem.read(s.rf[inst.rn], size)
+            s.rf[inst.rd] = (value & 0xFFFFFFFF00000000) >> 32
+            s.rf[inst.rd + 1] = (value & 0xFFFFFFFF)
+        else:
+            s.rf[inst.rd] = s.mem.read(s.rf[inst.rn], size)
     s.rf[inst.rn] = trim_32(new_rn)
     s.pc += 4
 
@@ -42,9 +51,18 @@ def make_ldstrdisp_executor(is16bit):
         offset = (inst.imm3 << inst.size) if is16bit else (inst.imm11 << inst.size)
         address = (s.rf[inst.rn] - offset if inst.sub else s.rf[inst.rn] + offset)
         if inst.s:  # STORE
-            s.mem.write(address, size, s.rf[inst.rd])
+            if size == 8:  # 64 bit store.
+                s.mem.write(address,     4, s.rf[inst.rd])
+                s.mem.write(address + 4, 4, s.rf[inst.rd + 1])
+            else:
+                s.mem.write(address, size, s.rf[inst.rd])
         else:       # LOAD
-            s.rf[inst.rd] = trim_32(s.mem.read(address, size))
+            if size == 8:  # 64 bit load.
+                value = s.mem.read(address, size)
+                s.rf[inst.rd] = (value & 0xFFFFFFFF00000000) >> 32
+                s.rf[inst.rd + 1] = (value & 0xFFFFFFFF)
+            else:
+                s.rf[inst.rd] = s.mem.read(address, size)
         s.pc += 2 if is16bit else 4
     return ldstrdisp
 
@@ -72,9 +90,18 @@ def make_ldstrindpm_executor(is16bit, postmodify):
                    else s.rf[inst.rn] + s.rf[inst.rm])
         size = {0:1, 1:2, 2:4, 3:8}[inst.size]  # Size in bytes.
         if inst.s:  # STORE
-            s.mem.write(address, size, s.rf[inst.rd])
+            if size == 8:  # 64 bit store.
+                s.mem.write(address,     4, s.rf[inst.rd])
+                s.mem.write(address + 4, 4, s.rf[inst.rd + 1])
+            else:
+                s.mem.write(address, size, s.rf[inst.rd])
         else:       # LOAD
-            s.rf[inst.rd] = trim_32(s.mem.read(address, size))
+            if size == 8:  # 64 bit load.
+                value = s.mem.read(address, size)
+                s.rf[inst.rd] = (value & 0xFFFFFFFF00000000) >> 32
+                s.rf[inst.rd + 1] = (value & 0xFFFFFFFF)
+            else:
+                s.rf[inst.rd] = s.mem.read(address, size)
         if postmodify:
             s.rf[inst.rn] = trim_32(address)
         s.pc += 2 if is16bit else 4

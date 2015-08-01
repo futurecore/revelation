@@ -31,7 +31,7 @@ def parse_pydgin_inst(line):
     True
 
     >>> i1 = parse_pydgin_inst('      b0 020040fc ldstrpmd32   13       :: RD.RF[0 ] = 000002f8 :: :: WR.MEM[000002f8] = 00000000 :: WR.RF[0 ] = 00000300')
-    >>> ex1 = {'line': '      b0 020040fc ldstrpmd32   13       :: RD.RF[0 ] = 000002f8 :: :: WR.MEM[000002f8] = 00000000 :: WR.RF[0 ] = 00000300', 'mem': (760, 0), 'pc': 176, 'reg': 768}
+    >>> ex1 = {'line': '      b0 020040fc ldstrpmd32   13       :: RD.RF[0 ] = 000002f8 :: :: WR.MEM[000002f8] = 00000000 :: WR.RF[0 ] = 00000300', 'mem': [(760, 0)], 'pc': 176, 'reg': [768]}
     >>> i1 == ex1
     True
     """
@@ -56,11 +56,17 @@ def parse_pydgin_inst(line):
             reg = int(reg)  # Register number (address) not produced by e-sim.
             skip = 2 if reg >= 10 else 3
             value = int(tokens[4:][index + skip], 16)
-            inst['reg'] = value
+            if 'reg' in inst:
+                inst['reg'].append(value)
+            else:
+                inst['reg'] = [value]
         elif tok.startswith('WR.MEM['):  # Writing to memory.
             addr = int(tok[7:-1], 16)
             value = int(tokens[4:][index + 2], 16)
-            inst['mem'] = (addr, value)
+            if 'mem' in inst:
+                inst['mem'].append((addr, value))
+            else:
+                inst['mem'] = [(addr, value)]
         else:  # Next tok might be a flag.
             for flag in _py_flags:
                 if tok.startswith(flag):
@@ -80,7 +86,7 @@ def parse_esim_inst(line):
     True
 
     >>> i1 = parse_esim_inst('0x0000b0 ---   _epiphany_star  strd r2,[r0],+0x1 - memaddr <- 0x2f8, memory <- 0x0, memaddr <- 0x2fc, memory <- 0x0, registers <- 0x300')
-    >>> ex1 = {'line': '0x0000b0 ---   _epiphany_star  strd r2,[r0],+0x1 - memaddr <- 0x2f8, memory <- 0x0, memaddr <- 0x2fc, memory <- 0x0, registers <- 0x300', 'mem': [(760, 0), (764, 0)], 'pc': 176, 'reg': 768}
+    >>> ex1 = {'line': '0x0000b0 ---   _epiphany_star  strd r2,[r0],+0x1 - memaddr <- 0x2f8, memory <- 0x0, memaddr <- 0x2fc, memory <- 0x0, registers <- 0x300', 'mem': [(760, 0), (764, 0)], 'pc': 176, 'reg': [768]}
     >>> i1 == ex1
     True
     """
@@ -93,7 +99,10 @@ def parse_esim_inst(line):
     for index, tok in enumerate(tokens[1:]):
         if tok == 'registers' or tok == 'core-registers':  # Writing to a register.
             value = int(tokens[1:][index + 2].split(',')[0], 16)
-            inst['reg'] = value
+            if 'reg' in inst:
+                inst['reg'].append(value)
+            else:
+                inst['reg'] = [value]
         elif tok == 'memaddr':  # Writing to memory.
             addr = tokens[1:][index + 2].split(',')[0]
             addr = int(addr, 16)
@@ -102,7 +111,7 @@ def parse_esim_inst(line):
             if 'mem' in inst:
                 inst['mem'].append((addr, value))
             else:
-                inst['mem'] = [ (addr, value) ]
+                inst['mem'] = [(addr, value)]
         else:  # Next tok might be a flag.
             if tok in _e_flags.keys():
                 state = tokens[1:][index + 2].split(',')[0]
@@ -166,9 +175,9 @@ def compare_instructions(py_inst, e_inst):
     "memaddr <- 0x2f8, memory <- 0x0, memaddr <- 0x2fc, memory <- 0x0,"
 
     >>> e_inst0 = {'pc': 0, 'line': '0x000000                       b.l 0x0000000000000058 - pc <- 0x58    - nbit <- 0x0', 'AN': False}
-    >>> e_inst1 = {'mem': [(760, 0), (764, 0)], 'pc': 176, 'line': '0x0000b0 ---   _epiphany_star  strd r2,[r0],+0x1 - memaddr <- 0x2f8, memory <- 0x0, memaddr <- 0x2fc, memory <- 0x0, registers <- 0x300', 'reg': 768}
+    >>> e_inst1 = {'mem': [(760, 0), (764, 0)], 'pc': 176, 'line': '0x0000b0 ---   _epiphany_star  strd r2,[r0],+0x1 - memaddr <- 0x2f8, memory <- 0x0, memaddr <- 0x2fc, memory <- 0x0, registers <- 0x300', 'reg': [768]}
     >>> py_inst0 = {'pc': 0, 'line': '       0 00002ce8 bcond32      0        AN=False', 'AN': False}
-    >>> py_inst1 = {'mem': (760, 0), 'pc': 176, 'line': '      b0 020040fc ldstrpmd32   13       :: RD.RF[0 ] = 000002f8 :: :: WR.MEM[000002f8] = 00000000 :: WR.RF[0 ] = 00000300', 'reg': 768}
+    >>> py_inst1 = {'mem': [(760, 0), (764, 0)], 'pc': 176, 'line': '      b0 020040fc ldstrpmd32   13       :: RD.RF[0 ] = 000002f8 :: :: WR.MEM[000002f8] = 00000000 :: WR.RF[0 ] = 00000300', 'reg': [768]}
     >>> compare_instructions(py_inst0, e_inst0) is None
     True
     >>> compare_instructions(py_inst1, e_inst1) is None
@@ -183,25 +192,30 @@ def compare_instructions(py_inst, e_inst):
                 'Revelation: {0}, e-sim: {1}').format(hex(py_inst['pc']),
                                                       hex(e_inst['pc']))
     if 'reg' in py_inst and 'reg' in e_inst:
-        if py_inst['reg'] != e_inst['reg']:
-            return ('Registers differ. ' +
-                    'Revelation: {0}, e-sim: {1}').format(hex(py_inst['reg']),
-                                                       hex(e_inst['reg']))
+        e_reg_sorted  = sorted(e_inst['reg'])
+        py_reg_sorted = sorted(py_inst['reg'])
+
+        if py_reg_sorted != e_reg_sorted:
+            msg = 'Registers differ. Revelation: '
+            for value in py_reg_sorted:
+                msg += 'rf<-' + hex(value) + ' '
+            msg += 'e-sim: '
+            for value in e_reg_sorted:
+                msg += 'rf<-' + hex(value) + ' '
+            return msg
     if 'mem' in py_inst and 'mem' in e_inst:
-        # Unify memory writes from the e-sim trace.
-        e_mem = sorted(e_inst['mem'], key=lambda x: x[0])
-        e_mem_unified = e_mem[0]
-        offset = 1
-        for index, (addr, value) in enumerate(e_mem[1:]):
-            if (addr - e_mem_unified[0]) == (offset * 4):
-                e_mem_unified = (e_mem_unified[0], (e_mem_unified[1] << 4) | value)
-                offset += 1
-        if e_mem_unified != py_inst['mem']:
-            return ('Memory regions differ. Revelation: {0}<-{1} ' +
-                    'e-sim: {2}<-{3}').format(hex(py_inst['mem'][0]),
-                                             hex(py_inst['mem'][1]),
-                                             hex(e_mem_unified[0]),
-                                             hex(e_mem_unified[1]))
+        # One instruction may contain more than one memory write.
+        # Sort memory writes on address.
+        e_mem_sorted  = sorted(e_inst['mem'], key=lambda x: x[0])
+        py_mem_sorted = sorted(py_inst['mem'], key=lambda x: x[0])
+        if e_mem_sorted != py_mem_sorted:
+            msg = 'Memory regions differ. Revelation: '
+            for (addr, value) in py_mem_sorted:
+                msg += hex(addr) + '<-' + value + ' '
+            msg += 'e-sim: '
+            for (addr, value) in e_mem_sorted:
+                msg += hex(addr) + '<-' + value + ' '
+            return msg
     for flag in _py_flags:
         # e-sim only prints flags if they have been updated.
         if (flag in py_inst and
@@ -209,7 +223,7 @@ def compare_instructions(py_inst, e_inst):
             not (py_inst[flag] == e_inst[flag])):
             return ('Flags differ. Revelation: {0}<-{1} ' +
                     'e-sim: {2}<-{3}').format(flag, str(py_inst[flag]),
-                                             flag, str(e_inst[flag]))
+                                              flag, str(e_inst[flag]))
     return None
 
 
