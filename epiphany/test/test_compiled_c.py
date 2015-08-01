@@ -6,7 +6,7 @@ import pytest
 elf_dir = os.path.join('epiphany', 'test', 'c')
 
 
-@pytest.mark.parametrize("elf_file,expected", [('nothing.elf',   176),
+@pytest.mark.parametrize("elf_file,expected", [('nothing.elf',   236),
                                                ('fib.elf',       441),
                                               ])
 def test_compiled_c(elf_file, expected, capsys):
