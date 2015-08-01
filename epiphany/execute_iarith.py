@@ -3,8 +3,7 @@ from epiphany.utils import (borrow_from,
                             carry_from,
                             overflow_from_add,
                             overflow_from_sub,
-                            reg_or_imm,
-                            signed,
+                            reg_or_simm,
                             )
 
 #-----------------------------------------------------------------------
@@ -19,15 +18,15 @@ def make_addsub_executor(is16bit, name):
         AC = CARRY OUT (ADD) ~BORROW (SUB)
         if ( RD[31:0] == 0 ) { AZ=1 } else { AZ=0 }
         if (( RD[31] & ~RM[31] & ~RN[31] ) | ( ~RD[31] & RM[31] & RN[31] ))
-        { OV=1 }
-        else { OV=0 }
+        { AV=1 }
+        else { AV=0 }
         AVS = AVS | AV
         """
         if is16bit:
             inst.bits &= 0xffff
-        op2 = reg_or_imm(s, inst, is16bit)
-        result = (signed(s.rf[inst.rn]) + op2 if name == 'add'
-                  else signed(s.rf[inst.rn]) - op2)
+        op2 = reg_or_simm(s, inst, is16bit)
+        result = (s.rf[inst.rn] + op2 if name == 'add'
+                  else s.rf[inst.rn] - op2)
         s.rf[inst.rd] = trim_32(result)
         if name == 'add':
             s.AC = carry_from(result)

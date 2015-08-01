@@ -6,12 +6,11 @@ signed = pydgin.utils.signed
 sext_8 = pydgin.utils.sext_8
 
 
-def reg_or_imm(state, inst, is16bit):
+def reg_or_simm(state, inst, is16bit):
     if is16bit:
-        val = signed(state.rf[inst.rm]) if inst.bit0 == 0 else signed(sext_3(inst.imm3))
+        val = state.rf[inst.rm] if inst.bit0 == 0 else sext_3(inst.imm3)
     else:
-        val = (signed(state.rf[inst.rm]) if inst.bit2 == 1
-               else signed(sext_11(inst.imm11)))
+        val = state.rf[inst.rm] if inst.bit2 == 1 else sext_11(inst.imm11)
     return val
 
 
