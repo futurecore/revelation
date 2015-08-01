@@ -148,7 +148,7 @@ def diff_files(trace0, trace1):
     for num, (py_inst, e_inst) in enumerate(zip(py_trace, e_trace)):
         diff = compare_instructions(py_inst, e_inst)
         if diff is not None:
-            print('Semantics of instruction at {0} differ:'.format(hex(num)))
+            print('Semantics of instruction at {0} differ:'.format(hex(e_inst['pc'])))
             print('  Revelation: {0}'.format(py_inst['line']))
             print('  e-sim:      {0}'.format(e_inst['line']))
             print(diff)
