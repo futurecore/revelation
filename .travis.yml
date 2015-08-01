@@ -6,16 +6,28 @@ python:
 env:
     - TRANSLATE=true
 
+cache:
+    directories:
+        - $HOME/.cache/pip
+
 install:
+    - pip install --disable-pip-version-check --upgrade pip
     - pip install -r requirements.txt
-    - pip install coveralls
     - cd ${HOME}
     - wget https://github.com/cornell-brg/pydgin/archive/master.zip
     - unzip master.zip
     - mv pydgin-master pydgin
+
+    # Download & extract latest PyPy source code
+    # Exclude bundled versions of py, pytest, & pytest-cov
     - cd ${HOME}
     - wget https://bitbucket.org/pypy/pypy/get/default.tar.gz
-    - mkdir pypy && tar xf default.tar.gz -C pypy --strip-components 1
+    - tar xf default.tar.gz --transform 's/pypy-pypy-[0-9a-f]\+/pypy/'
+                            --exclude 'pypy-pypy-*/py/*'
+                            --exclude 'pypy-pypy-*/_pytest/*'
+                            --exclude 'pypy-pypy-*/pytest.py'
+                            --exclude 'pypy-pypy-*/pytest_cov.py'
+
     - cd $TRAVIS_BUILD_DIR
     - export PYTHONPATH=${PYTHONPATH}:${HOME}/pydgin/:${HOME}/pypy
 
