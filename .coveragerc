@@ -1,3 +1,6 @@
+[run]
+omit = epiphany/test/*
+
 [report]
 # Regexes for lines to exclude from consideration
 exclude_lines =

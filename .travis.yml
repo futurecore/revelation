@@ -32,7 +32,9 @@ install:
     - export PYTHONPATH=${PYTHONPATH}:${HOME}/pydgin/:${HOME}/pypy
 
 script:
-    - py.test -n 4 --cov-report term-missing --cov epiphany epiphany/test/
+    - py.test -n 4 --cov-config .coveragerc
+                   --cov-report term-missing
+                   --cov=epiphany epiphany/test/
     - python -m doctest scripts/diff_trace.py
     - test "$TRANSLATE" == "true" && ${HOME}/pypy/rpython/bin/rpython --opt=jit epiphany/sim.py || true
 
