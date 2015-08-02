@@ -6,6 +6,87 @@ import opcode_factory
 import pytest
 
 
+def test_64bit_load_disppm():
+    state = new_state(rf5=8)
+    state.mem.write(8, 4,  0xFFFFFFFF)
+    state.mem.write(12, 4, 0xFFFFFFFF)
+    # bb: 00=byte, 01=half-word, 10=word, 11=double-word
+    instr = opcode_factory.ldstrpmd32(rd=0, rn=5, imm=0, bb=0b11, s=0)
+    name, executefn = decode(instr)
+    executefn(state, Instruction(instr, None))
+    expected_state = StateChecker(rf0=0xFFFFFFFF, rf1=0xFFFFFFFF)
+    expected_state.check(state)
+
+
+def test_64bit_store_disppm():
+    state = new_state(rf0=0xFFFFFFFF, rf1=0xFFFFFFFF, rf5=8)
+    # bb: 00=byte, 01=half-word, 10=word, 11=double-word
+    instr = opcode_factory.ldstrpmd32(rd=0, rn=5, sub=0, imm=1, bb=0b11, s=1)
+    name, executefn = decode(instr)
+    executefn(state, Instruction(instr, None))
+    expected_state = StateChecker(rf0=0xFFFFFFFF, rf1=0xFFFFFFFF)
+    expected_state.check(state, memory=[(8, 4, 0xFFFFFFFF),
+                                        (12, 4, 0xFFFFFFFF)])
+
+
+@pytest.mark.parametrize('opcode', [opcode_factory.ldstrdisp16,
+                                    opcode_factory.ldstrdisp32,
+                                    ])
+def test_64bit_load_disp(opcode):
+    state = new_state(rf5=8)
+    state.mem.write(8, 4,  0xFFFFFFFF)
+    state.mem.write(12, 4, 0xFFFFFFFF)
+    # bb: 00=byte, 01=half-word, 10=word, 11=double-word
+    instr = opcode(rd=2, rn=5, imm=0, bb=0b11, s=0)
+    name, executefn = decode(instr)
+    executefn(state, Instruction(instr, None))
+    expected_state = StateChecker(rf2=0xFFFFFFFF, rf3=0xFFFFFFFF)
+    expected_state.check(state)
+
+
+@pytest.mark.parametrize('opcode', [opcode_factory.ldstrdisp16,
+                                    opcode_factory.ldstrdisp32,
+                                    ])
+def test_64bit_store_disp(opcode):
+    state = new_state(rf0=0xFFFFFFFF, rf1=0xFFFFFFFF, rf5=8)
+    # bb: 00=byte, 01=half-word, 10=word, 11=double-word
+    instr = opcode(rd=0, rn=5, imm=0, bb=0b11, s=1)
+    name, executefn = decode(instr)
+    executefn(state, Instruction(instr, None))
+    expected_state = StateChecker(rf0=0xFFFFFFFF, rf1=0xFFFFFFFF)
+    expected_state.check(state, memory=[(8, 4, 0xFFFFFFFF),
+                                        (12, 4, 0xFFFFFFFF)])
+
+
+@pytest.mark.parametrize('opcode', [opcode_factory.ldstrind16,
+                                    opcode_factory.ldstrind32,
+                                   ])
+def test_64bit_load_index(opcode):
+    state = new_state(rf5=8)
+    state.mem.write(8, 4,  0xFFFFFFFF)
+    state.mem.write(12, 4, 0xFFFFFFFF)
+    # bb: 00=byte, 01=half-word, 10=word, 11=double-word
+    instr = opcode(rd=0, rn=5, sub=0, bb=0b11, s=0)
+    name, executefn = decode(instr)
+    executefn(state, Instruction(instr, None))
+    expected_state = StateChecker(rf0=0xFFFFFFFF, rf1=0xFFFFFFFF)
+    expected_state.check(state)
+
+
+@pytest.mark.parametrize('opcode', [opcode_factory.ldstrind16,
+                                    opcode_factory.ldstrind32,
+                                   ])
+def test_64bit_store_index(opcode):
+    state = new_state(rf0=0xFFFFFFFF, rf1=0xFFFFFFFF, rf5=8)
+    # bb: 00=byte, 01=half-word, 10=word, 11=double-word
+    instr = opcode(rd=0, rn=5, rm=6, sub=0, bb=0b11, s=1)
+    name, executefn = decode(instr)
+    executefn(state, Instruction(instr, None))
+    expected_state = StateChecker(rf0=0xFFFFFFFF, rf1=0xFFFFFFFF)
+    expected_state.check(state, memory=[(8, 4, 0xFFFFFFFF),
+                                        (12, 4, 0xFFFFFFFF)])
+
+
 @pytest.mark.parametrize('sub,new_rn', [(1, 8 - 4),
                                         (0, 8 + 4),
                                         (1, 8 - 4),
