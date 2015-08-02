@@ -24,7 +24,7 @@ def execute_ldstrpmd32(s, inst):
     else:          # LOAD
         if size == 8:  # 64 bit load.
             value = s.mem.read(s.rf[inst.rn], size)
-            s.rf[inst.rd + 1] = (value & 0xFFFFFFFF00000000) >> 32
+            s.rf[inst.rd + 1] = (value >> 32) & 0xFFFFFFFF
             s.rf[inst.rd] = (value & 0xFFFFFFFF)
         else:
             s.rf[inst.rd] = s.mem.read(s.rf[inst.rn], size)
@@ -59,7 +59,7 @@ def make_ldstrdisp_executor(is16bit):
         else:       # LOAD
             if size == 8:  # 64 bit load.
                 value = s.mem.read(address, size)
-                s.rf[inst.rd + 1] = (value & 0xFFFFFFFF00000000) >> 32
+                s.rf[inst.rd + 1] = (value >> 32) & 0xFFFFFFFF
                 s.rf[inst.rd] = (value & 0xFFFFFFFF)
             else:
                 s.rf[inst.rd] = s.mem.read(address, size)
@@ -98,7 +98,7 @@ def make_ldstrindpm_executor(is16bit, postmodify):
         else:       # LOAD
             if size == 8:  # 64 bit load.
                 value = s.mem.read(address, size)
-                s.rf[inst.rd + 1] = (value & 0xFFFFFFFF00000000) >> 32
+                s.rf[inst.rd + 1] = (value >> 32) & 0xFFFFFFFF
                 s.rf[inst.rd] = (value & 0xFFFFFFFF)
             else:
                 s.rf[inst.rd] = s.mem.read(address, size)
