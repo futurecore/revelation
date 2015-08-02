@@ -79,7 +79,7 @@ class StateChecker(object):
             got = state.mem.read(location, size)
             if expected != got:
                     raise ValueError("Memory location %s differs. Expected: %s got: %s" %
-                                     (location, expected, got))
+                                     (location, hex(expected), hex(got)))
 
     def check(self, state, memory=[]):
         """Check all registers and flags against an expected state.
@@ -92,7 +92,7 @@ class StateChecker(object):
                 reg_name = index
             if expected != got:
                 raise ValueError("Register %s differs. Expected: %s got: %s" %
-                                 (reg_name, expected, got))
+                                 (reg_name, hex(expected), hex(got)))
         self.check_flags(state)
         self.check_memory(memory, state)
 
