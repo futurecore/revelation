@@ -42,8 +42,14 @@ def parse_pydgin_inst(line):
     tokens = line.split()
     if not tokens:
         return inst
+    # Pydgin prints traces to STDOUT, so the trace is mixed with "real" output.
+    # If the first token is not a number, we assume that this line of text was
+    # printed by the simulated program and move on.
+    try:
+        inst['pc'] = int(tokens[0], 16)
+    except ValueError:
+        return None
     inst['line'] = line
-    inst['pc'] = int(tokens[0], 16)
     # Skip the binary representation of the instruction at tokens[1].
     # Skip the name of the instruction at tokens[2].
     # Skip the number of the instruction at tokens[3] (as this will be
