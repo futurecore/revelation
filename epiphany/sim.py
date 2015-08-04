@@ -7,7 +7,7 @@ from epiphany.isa import decode
 from epiphany.machine import State, RESET_ADDR
 from epiphany.instruction import Instruction
 
-MEMORY_SIZE = 2**18  # 2^8 x 2^10 == 32kB.
+MEMORY_SIZE = 2**32  # Global on-chip address space.
 
 def new_memory():
     return Memory(size=MEMORY_SIZE, byte_storage=True)
