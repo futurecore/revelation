@@ -3,7 +3,9 @@
 #=======================================================================
 
 from pydgin.machine import Machine
-from pydgin.storage import RegisterFile
+
+from epiphany.isa import reg_map
+from epiphany.storage import EpiphanyRegisterFile
 
 RESET_ADDR = 0
 
@@ -17,7 +19,7 @@ class State(Machine):
     def __init__(self, memory, debug, reset_addr=RESET_ADDR):
         Machine.__init__(self,
                          memory,
-                         RegisterFile(constant_zero=False, num_regs=107),
+                         EpiphanyRegisterFile(memory=memory),
                          debug,
                          reset_addr=RESET_ADDR)
 
@@ -34,10 +36,16 @@ class State(Machine):
         self.BV  = False
         self.BVS = False
 
-    def set_register(self, index, value):
-        self.rf[index] = value
+    @property
+    def pc(self):
+        return self.rf[reg_map['pc']]
+
+    @pc.setter
+    def pc(self, value):
+        self.rf[reg_map['pc']] = value
 
     def fetch_pc(self):
+        # Override method from base class. Needed by Pydgin.
         return self.pc
 
     def debug_flags(self):

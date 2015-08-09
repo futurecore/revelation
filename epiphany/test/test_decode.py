@@ -134,14 +134,14 @@ def test_decode_add32_immediate_argument():
 def test_mov_special_registers():
     # Note that in the MOV 'special' instructions rd and rn are swapped.
     instr = Instruction(opcode_factory.movfs16(rn=0, rd='CONFIG'), '')
-    assert instr.rd == 1  # 65 - 64
+    assert instr.rd == 0
     assert instr.rn == 0
-    instr = Instruction(opcode_factory.movfs32(rn=0, rd='pc'), '')
-    assert instr.rd == 3  # 67 - 64
+    instr = Instruction(opcode_factory.movfs32(rn=0, rd='IRET'), '')
     assert instr.rn == 0
+    assert instr.rd == 8
     instr = Instruction(opcode_factory.movts16(rn='CONFIG', rd=0), '')
     assert instr.rd == 0
-    assert instr.rn == 1  # 65 - 64
-    instr = Instruction(opcode_factory.movts32(rn='pc', rd=0), '')
+    assert instr.rn == 0
+    instr = Instruction(opcode_factory.movts32(rn='IRET', rd=0), '')
+    assert instr.rn == 8
     assert instr.rd == 0
-    assert instr.rn == 3  # 67 -64

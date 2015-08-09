@@ -11,7 +11,7 @@ def make_movcond_executor(is16bit):
             RD = RN
         """
         if is16bit:
-            inst.bits &= 0xffff
+            inst.bits &= 0xFFFF
         rd = inst.rd
         rn = inst.rn
         if condition_passed(s, inst.cond):
@@ -30,7 +30,7 @@ def make_movimm_executor(is16bit, is_t):
         RD=<imm>
         """
         if is16bit:
-            inst.bits &= 0xffff
+            inst.bits &= 0xFFFF
         s.rf[inst.rd] = (s.rf[inst.rd] | (inst.imm16 << 16)) if is_t else inst.imm16
         s.pc += 2 if is16bit else 4
     return execute_movimm
@@ -46,13 +46,15 @@ def make_mov_executor(is16bit, rd_is_special=False, rn_is_special=False):
         RD=RN
         """
         if is16bit:
-            inst.bits &= 0xffff
+            inst.bits &= 0xFFFF
         if rd_is_special:
-            rd = inst.rn + 64
-            rn = inst.rd
+            rd_address = 0xF0400 + (0x4 * inst.rn)
+            rn = s.rf[inst.rd]
+            s.rf.set_register_by_address(rd_address, rn)
         elif rn_is_special:
-            rn = inst.rd + 64
+            rn_address = 0xF0400 + (0x4 * inst.rd)
             rd = inst.rn
-        s.rf[rd] = s.rf[rn]
+            value = s.rf.get_register_by_address(rn_address)
+            s.rf[rd] = value
         s.pc += 2 if is16bit else 4
     return execute_mov

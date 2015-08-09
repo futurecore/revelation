@@ -29,6 +29,7 @@ reg_map = {
     'r32'  : 32,   'r33'  : 33,   'r34'  : 34,   'r35'  : 35,
     'r36'  : 36,   'r37'  : 37,   'r38'  : 38,   'r39'  : 39,
     'r40'  : 40,   'r41'  : 41,   'r42'  : 42,   'r43'  : 43,
+    'r44'  : 44,   'r45'  : 45,   'r46'  : 46,   'r47'  : 47,
     'r48'  : 48,   'r49'  : 49,   'r50'  : 50,   'r51'  : 51,
     'r52'  : 52,   'r53'  : 53,   'r54'  : 54,   'r55'  : 55,
     'r56'  : 56,   'r57'  : 57,   'r58'  : 58,   'r59'  : 59,
@@ -40,56 +41,53 @@ reg_map = {
     'SP' : 13,  # Stack pointer
     'LR' : 14,  # Link register
     # Special registers.
-    'UNUSED'      : 64,
-    'CONFIG'      : 65,  # Core configuration
-    'STATUS'      : 66,  # Core status
-    'pc'          : 67,  # Program counter
-    'DEBUGSTATUS' : 68,  # Debug status
-    'LC'          : 69,  # Hardware counter loop
-    'LS'          : 70,  # Hardware counter start address
-    'LE'          : 71,  # Hardware counter end address
-    'IRET'        : 72,  # Interrupt PC return address
-    'IMASK'       : 73,  # Interrupt mask
-    'ILAT'        : 74,  # Interrupt latch
-    'ILATST'      : 75,  # Alias for setting interrupts
-    'ILATCL'      : 76,  # Alias for clearing interrupts
-    'IPEND'       : 77,  # Interrupt currently in progress
-    'FSTATUS'     : 78,  # Alias for writing to all STATUS bits
-    'DEBUGCMD'    : 79,  # Debug command register
-    'RESETCORE'   : 80,  # Per core software reset
+    'CONFIG'      : 64,  # Core configuration
+    'STATUS'      : 65,  # Core status
+    'pc'          : 66,  # Program counter
+    'DEBUGSTATUS' : 67,  # Debug status
+    'LC'          : 68,  # Hardware counter loop
+    'LS'          : 69,  # Hardware counter start address
+    'LE'          : 70,  # Hardware counter end address
+    'IRET'        : 71,  # Interrupt PC return address
+    'IMASK'       : 72,  # Interrupt mask
+    'ILAT'        : 73,  # Interrupt latch
+    'ILATST'      : 74,  # Alias for setting interrupts
+    'ILATCL'      : 75,  # Alias for clearing interrupts
+    'IPEND'       : 76,  # Interrupt currently in progress
+    'FSTATUS'     : 77,  # Alias for writing to all STATUS bits
+    'DEBUGCMD'    : 78,  # Debug command register
+    'RESETCORE'   : 79,  # Per core software reset
     # Event timer registers
-    'CTIMER0'     : 81,  # Core timer 0
-    'CTIMER1'     : 82,  # Core timer 1
+    'CTIMER0'     : 80,  # Core timer 0
+    'CTIMER1'     : 81,  # Core timer 1
     # Process control registers
-    'MEMSTATUS'   : 83,  # Memory protection status
-    'MEMPROTECT'  : 84,  # Memory protection registration
+    'MEMSTATUS'   : 82,  # Memory protection status
+    'MEMPROTECT'  : 83,  # Memory protection registration
     # DMA registers
-    'DMA0CONFIG'  : 85,  # DMA channel 0 configuration
-    'DMA0STRIDE'  : 86,  # DMA channel 0 stride
-    'DMA0COUNT'   : 87,  # DMA channel 0 count
-    'DMA0SRCADDR' : 88,  # DMA channel 0 source address
-    'DMA0DSTADDR' : 89,  # DMA channel 0 destination address
-    'DMA0AUTO0'   : 90,  # DMA channel 0 slave lower data
-    'DMA0AUTO1'   : 91,  # DMA channel 0 slave upper data
-    'DMA0STATUS'  : 92,  # DMA channel 0 status
-    'DMA1CONFIG'  : 93,  # DMA channel 1 configuration
-    'DMA1STRIDE'  : 94,  # DMA channel 1 stride
-    'DMA1COUNT'   : 95,  # DMA channel 1 count
-    'DMA1SRCADDR' : 96,  # DMA channel 1 source address
-    'DMA1DSTADDR' : 97,  # DMA channel 1 destination address
-    'DMA1AUTO0'   : 98,  # DMA channel 1 slave lower data
-    'DMA1AUTO1'   : 99,  # DMA channel 1 slave upper data
-    'DMA1STATUS'  : 100, # DMA channel 1 status
+    'DMA0CONFIG'  : 84,  # DMA channel 0 configuration
+    'DMA0STRIDE'  : 85,  # DMA channel 0 stride
+    'DMA0COUNT'   : 86,  # DMA channel 0 count
+    'DMA0SRCADDR' : 87,  # DMA channel 0 source address
+    'DMA0DSTADDR' : 88,  # DMA channel 0 destination address
+    'DMA0AUTO0'   : 89,  # DMA channel 0 slave lower data
+    'DMA0AUTO1'   : 90,  # DMA channel 0 slave upper data
+    'DMA0STATUS'  : 91,  # DMA channel 0 status
+    'DMA1CONFIG'  : 92,  # DMA channel 1 configuration
+    'DMA1STRIDE'  : 93,  # DMA channel 1 stride
+    'DMA1COUNT'   : 94,  # DMA channel 1 count
+    'DMA1SRCADDR' : 95,  # DMA channel 1 source address
+    'DMA1DSTADDR' : 96,  # DMA channel 1 destination address
+    'DMA1AUTO0'   : 97,  # DMA channel 1 slave lower data
+    'DMA1AUTO1'   : 98,  # DMA channel 1 slave upper data
+    'DMA1STATUS'  : 99,  # DMA channel 1 status
     # Mesh node control registers
-    'MESHCONFIG'  : 101, # Mesh node configuration
-    'COREID'      : 102, # Processor core ID
-    'MULTICAST'   : 103, # Multicast configuration
-    'CMESHROUTE'  : 104, # cMesh routing configuration, 12 bits
-    'XMESHROUTE'  : 105, # xMesh routing configuration, 12 bits
-    'RMESHROUTE'  : 106, # rMesh routing configuration, 12 bits
-    # Other control registers
-    'RESETCORE'   : 107, # Write-only, 1 bit
-     }
+    'MESHCONFIG'  : 100, # Mesh node configuration
+    'COREID'      : 101, # Processor core ID
+    'MULTICAST'   : 102, # Multicast configuration
+    'CMESHROUTE'  : 103, # cMesh routing configuration, 12 bits
+    'XMESHROUTE'  : 104, # xMesh routing configuration, 12 bits
+    'RMESHROUTE'  : 105, # rMesh routing configuration, 12 bits
+}
 
 
 #=======================================================================

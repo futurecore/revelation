@@ -1,5 +1,5 @@
 from epiphany.isa import reg_map
-
+from epiphany.storage import register_map
 
 def make_zero_operand_factory(opcode):
     def factory():
@@ -304,8 +304,12 @@ def make_mov_special_factory(is16bit, is_from):
     # Note that in the MOV 'special' instructions rd and rn are swapped.
     # TODO: Find out what M0 and M1 are for.
     def mov(rd=0, rn=0):
-        rn = (reg_map[rn] - 64) if not is_from else rn
-        rd = (reg_map[rd] - 64) if is_from else rd
+        if is_from:
+            rd_address = register_map[reg_map[rd]][0]
+            rd = (rd_address - 0xF0400) / 0x4
+        else:
+            rn_address = register_map[reg_map[rn]][0]
+            rn = (rn_address - 0xF0400) / 0x4
         if is16bit and is_from:
             opcode = 0b0100010010
         elif is16bit and not is_from:

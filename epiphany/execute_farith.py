@@ -1,5 +1,5 @@
 from epiphany.utils import bits2float, float2bits, get_exponent
-from pydgin.utils import trim_32
+from pydgin.utils import signed, trim_32
 
 import math
 
@@ -33,7 +33,7 @@ def make_farith_executor(name, is16bit, is_unary=False):
             result = rd - (rn * rm)
         # Unary operations.
         elif name == 'float':
-            result = float(s.rf[inst.rn])
+            result = float(signed(s.rf[inst.rn]))
         elif name == 'fix':
             if math.isnan(rn): # FXIME
                 result = 0xffffffff

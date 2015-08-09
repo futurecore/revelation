@@ -22,9 +22,9 @@ def new_state(mem=None, debug=Debug(), **args):
             if index >= 107:
                 raise ValueError("The Epiphany only has 107 registers cannot set rf[%d]." %
                                  index)
-            state.set_register(index, value)
+            state.rf[index] = value
         elif arg.startswith("rf") and arg[2:] in reg_map:
-            state.set_register(reg_map[arg[2:]], value)
+            state.rf[reg_map[arg[2:]]] = value
         else:
             raise KeyError('No such register: {0}'.format(arg[2:]))
     return state

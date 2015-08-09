@@ -17,6 +17,7 @@ exclude_lines =
 
     # Don't complain about not generating debug output.
     if self.debug.enabled('flags'):
+    if self.debug.enabled('rf'):
     s.debug_flags()
     print
 
