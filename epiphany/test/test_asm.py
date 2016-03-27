@@ -36,6 +36,13 @@ elf_dir = os.path.join('epiphany', 'test', 'asm')
         ('orr.elf', StateChecker(rf0=5, rf1=7, rf2=7)),
         pytest.mark.xfail(('rti.elf', StateChecker())), # FIXME
         ('rts.elf', StateChecker(rf1=100, rf2=200, rf3=300, rfLR=562)),
+        ('special_regs.elf', StateChecker(rf0=1, rf1=2, rf2=3, rf3=4, rf4=5,
+                                          rf5=6, rf6=7, rf7=8, rf8=9, rf10=11,
+                                          rf11=12,
+                                          rfCONFIG=1, rfSTATUS=2, # rfpc=3,
+                                          rfLC=4, rfLS=5, rfLE=6, rfIRET=7,
+                                          rfIMASK=8, rfILAT=9, rfILATST=10,
+                                          rfILATCL=11, rfIPEND=12)),
         ('sub.elf', StateChecker(rf0=100, rf1=20, rf2=80, rf3=80)),
         pytest.mark.xfail(('trap.elf', StateChecker())),
        ])
