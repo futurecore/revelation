@@ -84,15 +84,18 @@ class StateChecker(object):
     def check(self, state, memory=[]):
         """Check all registers and flags against an expected state.
         """
-        for index, expected in self.expected_registers:
+        reg_errors = ''
+        for index, expected in sorted(self.expected_registers, key=lambda x: x[0]):
             got = state.rf[index]
             if index > 63:
                 reg_name = (key for key, value in reg_map.items() if value==index).next()
             else:
                 reg_name = index
             if expected != got:
-                raise ValueError("Register %s differs. Expected: %s got: %s" %
+                reg_errors += ('Register %s differs. Expected: %s got: %s' %
                                  (reg_name, hex(expected), hex(got)))
+        if reg_errors:
+            raise ValueError(reg_errors)
         self.check_flags(state)
         self.check_memory(memory, state)
 
