@@ -4,7 +4,7 @@ python:
     - '2.7'
 
 env:
-    - TRANSLATE=true
+    - TRANSLATE=false
 
 cache:
     directories:
@@ -19,11 +19,10 @@ install:
     - mv pydgin-master pydgin
 
     # Download & extract latest PyPy source code
-    # Exclude bundled versions of py, pytest, & pytest-cov
+    # Exclude bundled versions of pytest, & pytest-cov
     - cd ${HOME}
     - wget https://bitbucket.org/pypy/pypy/get/default.tar.gz
     - tar xf default.tar.gz --transform 's/pypy-pypy-[0-9a-f]\+/pypy/'
-                            --exclude 'pypy-pypy-*/py/*'
                             --exclude 'pypy-pypy-*/_pytest/*'
                             --exclude 'pypy-pypy-*/pytest.py'
                             --exclude 'pypy-pypy-*/pytest_cov.py'
