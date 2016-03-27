@@ -17,9 +17,10 @@ class State(Machine):
                        'AVS', 'BN', 'BIS', 'BUS', 'BVS', 'BZ']
 
     def __init__(self, memory, debug, reset_addr=RESET_ADDR):
+        self.rf = EpiphanyRegisterFile(memory)
         Machine.__init__(self,
                          memory,
-                         EpiphanyRegisterFile(memory=memory),
+                         self.rf,
                          debug,
                          reset_addr=RESET_ADDR)
 
@@ -46,7 +47,7 @@ class State(Machine):
 
     def fetch_pc(self):
         # Override method from base class. Needed by Pydgin.
-        return self.pc
+        return self.rf[reg_map['pc']]
 
     def debug_flags(self):
         if self.debug.enabled('flags'):
