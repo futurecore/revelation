@@ -28,7 +28,7 @@ elf_dir = os.path.join('epiphany', 'test', 'asm')
         ('lsl.elf', StateChecker(rf0=5, rf1=7, rf2=640, rf3=640)),
         ('lsr.elf', StateChecker(rf0=3, rf1=1, rf2=1, rf3=1)),
         ('mov_cond.elf', StateChecker(rf0=0, rf1=15, rf2=15, rf3=15)),
-        pytest.mark.xfail(('movfs.elf', StateChecker(rf0=7, rf63=7, rfIRET=7))),
+        ('movfs.elf', StateChecker(rf0=7, rf63=7, rfIRET=7)),
         ('mov_imm.elf', StateChecker(rf0=25)),
         ('movt.elf', StateChecker(rf0=2415919104)),
         ('movts.elf', StateChecker(rf0=7, rfIRET=7)),  # FIXME
