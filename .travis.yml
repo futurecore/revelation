@@ -35,6 +35,7 @@ script:
                    --cov-report term-missing
                    --cov=epiphany epiphany/test/
     - python -m doctest scripts/diff_trace.py
+    - python -m doctest scripts/get_instructions_used.py
     - test "$TRANSLATE" == "true" && ${HOME}/pypy/rpython/bin/rpython --opt=jit epiphany/sim.py || true
 
 after_success: coveralls
