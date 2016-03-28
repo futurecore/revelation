@@ -21,8 +21,10 @@ _main:
     movts LE, r5
     movts IRET, r6
     movts IMASK, r7
-    movts ILAT, r8
     movts ILATST, r9
     movts ILATCL, r10
     movts IPEND, r11
+
+    movts ILAT, r8  ; ILAT is set by some aliased registers, so do this last.
+
 TEAR_DOWN
