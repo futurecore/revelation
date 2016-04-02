@@ -8,6 +8,25 @@ import pytest
 elf_dir = os.path.join('epiphany', 'test', 'asm')
 
 @pytest.mark.parametrize("elf,expected",
+       [('trap.elf', "Hello, world!"),
+       ])
+def test_elf_with_stdout(elf, expected, capfd):
+    """Test ELF files by checking STDOUT.
+    """
+    elf_filename = os.path.join(elf_dir, elf)
+    epiphany = Epiphany()
+    epiphany = Epiphany()
+    with open(elf_filename, 'rb') as elf:
+        epiphany.init_state(elf, elf_filename, '', [], False, is_test=True)
+        epiphany.max_insts = 10000
+        epiphany.run()
+        assert not epiphany.state.running
+        out, err = capfd.readouterr()
+        assert err == ''
+        assert expected in out
+
+
+@pytest.mark.parametrize("elf,expected",
        [('add.elf', StateChecker(rf1=110, rf2=7, rf3=105)),
         ('and.elf', StateChecker(rf0=0, rf1=1, rf2=1, rf3=0, rf4=0, rf5=0)),
         ('asr.elf', StateChecker(rf0=1, rf1=5, rf2=0, rf3=0)),
@@ -44,7 +63,6 @@ elf_dir = os.path.join('epiphany', 'test', 'asm')
                                           rfIMASK=8, rfILAT=9, rfILATST=10,
                                           rfILATCL=11, rfIPEND=12)),
         ('sub.elf', StateChecker(rf0=100, rf1=20, rf2=80, rf3=80)),
-        pytest.mark.xfail(('trap.elf', StateChecker())),
        ])
 def test_elf(elf, expected):
     """Test ELF files that deal in unsigned integers (rather than floats).
