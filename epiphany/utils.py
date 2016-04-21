@@ -2,8 +2,23 @@ import pydgin.utils
 
 import math
 
-signed = pydgin.utils.signed
-sext_8 = pydgin.utils.sext_8
+try:
+    from rpython.rlib.rarithmetic import r_uint, intmask
+    from rpython.rlib.objectmodel import specialize
+except ImportError:
+    r_uint = lambda x : x
+    intmask = lambda x : x
+    class Specialize(object):
+        def argtype(self, fun, *args):
+            return lambda fun : fun
+    specialize = Specialize()
+
+
+def signed(value):
+    if value & 0x8000000:
+        twos_complement = ~value + 1
+        return -intmask(trim_32(twos_complement))
+    return intmask(value)
 
 
 def reg_or_simm(state, inst, is16bit):
@@ -21,6 +36,13 @@ def sext_3(value):
         return 0XFFFFFFF8 | value
     return value
 
+def sext_8(value):
+    """Sign-extended 8 bit number.
+    """
+    if value & 0x80:
+        return 0xFFFFFF00 | value
+    return value
+
 
 def sext_11(value):
     """Sign-extended 11 bit number.
@@ -36,6 +58,12 @@ def sext_24(value):
     if value & 0x800000:
         return 0xFF000000 | value
     return value
+
+
+@specialize.argtype(0)
+def trim_32(value):
+    return value & 0xFFFFFFFF
+
 
 #
 # Floating point arithmetic.

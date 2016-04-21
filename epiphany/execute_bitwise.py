@@ -1,5 +1,4 @@
-from pydgin.utils import trim_32
-from epiphany.utils import signed
+from epiphany.utils import signed, trim_32
 
 #-----------------------------------------------------------------------
 # bit1632 - 16 or 32 bit bitwise arithmetic.

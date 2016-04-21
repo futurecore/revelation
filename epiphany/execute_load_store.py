@@ -1,4 +1,4 @@
-from pydgin.utils import trim_32
+from epiphany.utils import trim_32
 
 #-----------------------------------------------------------------------
 # ldstrpmd32 - load-store post-modify with displacement.

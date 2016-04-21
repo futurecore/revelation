@@ -1,9 +1,9 @@
-from pydgin.utils import trim_32
 from epiphany.utils import (borrow_from,
                             carry_from,
                             overflow_from_add,
                             overflow_from_sub,
                             reg_or_simm,
+                            trim_32,
                             )
 
 #-----------------------------------------------------------------------

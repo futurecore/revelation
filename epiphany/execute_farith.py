@@ -1,5 +1,5 @@
-from epiphany.utils import bits2float, float2bits, get_exponent
-from pydgin.utils import signed, trim_32
+from epiphany.utils import bits2float, float2bits, get_exponent, trim_32
+from pydgin.utils import signed
 
 import math
 

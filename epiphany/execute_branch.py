@@ -1,6 +1,5 @@
 from epiphany.condition_codes import condition_passed
-from epiphany.utils import signed, sext_8, sext_24
-from pydgin.utils import trim_32
+from epiphany.utils import signed, sext_8, sext_24, trim_32
 
 import epiphany.isa
 

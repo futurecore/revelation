@@ -1,9 +1,8 @@
-from pydgin.utils import trim_32
-
 from epiphany.instruction import Instruction
 from epiphany.isa import decode
 from epiphany.machine import RESET_ADDR
 from epiphany.test.machine import StateChecker, new_state
+from epiphany.utils import trim_32
 
 import opcode_factory
 import pytest

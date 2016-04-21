@@ -1,5 +1,4 @@
-from pydgin.utils import trim_32
-
+from epiphany.utils import trim_32
 import epiphany.isa
 
 #-----------------------------------------------------------------------

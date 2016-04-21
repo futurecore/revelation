@@ -4,7 +4,7 @@ python:
     - '2.7'
 
 env:
-    - TRANSLATE=false
+    - TRANSLATE=true
 
 cache:
     directories:
@@ -23,8 +23,6 @@ install:
     - cd ${HOME}
     - wget https://bitbucket.org/pypy/pypy/get/default.tar.gz
     - tar xf default.tar.gz --transform 's/pypy-pypy-[0-9a-f]\+/pypy/'
-                            --exclude 'pypy-pypy-*/_pytest/*'
-                            --exclude 'pypy-pypy-*/pytest.py'
                             --exclude 'pypy-pypy-*/pytest_cov.py'
 
     - cd $TRAVIS_BUILD_DIR

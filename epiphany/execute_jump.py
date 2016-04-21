@@ -1,5 +1,5 @@
 import epiphany.isa
-from pydgin.utils import trim_32
+from epiphany.utils import trim_32
 
 #-----------------------------------------------------------------------
 # jr32 and jr16 - jump.
