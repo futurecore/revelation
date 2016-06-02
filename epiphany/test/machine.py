@@ -4,7 +4,7 @@ from epiphany.sim import new_memory
 from epiphany.isa import reg_map
 from epiphany.utils import bits2float
 
-possible_attributes = "AN AZ AC AV AVS BN BV BIS BVS BUS BZ pc".split()
+possible_attributes = 'AN AZ AC AV AVS BN BV BIS BVS BUS BZ pc'.split()
 
 
 def new_state(mem=None, debug=Debug(), **args):
@@ -17,13 +17,13 @@ def new_state(mem=None, debug=Debug(), **args):
     for arg, value in args.items():
         if arg in possible_attributes:
             continue
-        elif arg.startswith("rf") and arg[2].isdigit():
+        elif arg.startswith('rf') and arg[2].isdigit():
             index = int(arg[2:])
             if index >= 107:
-                raise ValueError("The Epiphany only has 107 registers cannot set rf[%d]." %
+                raise ValueError('The Epiphany only has 107 registers cannot set rf[%d]. ' %
                                  index)
             state.rf[index] = value
-        elif arg.startswith("rf") and arg[2:] in reg_map:
+        elif arg.startswith('rf') and arg[2:] in reg_map:
             state.rf[reg_map[arg[2:]]] = value
         else:
             raise KeyError('No such register: {0}'.format(arg[2:]))
@@ -46,13 +46,13 @@ class StateChecker(object):
         for arg, value in args.items():
             if arg in possible_attributes:
                 continue
-            elif arg.startswith("rf") and arg[2].isdigit():
+            elif arg.startswith('rf') and arg[2].isdigit():
                 index = int(arg[2:])
                 if index >= 107:
-                    raise ValueError("The Epiphany only has 107 registers cannot set rf[%d]." %
+                    raise ValueError('The Epiphany only has 107 registers cannot set rf[%d]. ' %
                                      index)
                 self.expected_registers.append((index, value))
-            elif arg.startswith("rf") and arg[2:] in reg_map:
+            elif arg.startswith('rf') and arg[2:] in reg_map:
                 self.expected_registers.append((reg_map[arg[2:]], value))
             else:
                 raise KeyError('No such register: {0}'.format(arg[2:]))
@@ -65,7 +65,7 @@ class StateChecker(object):
                 expected = getattr(self, attr)
                 got = getattr(state, attr)
                 if expected != got:
-                    raise ValueError("Flag %s differs. Expected: %s got: %s" %
+                    raise ValueError('Flag %s differs. Expected: %s got: %s' %
                                      (attr, expected, got))
 
     def check_memory(self, memory, state):
@@ -78,7 +78,7 @@ class StateChecker(object):
         for (location, size, expected) in memory:
             got = state.mem.read(location, size)
             if expected != got:
-                    raise ValueError("Memory location %s differs. Expected: %s got: %s" %
+                    raise ValueError('Memory location %s differs; expected: %s got: %s. ' %
                                      (location, hex(expected), hex(got)))
 
     def check(self, state, memory=[]):
@@ -92,7 +92,7 @@ class StateChecker(object):
             else:
                 reg_name = index
             if expected != got:
-                reg_errors += ('Register %s differs. Expected: %s got: %s' %
+                reg_errors += ('Register %s differs; expected: %s got: %s. ' %
                                  (reg_name, hex(expected), hex(got)))
         if reg_errors:
             raise ValueError(reg_errors)
@@ -111,7 +111,7 @@ class StateChecker(object):
             else:
                 reg_name = index
             if abs(bits2float(expected) - bits2float(got)) > self.epsilon:
-                raise ValueError("Register %s differs by more than %.4f. Expected: %s got: %s" %
+                raise ValueError('Register %s differs by more than %.4f; expected: %s got: %s. ' %
                                  (reg_name, self.epsilon,
                                   bits2float(expected), bits2float(got)))
         self.check_flags(state)
