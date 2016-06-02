@@ -56,9 +56,11 @@ def execute_mbkpt16(s, inst):
 def execute_gie16(s, inst):
     """Enables all interrupts in ILAT register, dependent on the per bit
     settings in the IMASK register.
-    TODO: Implement interrupts.
         STATUS[1]=0
     """
+    for i, bit in enumerate(bin(s.rf[epiphany.isa.reg_map['IMASK']])[2:]):
+        if bit == '1':
+            s.rf[epiphany.isa.reg_map['ILAT']] &= ~(1 << i)
     s.rf[epiphany.isa.reg_map['STATUS']] &= ~(1 << 1)
     s.pc += 2
 
@@ -89,12 +91,25 @@ def execute_rti16(s, inst):
     STATUS[1] = 0;
     PC = IRET;
     <execute instruction at PC>
-    """
-    # FIXME: Set IPEND.
-    mask = 0xFFFFFFFD
-    s.rf[epiphany.isa.reg_map['STATUS']] &= mask
-    s.pc = s.rf[epiphany.isa.reg_map['IRET']]
 
+    If an RTI instruction is issued outside of an interrupt, the RTI
+    proceeds as if there were an interrupt to service:
+    https://parallella.org/forums/viewtopic.php?f=23&t=818&hilit=interrupt#p5185
+    """
+    # Let N be the interrupt level.
+    interrupt_level = 0
+    if s.rf[epiphany.isa.reg_map['IPEND']] > 0:
+        for index in range(10):
+            if (s.rf[epiphany.isa.reg_map['IPEND']] & (1 << index)):
+                interrupt_level = index
+                break
+    #     Bit N of IPEND is cleared.
+    if interrupt_level > 0:
+        s.rf[epiphany.isa.reg_map['IPEND']] &= ~(1 << interrupt_level)
+    #     The GID bit in STATUS is cleared.
+    s.rf[epiphany.isa.reg_map['STATUS']] &= ~(1 << 1)
+    #     PC is set to IRET.
+    s.pc = s.rf[epiphany.isa.reg_map['IRET']]
 
 #-----------------------------------------------------------------------
 # trap16

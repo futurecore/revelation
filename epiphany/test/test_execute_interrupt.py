@@ -59,12 +59,21 @@ def test_execute_bkpt16():
     assert not state.running
 
 
-def test_execute_rti16():
-    state = new_state(rfIRET=224, rfSTATUS=0b10, pc=0)
+def test_execute_rti16_no_interrupt():
+    state = new_state(rfIRET=224, rfSTATUS=0b00, pc=0)
     instr = opcode_factory.rti16()
     name, executefn = decode(instr)
     executefn(state, Instruction(instr, None))
     expected_state = StateChecker(pc=224, rfIRET=224, rfSTATUS=0b00)
+    expected_state.check(state)
+
+
+def test_execute_rti16_with_interrupt():
+    state = new_state(rfIRET=224, rfSTATUS=0b10, rfIPEND=0b1000000000, pc=0)
+    instr = opcode_factory.rti16()
+    name, executefn = decode(instr)
+    executefn(state, Instruction(instr, None))
+    expected_state = StateChecker(pc=224, rfIRET=224, rfIPEND=0b0, rfSTATUS=0b00)
     expected_state.check(state)
 
 
