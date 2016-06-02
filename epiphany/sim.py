@@ -17,6 +17,7 @@ class Epiphany(Sim):
 
     def __init__(self):
         Sim.__init__(self, "Epiphany", jit_enabled=True)
+        self.hardware_loop = False
         self.ivt = {  # Interrupt vector table.
             0 : 0x0,  # Sync hardware signal.
             1 : 0x4,  # Floating-point,invalid instruction or alignment.
@@ -34,7 +35,27 @@ class Epiphany(Sim):
         inst_str, exec_fun = decode(bits)
         return Instruction(bits, inst_str), exec_fun
 
+    def pre_execute(self):
+        # Check whether or not we are in a hardware loop, and set registers
+        # after the next instruction, as appropriate. See Section 7.9 of the
+        # Epiphany Architecture Reference Rev. 14.03.11:
+        #     When the program counter (PC) matches the value in LE and the LC
+        #     is greater than zero, the PC gets set to the address in LS. The
+        #     LC register decrements automatically every time the program
+        #     scheduler completes one iteration of the code loop defined by LS
+        #     and LE.
+        if ((self.state.rf[reg_map['STATUS']] & (1 << 1)) and
+            self.state.pc == self.state.rf[reg_map['LE']]):
+            self.state.rf[reg_map['LC']] -= 1
+            self.hardware_loop = True
+
     def post_execute(self):
+        # If we are in a hardware loop, and the loop counter is > 0,
+        # jump back to the start of the loop.
+        if self.hardware_loop and self.state.rf[reg_map['LC']] > 0:
+            self.state.pc = self.state.rf[reg_map['LS']]
+            self.hardware_loop = False
+            return
         # Service interrupts. See: http://blog.alexrp.com/epiphany-notes/
         if (self.state.rf[reg_map['ILAT']] == 0 or
             (self.state.rf[reg_map['STATUS']] & (1 << 1)) or
