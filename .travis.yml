@@ -1,37 +1,33 @@
 language: python
-
-python:
-    - '2.7'
-
+python: '2.7'
 cache: pip
-
 env:
-    - TRANSLATE=true
-
+  matrix:
+  - TRANSLATE=true
 install:
-    - pip install --disable-pip-version-check --upgrade pip
-    - pip install -r requirements.txt
-    - cd ${HOME}
-    - wget https://github.com/cornell-brg/pydgin/archive/master.zip
-    - unzip master.zip
-    - mv pydgin-master pydgin
-
-    # Download & extract latest PyPy source code
-    # Exclude bundled versions of pytest, & pytest-cov
-    - cd ${HOME}
-    - wget https://bitbucket.org/pypy/pypy/get/default.tar.gz
-    - tar xf default.tar.gz --transform 's/pypy-pypy-[0-9a-f]\+/pypy/'
-                            --exclude 'pypy-pypy-*/pytest_cov.py'
-
-    - cd $TRAVIS_BUILD_DIR
-    - export PYTHONPATH=${PYTHONPATH}:${HOME}/pydgin/
-
+- pip install --disable-pip-version-check --upgrade pip
+- pip install -r requirements.txt
+- cd ${HOME}
+- wget https://github.com/cornell-brg/pydgin/archive/master.zip
+- unzip master.zip
+- mv pydgin-master pydgin
+- cd ${HOME}
+- wget https://bitbucket.org/pypy/pypy/get/default.tar.gz
+- tar xf default.tar.gz --transform 's/pypy-pypy-[0-9a-f]\+/pypy/' --exclude 'pypy-pypy-*/pytest_cov.py'
+- cd $TRAVIS_BUILD_DIR
+- export PYTHONPATH=${PYTHONPATH}:${HOME}/pydgin/
 script:
-    - py.test -n 4 -rxXs --color=yes --doctest-modules --cov-config=.coveragerc --cov-report=term-missing --cov=revelation revelation/test/ scripts/
-    - test "$TRANSLATE" == "true" && PYTHONPATH=${HOME}/pydgin/:${HOME}/pypy:. ${HOME}/pypy/rpython/bin/rpython --no-pdb --opt=jit revelation/sim.py || true
-
-after_success: coveralls
-
-notifications:
-    slack:
-        secure: dBy5lkieNPYSmVhBOKXbHKCpgVJLQiuB0K89JmypE03FpRZSJKv1rwz/LG/herCgNOhwJ3/u/VEMEyfucLrkIYsgJjBcxU+Fby//iRZ9IroLLJr9J/xYG53kaMMsmyvohKSBdgl7IPqkwRRWB58Ac9iOvNmZPYsGwxqCHR7pRbHDiR0GmewdpLIylPFsU3G7Q6yGRdoFzTCawM3TYHwkKQOs1gFkBkAcB6LwxH3ZwIN/8caVm2fwU8Edn7nnzJ6vq/od2W2smgRQPfOwUk5FhEagqYQV7DB4Yu5Kx3wug3lWNEEk95KENnQZ7zU+1NjA7e5EERNvXNmdxNmxnaoZeRxj5mjS8PcERMNQd6i5nWOvWXYHhwBvy9CuZ9xBMr3G4TYLEwAo2SrD31h7pmsoHf9rRGOs9Z8P9/zr54M2G0qHoUoyfhah1c3DwnZBuepRzQzBn4i3eUyBKrLADAMQteGKwxKsWyvQybsomOyfpZA/g1cKLszTMoWNLl6S9OaBLjVTYlncwl3qI8Wvjs/pXICmxPuB0in6rAY3KakWo/6ls+QBlergAFTrPGqCH9MutlHICGfxztRaTPWYWRQnJlze896WVE5oGrtn35AUAWaB6ckQOGAAvnkslD4VQaZXxbrvcK0luszVF8OkFqBlPrFjq0cu+iYoNaTMZGusPyA=
+- py.test -n 4 -rxs --color=yes --cov-config .coveragerc --cov-report term-missing
+  --cov=revelation revelation/test/
+- python -m doctest scripts/diff_trace.py
+- python -m doctest scripts/get_instructions_used.py
+- mkdir bin
+- test "$TRANSLATE" == "true" && PYTHONPATH=${HOME}/pydgin/:${HOME}/pypy:. ${HOME}/pypy/rpython/bin/rpython
+  --no-pdb --opt=jit revelation/sim.py || true
+- mv pydgin-revelation-jit bin/ 2>/dev/null
+- test "$TRANSLATE" == "true" && PYTHONPATH=${HOME}/pydgin/:${HOME}/pypy:. ${HOME}/pypy/rpython/bin/rpython
+  --no-pdb -O2 revelation/sim.py || true
+- mv pydgin-revelation-nojit bin/ 2>/dev/null
+after_success:
+- coveralls
+- ./scripts/deploy.sh
