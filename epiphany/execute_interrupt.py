@@ -111,6 +111,23 @@ def execute_rti16(s, inst):
     #     PC is set to IRET.
     s.pc = s.rf[epiphany.isa.reg_map['IRET']]
 
+
+#-----------------------------------------------------------------------
+# swi16
+#-----------------------------------------------------------------------
+def execute_swi16(s, inst):
+    # http://blog.alexrp.com/epiphany-notes/
+    # The architecture has an undocumented SWI instruction which raises a software
+    # exception. It sets bit 1 of ILAT and sets the EXCAUSE bits in STATUS to
+    # 0b0001 (for Epiphany III) or 0b1110 (for Epiphany IV).
+    s.rf[epiphany.isa.reg_map['ILAT']] |= (1 << 1)
+    s.rf[epiphany.isa.reg_map['STATUS']] |= (1 << 16)
+    s.rf[epiphany.isa.reg_map['STATUS']] |= (1 << 17)
+    s.rf[epiphany.isa.reg_map['STATUS']] |= (1 << 18)
+    s.rf[epiphany.isa.reg_map['STATUS']] &= ~(1 << 19)
+    s.pc += 2
+
+
 #-----------------------------------------------------------------------
 # trap16
 #-----------------------------------------------------------------------

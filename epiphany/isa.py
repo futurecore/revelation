@@ -193,8 +193,9 @@ encodings = [
     ['gid16',       'xxxxxxxx_xxxxxxxx_xxxxxx11_10010010'],
     ['sync16',      'xxxxxxxx_xxxxxxxx_xxxxxx01_11110010'],
     ['rti16',       'xxxxxxxx_xxxxxxxx_xxxxxx01_11010010'],
-    ['wand16',      'xxxxxxxx_xxxxxxxx_xxxxxx01_10000010'],
+    ['swi16',       'xxxxxxxx_xxxxxxxx_xxxxxx01_11100010'],
     ['trap16',      'xxxxxxxx_xxxxxxxx_xxxxxx11_11100010'],
+    ['wand16',      'xxxxxxxx_xxxxxxxx_xxxxxx01_10000010'],
     ['unimpl',      'xxxxxxxx_xxxx1111_xxxxxx00_00001111'],
 ]
 
@@ -305,6 +306,7 @@ execute_gie16   = execute_interrupts.execute_gie16
 execute_gid16   = execute_interrupts.execute_gid16
 execute_sync16  = execute_interrupts.execute_sync16
 execute_rti16   = execute_interrupts.execute_rti16
+execute_swi16   = execute_interrupts.execute_swi16
 execute_wand16  = execute_interrupts.execute_wand16
 execute_trap16  = execute_interrupts.execute_trap16
 execute_unimpl  = execute_interrupts.execute_unimpl

@@ -77,6 +77,15 @@ def test_execute_rti16_with_interrupt():
     expected_state.check(state)
 
 
+def test_execute_swi16():
+    state = new_state(rfSTATUS=0b0, rfILAT=0b0, pc=0)
+    instr = opcode_factory.swi16()
+    name, executefn = decode(instr)
+    executefn(state, Instruction(instr, None))
+    expected_state = StateChecker(rfILAT=0b10, rfSTATUS=0b1110000000000000000)
+    expected_state.check(state)
+
+
 def test_execute_trap16():
     state = new_state()
     instr = opcode_factory.trap16(trap=3)  # Exit.

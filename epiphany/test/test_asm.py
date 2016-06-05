@@ -65,6 +65,7 @@ def test_elf_with_stdout(elf, expected, capfd):
                                           rfIMASK=8, rfILAT=9, rfILATST=10,
                                           rfILATCL=11, rfIPEND=12)),
         ('sub.elf', StateChecker(rf0=100, rf1=20, rf2=80, rf3=80)),
+        ('swi.elf', StateChecker(rfILAT=0b10, rfSTATUS=0b1110000000000000000)),
        ])
 def test_elf(elf, expected):
     """Test ELF files that deal in unsigned integers (rather than floats).
