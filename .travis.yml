@@ -3,12 +3,10 @@ language: python
 python:
     - '2.7'
 
+cache: pip
+
 env:
     - TRANSLATE=true
-
-cache:
-    directories:
-        - $HOME/.cache/pip
 
 install:
     - pip install --disable-pip-version-check --upgrade pip
@@ -26,15 +24,13 @@ install:
                             --exclude 'pypy-pypy-*/pytest_cov.py'
 
     - cd $TRAVIS_BUILD_DIR
-    - export PYTHONPATH=${PYTHONPATH}:${HOME}/pydgin/:${HOME}/pypy
+    - export PYTHONPATH=${PYTHONPATH}:${HOME}/pydgin/
 
 script:
-    - py.test -n 4 --cov-config .coveragerc
-                   --cov-report term-missing
-                   --cov=revelation revelation/test/
+    - py.test -n 4 -rxs --color=yes --cov-config .coveragerc --cov-report term-missing --cov=revelation revelation/test/
     - python -m doctest scripts/diff_trace.py
     - python -m doctest scripts/get_instructions_used.py
-    - test "$TRANSLATE" == "true" && ${HOME}/pypy/rpython/bin/rpython --opt=jit revelation/sim.py || true
+    - test "$TRANSLATE" == "true" && PYTHONPATH=${HOME}/pydgin/:${HOME}/pypy:. ${HOME}/pypy/rpython/bin/rpython --opt=jit revelation/sim.py || true
 
 after_success: coveralls
 
