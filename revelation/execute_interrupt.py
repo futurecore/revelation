@@ -58,9 +58,10 @@ def execute_gie16(s, inst):
     settings in the IMASK register.
         STATUS[1]=0
     """
-    for i, bit in enumerate(bin(s.rf[revelation.isa.reg_map['IMASK']])[2:]):
-        if bit == '1':
-            s.rf[revelation.isa.reg_map['ILAT']] &= ~(1 << i)
+    for index in range(10):
+        if (s.rf[revelation.isa.reg_map['IMASK']] & (1 << index)):
+            s.rf[revelation.isa.reg_map['ILAT']] &= ~(1 << index)
+            break
     s.rf[revelation.isa.reg_map['STATUS']] &= ~(1 << 1)
     s.pc += 2
 
