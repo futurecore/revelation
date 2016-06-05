@@ -35,7 +35,7 @@ To run the unit tests here, ensure that the required packages are installed:
 
 Then run the tests themselves:
 
-    $ py.test --cov-report term-missing --cov epiphany epiphany/test/
+    $ py.test --cov-report term-missing --cov revelation revelation/test/
 
 Note that some of the tests may take a while to run, particularly those that load an ELF file.
 
@@ -45,8 +45,8 @@ To compile the simulator to a native executable, you need to first clone (or dow
 
 To compile Revelation *without* a JIT:
 
-    $ PYTHONPATH=. .../pypy/rpython/bin/rpython -Ojit epiphany/sim.py
+    $ PYTHONPATH=. .../pypy/rpython/bin/rpython -Ojit revelation/sim.py
 
 To compile the simulator *with* a JIT:
 
-    $ PYTHONPATH=. ../../pypy/rpython/bin/rpython -Ojit epiphany/sim.py
+    $ PYTHONPATH=. ../../pypy/rpython/bin/rpython -Ojit revelation/sim.py

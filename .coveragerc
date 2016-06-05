@@ -1,5 +1,5 @@
 [run]
-omit = epiphany/test/*
+omit = revelation/test/*
 
 [report]
 # Regexes for lines to exclude from consideration

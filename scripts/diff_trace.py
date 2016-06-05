@@ -5,7 +5,7 @@ To use this script, first produce a trace from the e-sim tool:
     $ e-sim -r 1 -c 1 --extra-args="--trace=on --trace-file e_trace.out" myfile.elf
 
 Then create a trace from Revelation:
-    $ python epiphany/sim.py --debug insts,mem,rf,flags,syscalls myfile.elf > py_trace.out
+    $ python revelation/sim.py --debug insts,mem,rf,flags,syscalls myfile.elf > py_trace.out
 
 Then call this script (order of the CLI arguments matters):
     $ python diff_trace.py e_trace.out py_trace.out

@@ -31,10 +31,10 @@ install:
 script:
     - py.test -n 4 --cov-config .coveragerc
                    --cov-report term-missing
-                   --cov=epiphany epiphany/test/
+                   --cov=revelation revelation/test/
     - python -m doctest scripts/diff_trace.py
     - python -m doctest scripts/get_instructions_used.py
-    - test "$TRANSLATE" == "true" && ${HOME}/pypy/rpython/bin/rpython --opt=jit epiphany/sim.py || true
+    - test "$TRANSLATE" == "true" && ${HOME}/pypy/rpython/bin/rpython --opt=jit revelation/sim.py || true
 
 after_success: coveralls
 

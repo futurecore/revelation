@@ -2,8 +2,8 @@ venv/
 e_trace.out
 py_trace.out
 .cache/
-pydgin-epiphany-jit
-pydgin-epiphany-nojit
+pydgin-revelation-jit
+pydgin-revelation-nojit
 .coverage
 *~
 *.pyc
