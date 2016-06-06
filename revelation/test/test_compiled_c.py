@@ -8,11 +8,17 @@ elf_dir = os.path.join('revelation', 'test', 'c')
 
 
 @pytest.mark.parametrize('elf_file,expected',
-                         [('hello.elf',           'Hello, world!\n'),
+                         [('clearilat.elf',       'Sync interrupt caused by ILATST (should only appear once).\n'
+                                                  'Clearing all ILAT with ILATCL.\n'
+                                                  'DONE! Status = 0\n'),
+                          pytest.mark.skip(('div_by_zero.elf',     'Exception_isr 214023\nEnd.\nDONE! Status = 1')),
+                          ('hello.elf',           'Hello, world!\n'),
                           pytest.mark.skip(('fib_print.elf',       '10946')),
                           pytest.mark.skip(('read_file.elf',       'Hello, world!')),
                           ('selfmod.elf',         'Hello\nWorld\n'),
                           ('selfmod2.elf',        'Hello\nWorld\n'),
+                          ('setilat.elf',         'User interrupt set by ILATST.\n'
+                                                  'DONE! Status = 0'),
                           ('user_interrupt1.elf', ('User interrupt 1.\n'
                                                    'User interrupt 2.\n'
                                                    'User interrupt 3.\n'
@@ -50,8 +56,6 @@ def test_compiled_c_with_output(elf_file, expected, capfd):
 @pytest.mark.parametrize('elf_file,expected',
                          [('fib_return.elf', StateChecker(rf0=10946)),
                           ('exit5.elf',      StateChecker(rf0=5)),
-                          ('setilat.elf',    StateChecker(rf20=0xaaaaaaaa, rf21=0x5555, rfILATST=0xaaaaffff)),
-                          ('clearilat.elf',  StateChecker(rf20=0xaaaaaaaa, rf21=0x5555, rfILATCL=0xaaaaffff)),
                          ])
 def test_compiled_c_with_return(elf_file, expected):
     """Test an ELF file that has been compiled from a C function.

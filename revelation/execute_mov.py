@@ -71,12 +71,19 @@ def make_mov_executor(is16bit, rd_is_special=False, rn_is_special=False):
         if rd_is_special:
             rd_address = 0xF0400 + (0x4 * inst.rn)
             rn = s.rf[inst.rd]
-            if rd_address == 0xF042C or rd_address == 0xF0430:  # ILATST / ILATCL
+            if rd_address == 0xF042C:  # ILATST
                 value = s.rf.get_register_by_address(rd_address)
                 value |= rn
                 s.rf.set_register_by_address(rd_address, value)
                 ilat = s.rf.get_register_by_address(0xF0428)  # ILAT
                 ilat |= rn
+                s.rf.set_register_by_address(0xF0428, ilat)
+            elif rd_address == rd_address == 0xF0430:  # ILATCL
+                value = s.rf.get_register_by_address(rd_address)
+                value |= rn
+                s.rf.set_register_by_address(rd_address, value)
+                ilat = s.rf.get_register_by_address(0xF0428)  # ILAT
+                ilat &= ~rn
                 s.rf.set_register_by_address(0xF0428, ilat)
             else:
                 s.rf.set_register_by_address(rd_address, rn)
