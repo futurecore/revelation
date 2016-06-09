@@ -1,4 +1,5 @@
 venv/
+bin/
 e_trace.out
 py_trace.out
 .cache/
