@@ -122,8 +122,8 @@ def execute_swi16(s, inst):
     # 0b0001 (for Epiphany III) or 0b1110 (for Epiphany IV).
     s.rf[revelation.isa.reg_map['ILAT']] |= (1 << 1)
     s.rf[revelation.isa.reg_map['STATUS']] |= (1 << 16)
-    s.rf[revelation.isa.reg_map['STATUS']] |= (1 << 17)
-    s.rf[revelation.isa.reg_map['STATUS']] |= (1 << 18)
+    s.rf[revelation.isa.reg_map['STATUS']] &= ~(1 << 17)
+    s.rf[revelation.isa.reg_map['STATUS']] &= ~(1 << 18)
     s.rf[revelation.isa.reg_map['STATUS']] &= ~(1 << 19)
     s.pc += 2
 

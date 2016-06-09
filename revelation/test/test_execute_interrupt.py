@@ -82,7 +82,7 @@ def test_execute_swi16():
     instr = opcode_factory.swi16()
     name, executefn = decode(instr)
     executefn(state, Instruction(instr, None))
-    expected_state = StateChecker(rfILAT=0b10, rfSTATUS=0b1110000000000000000)
+    expected_state = StateChecker(rfILAT=0b10, rfSTATUS=0b00010000000000000000)
     expected_state.check(state)
 
 
