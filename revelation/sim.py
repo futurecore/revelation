@@ -57,10 +57,13 @@ class Revelation(Sim):
             self.hardware_loop = False
             return
         # Service interrupts. See: http://blog.alexrp.com/revelation-notes/
-        if (self.state.rf[reg_map['ILAT']] == 0 or
+        if not (self.state.rf[reg_map['ILAT']] == 0 or
             (self.state.rf[reg_map['STATUS']] & (1 << 1)) or
             self.state.rf[reg_map['DEBUGSTATUS']] == 1):
-            return
+            self._service_interrupts()
+            # return
+
+    def _service_interrupts(self):
         # Let N be the interrupt level:
         interrupt_level = 0
         for index in range(10):
