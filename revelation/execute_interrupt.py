@@ -59,9 +59,8 @@ def execute_gie16(s, inst):
         STATUS[1]=0
     """
     for index in range(10):
-        if (s.rf[revelation.isa.reg_map['IMASK']] & (1 << index)):
+        if not (s.rf[revelation.isa.reg_map['IMASK']] & (1 << index)):
             s.rf[revelation.isa.reg_map['ILAT']] &= ~(1 << index)
-            break
     s.rf[revelation.isa.reg_map['STATUS']] &= ~(1 << 1)
     s.pc += 2
 

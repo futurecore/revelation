@@ -59,17 +59,15 @@ class Revelation(Sim):
         # Service interrupts. See: http://blog.alexrp.com/revelation-notes/
         if (self.state.rf[reg_map['ILAT']] == 0 or
             (self.state.rf[reg_map['STATUS']] & (1 << 1)) or
-            self.state.rf[reg_map['DEBUGSTATUS']] == 1 or
-            self.state.rf[reg_map['IPEND']] > 0):
+            self.state.rf[reg_map['DEBUGSTATUS']] == 1):
             return
         # Let N be the interrupt level:
         interrupt_level = 0
         for index in range(10):
-            if (self.state.rf[reg_map['ILAT']] & (1 << index)):
+            if ((self.state.rf[reg_map['ILAT']] & (1 << index)) and
+                not (self.state.rf[reg_map['IMASK']] & (1 << index))):
                 interrupt_level = index
                 break
-        if self.state.rf[reg_map['IMASK']] & (1 << interrupt_level):
-            return
         #     The PC is saved in IRET.
         self.state.rf[reg_map['IRET']] = self.state.pc
         #     Bit N in ILAT is cleared.
