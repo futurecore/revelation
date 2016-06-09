@@ -1,6 +1,8 @@
 from revelation.utils import bits2float, float2bits, get_exponent, trim_32
 from pydgin.utils import signed
 
+import revelation.isa
+
 import math
 
 
@@ -60,6 +62,13 @@ def make_farith_executor(name, is16bit, is_unary=False):
             s.BIS = True
         # BVS = BVS | BV;
         s.BVS = s.BVS or s.BV
+
+        # Deal with fp interrupts.
+        if (((s.rf[revelation.isa.reg_map['CONFIG']] & (1 << 1)) and s.BIS) or
+            ((s.rf[revelation.isa.reg_map['CONFIG']] & (1 << 2)) and s.BV) or
+            ((s.rf[revelation.isa.reg_map['CONFIG']] & (1 << 3)) and s.BUS)):
+            s.rf[revelation.isa.reg_map['ILAT']] |= (1 << 1)
+            # TODO: Set EXCAUSE bits in the STATUS register.
         s.debug_flags()
         s.pc += 2 if is16bit else 4
     return farith
