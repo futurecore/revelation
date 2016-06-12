@@ -72,25 +72,25 @@ def make_mov_executor(is16bit, rd_is_special=False, rn_is_special=False):
             rd_address = 0xF0400 + (0x4 * inst.rn)
             rn = s.rf[inst.rd]
             if rd_address == 0xF042C:  # ILATST
-                value = s.rf.get_register_by_address(rd_address)
+                value = s.mem.read(rd_address, 4)
                 value |= rn
-                s.rf.set_register_by_address(rd_address, value)
-                ilat = s.rf.get_register_by_address(0xF0428)  # ILAT
+                s.mem.write(rd_address, 4, value)  # Set ILATST.
+                ilat = s.mem.read(0xF0428, 4)  # ILAT
                 ilat |= rn
-                s.rf.set_register_by_address(0xF0428, ilat)
+                s.mem.write(0xF0428, 4, ilat)
             elif rd_address == rd_address == 0xF0430:  # ILATCL
-                value = s.rf.get_register_by_address(rd_address)
+                value = s.mem.read(rd_address, 4)
                 value |= rn
-                s.rf.set_register_by_address(rd_address, value)
-                ilat = s.rf.get_register_by_address(0xF0428)  # ILAT
+                s.mem.write(rd_address, 4, value)  # Set ILATCL.
+                ilat = s.mem.read(0xF0428, 4)  # ILAT
                 ilat &= ~rn
-                s.rf.set_register_by_address(0xF0428, ilat)
+                s.mem.write(0xF0428, 4, ilat)
             else:
-                s.rf.set_register_by_address(rd_address, rn)
+                s.mem.write(rd_address, 4, rn)
         elif rn_is_special:
             rn_address = 0xF0400 + (0x4 * inst.rn)
             rd = inst.rd
-            value = s.rf.get_register_by_address(rn_address)
+            value = s.mem.read(rn_address, 4)
             s.rf[rd] = value
         s.pc += 2 if is16bit else 4
     return execute_mov

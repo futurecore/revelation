@@ -1,5 +1,4 @@
-from revelation.isa import reg_map
-from revelation.storage import register_map
+from revelation.machine import get_address_of_register_by_name
 
 def make_zero_operand_factory(opcode):
     def factory():
@@ -306,10 +305,10 @@ def make_mov_special_factory(is16bit, is_from):
     # TODO: Find out what M0 and M1 are for.
     def mov(rd=0, rn=0):
         if is_from:
-            rd_address = register_map[reg_map[rd]][0]
+            rd_address = get_address_of_register_by_name(rd)
             rd = (rd_address - 0xF0400) / 0x4
         else:
-            rn_address = register_map[reg_map[rn]][0]
+            rn_address = get_address_of_register_by_name(rn)
             rn = (rn_address - 0xF0400) / 0x4
         if is16bit and is_from:
             opcode = 0b0100010010

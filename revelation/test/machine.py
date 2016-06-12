@@ -27,6 +27,10 @@ def new_state(mem=None, debug=Debug(), **args):
             state.rf[reg_map[arg[2:]]] = value
         else:
             raise KeyError('No such register: {0}'.format(arg[2:]))
+    # Give the RAM model a reference to the register files. Since the
+    # Epiphany has memory-mapped register files, we need to intercept
+    # any read / write to memory which should actually go to the registers.
+    state.mem.rf = state.rf
     return state
 
 

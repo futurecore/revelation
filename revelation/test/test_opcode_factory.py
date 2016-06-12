@@ -1,3 +1,4 @@
+from revelation.isa import reg_map
 from opcode_factory import *
 
 import pytest

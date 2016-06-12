@@ -1,16 +1,15 @@
 from pydgin.debug import Debug
 from pydgin.misc import load_program
 from pydgin.sim import Sim, init_sim
-from pydgin.storage import Memory
 
 from revelation.isa import decode, reg_map
-from revelation.machine import State, RESET_ADDR
+from revelation.machine import RevelationMemory, State, RESET_ADDR
 from revelation.instruction import Instruction
 
 MEMORY_SIZE = 2**32  # Global on-chip address space.
 
 def new_memory():
-    return Memory(size=MEMORY_SIZE, byte_storage=True)
+    return RevelationMemory(size=MEMORY_SIZE, byte_storage=True)
 
 
 class Revelation(Sim):
@@ -61,7 +60,6 @@ class Revelation(Sim):
             (self.state.rf[reg_map['STATUS']] & (1 << 1)) or
             self.state.rf[reg_map['DEBUGSTATUS']] == 1):
             self._service_interrupts()
-            # return
 
     def _service_interrupts(self):
         # Let N be the interrupt level:
@@ -87,9 +85,14 @@ class Revelation(Sim):
         if is_test:
             self.debug = Debug()
             Debug.global_enabled = True
-        mem = new_memory()
-        _, _ = load_program(exe_file, mem)
-        self.state = State(mem, self.debug, reset_addr=RESET_ADDR)
+        memory = new_memory()
+        _, _ = load_program(exe_file, memory)
+        memory.set_debug(self.debug)
+        self.state = State(memory, self.debug, reset_addr=RESET_ADDR)
+        # Give the RAM model a reference to the register files. Since the
+        # Epiphany has memory-mapped register files, we need to intercept
+        # any read / write which should actually go to the registers.
+        memory.rf = self.state.rf
 
 
 init_sim(Revelation())
