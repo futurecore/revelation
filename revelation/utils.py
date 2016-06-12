@@ -33,14 +33,14 @@ def sext_3(value):
     """Sign-extended 3 bit number.
     """
     if value & 0x4:
-        return 0XFFFFFFF8 | value
+        return 0xfffffff8 | value
     return value
 
 def sext_8(value):
     """Sign-extended 8 bit number.
     """
     if value & 0x80:
-        return 0xFFFFFF00 | value
+        return 0xffffff00 | value
     return value
 
 
@@ -56,13 +56,13 @@ def sext_24(value):
     """Sign-extended 24 bit number.
     """
     if value & 0x800000:
-        return 0xFF000000 | value
+        return 0xff000000 | value
     return value
 
 
 @specialize.argtype(0)
 def trim_32(value):
-    return value & 0xFFFFFFFF
+    return value & 0xffffffff
 
 
 #
@@ -138,7 +138,7 @@ def is_zero(bits):
 #   if   result > (2**32 - 1)
 #
 def carry_from(result):
-    return result > 0xFFFFFFFF
+    return result > 0xffffffff
 
 #-----------------------------------------------------------------------
 # borrow_from

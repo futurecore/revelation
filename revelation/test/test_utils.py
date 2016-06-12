@@ -13,17 +13,17 @@ import math
 
 def test_sign_extend_3bit():
     assert sext_3(0b011) == 0b011
-    assert sext_3(0b111) == 0xFFFFFFFF
+    assert sext_3(0b111) == 0xffffffff
 
 
 def test_sign_extend_11bit():
     assert sext_11(0b01111111111) == 0b01111111111
-    assert sext_11(0b11111111111) == 0xFFFFFFFF
+    assert sext_11(0b11111111111) == 0xffffffff
 
 
 def test_sign_extend_24bit():
     assert sext_24(0b011111111111111111111111) == 0b011111111111111111111111
-    assert sext_24(0b111111111111111111111111) == 0xFFFFFFFF
+    assert sext_24(0b111111111111111111111111) == 0xffffffff
 
 
 def test_get_mantissa():
@@ -39,9 +39,9 @@ def test_get_mantissa():
 
 def test_get_exponent():
     bits = 0b01111111100000000000000000000000
-    assert get_exponent(bits) == 0xFF
+    assert get_exponent(bits) == 0xff
     bits = 0b11111111100000000000000000000000
-    assert get_exponent(bits) == 0xFF
+    assert get_exponent(bits) == 0xff
     bits = 0b00000000011111111111111111111111
     assert get_exponent(bits) == 0
     bits = 0b10000000011111111111111111111111

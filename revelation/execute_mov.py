@@ -11,7 +11,7 @@ def make_movcond_executor(is16bit):
             RD = RN
         """
         if is16bit:
-            inst.bits &= 0xFFFF
+            inst.bits &= 0xffff
         rd = inst.rd
         rn = inst.rn
         if condition_passed(s, inst.cond):
@@ -30,7 +30,7 @@ def make_movimm_executor(is16bit, is_t):
         RD=<imm>
         """
         if is16bit:
-            inst.bits &= 0xFFFF
+            inst.bits &= 0xffff
         s.rf[inst.rd] = (s.rf[inst.rd] | (inst.imm16 << 16)) if is_t else inst.imm16
         s.pc += 2 if is16bit else 4
     return execute_movimm
@@ -67,28 +67,28 @@ def make_mov_executor(is16bit, rd_is_special=False, rn_is_special=False):
         RD=RN
         """
         if is16bit:
-            inst.bits &= 0xFFFF
+            inst.bits &= 0xffff
         if rd_is_special:
-            rd_address = 0xF0400 + (0x4 * inst.rn)
+            rd_address = 0xf0400 + (0x4 * inst.rn)
             rn = s.rf[inst.rd]
-            if rd_address == 0xF042C:  # ILATST
+            if rd_address == 0xf042c:  # ILATST
                 value = s.mem.read(rd_address, 4)
                 value |= rn
                 s.mem.write(rd_address, 4, value)  # Set ILATST.
-                ilat = s.mem.read(0xF0428, 4)  # ILAT
+                ilat = s.mem.read(0xf0428, 4)  # ILAT
                 ilat |= rn
-                s.mem.write(0xF0428, 4, ilat)
-            elif rd_address == rd_address == 0xF0430:  # ILATCL
+                s.mem.write(0xf0428, 4, ilat)
+            elif rd_address == rd_address == 0xf0430:  # ILATCL
                 value = s.mem.read(rd_address, 4)
                 value |= rn
                 s.mem.write(rd_address, 4, value)  # Set ILATCL.
-                ilat = s.mem.read(0xF0428, 4)  # ILAT
+                ilat = s.mem.read(0xf0428, 4)  # ILAT
                 ilat &= ~rn
-                s.mem.write(0xF0428, 4, ilat)
+                s.mem.write(0xf0428, 4, ilat)
             else:
                 s.mem.write(rd_address, 4, rn)
         elif rn_is_special:
-            rn_address = 0xF0400 + (0x4 * inst.rn)
+            rn_address = 0xf0400 + (0x4 * inst.rn)
             rd = inst.rd
             value = s.mem.read(rn_address, 4)
             s.rf[rd] = value

@@ -6,11 +6,11 @@ import pytest
 def test_check_memory():
     expected = StateChecker()
     got = new_state()
-    got.mem.write(4, 4, 0xFFFF)
+    got.mem.write(4, 4, 0xffff)
     got.mem.write(0, 4, 0x0)
-    expected.check(got, memory=[(0x4, 4, 0xFFFF)])
+    expected.check(got, memory=[(0x4, 4, 0xffff)])
     with pytest.raises(ValueError):
-        expected.check(got, memory=[(0x0, 4, 0xFFFF)])
+        expected.check(got, memory=[(0x0, 4, 0xffff)])
 
 
 def test_register_out_of_range():

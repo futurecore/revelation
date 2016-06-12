@@ -29,11 +29,11 @@ class Instruction(object):
 
     @property
     def imm11(self):
-        return ((self.bits >> 7) & 0x7) | ((self.bits >> 13) & (0xFF << 3))
+        return ((self.bits >> 7) & 0x7) | ((self.bits >> 13) & (0xff << 3))
 
     @property
     def imm16(self):
-        return ((self.bits >> 5) & 255) | ((self.bits >> 12) & 0xFF00)
+        return ((self.bits >> 5) & 255) | ((self.bits >> 12) & 0xff00)
 
     @property
     def t5(self):

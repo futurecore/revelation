@@ -21,11 +21,11 @@ class Revelation(Sim):
             0 : 0x0,  # Sync hardware signal.
             1 : 0x4,  # Floating-point,invalid instruction or alignment.
             2 : 0x8,  # Memory protection fault.
-            3 : 0xC,  # Timer0 has expired.
+            3 : 0xc,  # Timer0 has expired.
             4 : 0x10, # Timer1 has expired.
             5 : 0x14, # Message interrupt.
             6 : 0x18, # Local DMA channel-0 finished data transfer.
-            7 : 0x1C, # Local DMA channel-1 finished data transfer.
+            7 : 0x1c, # Local DMA channel-1 finished data transfer.
             8 : 0x20, # Wired AND-signal interrupt.
             9 : 0x24, # Software-generate user interrupt.
         }

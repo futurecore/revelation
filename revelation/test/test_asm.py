@@ -45,7 +45,7 @@ def test_elf_with_stdout(elf, expected, capfd):
                                           rf7=0x640, rf8=0x640)),
         ('jalr.elf',         StateChecker(rf3=100, rfLR=0x236)),
         ('jr.elf',           StateChecker(rf0=3, rf1=1, rf2=2)),
-        ('low_high.elf',     StateChecker(rf3=0xFFFFFFFF)),
+        ('low_high.elf',     StateChecker(rf3=0xffffffff)),
         ('lsl.elf',          StateChecker(rf0=5, rf1=7, rf2=640, rf3=640)),
         ('lsr.elf',          StateChecker(rf0=3, rf1=1, rf2=1, rf3=1)),
         ('mov_cond.elf',     StateChecker(rf0=0, rf1=15, rf2=15, rf3=15)),
@@ -157,10 +157,10 @@ def test_fp_elf(elf, expected):
 
 
 @pytest.mark.parametrize("elf,expected",
-       [('ldr_disp.elf',    StateChecker(rf0=0xFFFFFFFF, rf1=0x00100000)),
-        ('ldr_disp_pm.elf', StateChecker(rf0=0xFFFFFFFF, rf1=0x00100004)),
-        ('ldr_index.elf',   StateChecker(rf0=0xFFFFFFFF, rf1=0x00100004, rf2=0)),
-        ('ldr_pm.elf',      StateChecker(rf0=0xFFFFFFFF, rf1=0x00100004,
+       [('ldr_disp.elf',    StateChecker(rf0=0xffffffff, rf1=0x00100000)),
+        ('ldr_disp_pm.elf', StateChecker(rf0=0xffffffff, rf1=0x00100004)),
+        ('ldr_index.elf',   StateChecker(rf0=0xffffffff, rf1=0x00100004, rf2=0)),
+        ('ldr_pm.elf',      StateChecker(rf0=0xffffffff, rf1=0x00100004,
                                          rf2=0x80002)),
        ])
 def test_load(elf, expected):
@@ -170,17 +170,17 @@ def test_load(elf, expected):
     revelation = Revelation()
     with open(elf_filename, 'rb') as elf:
         revelation.init_state(elf, elf_filename, '', [], False, is_test=True)
-        revelation.state.mem.write(0x00100004, 4, 0xFFFFFFFF)
+        revelation.state.mem.write(0x00100004, 4, 0xffffffff)
         revelation.max_insts = 10000
         revelation.run()
         expected.check(revelation.state)
 
 
 @pytest.mark.parametrize("elf,expected",
-       [('str_disp.elf', StateChecker(rf0=0xFFFFFFFF, rf1=0x00100000)),
-        ('str_disp_pm.elf', StateChecker(rf0=0xFFFFFFFF, rf1=0x00100004)),
-        ('str_index.elf', StateChecker(rf0=0xFFFFFFFF, rf1=0x00100004, rf2=0)),
-        ('str_pm.elf', StateChecker(rf0=0xFFFFFFFF, rf1=0x00100004, rf2=4)),
+       [('str_disp.elf', StateChecker(rf0=0xffffffff, rf1=0x00100000)),
+        ('str_disp_pm.elf', StateChecker(rf0=0xffffffff, rf1=0x00100004)),
+        ('str_index.elf', StateChecker(rf0=0xffffffff, rf1=0x00100004, rf2=0)),
+        ('str_pm.elf', StateChecker(rf0=0xffffffff, rf1=0x00100004, rf2=4)),
        ])
 def test_store(elf, expected):
     """Test ELF files that transfer data from registers to memory.
@@ -191,7 +191,7 @@ def test_store(elf, expected):
         revelation.init_state(elf, elf_filename, '', [], False, is_test=True)
         revelation.max_insts = 10000
         revelation.run()
-        expected.check(revelation.state, memory=[(0x00100004, 4, 0xFFFFFFFF)])
+        expected.check(revelation.state, memory=[(0x00100004, 4, 0xffffffff)])
 
 
 def test_testset32():
@@ -204,7 +204,7 @@ def test_testset32():
         revelation.max_insts = 100000
         revelation.run()
         expected = StateChecker(AZ=1, rf0=0, rf1=0x100000, rf2=0x4)
-        expected.check(revelation.state, memory=[(0x100004, 4, 0xFFFF)])
+        expected.check(revelation.state, memory=[(0x100004, 4, 0xffff)])
 
 
 def test_testset32_fail():

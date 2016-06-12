@@ -31,7 +31,7 @@ def make_arith32_immediate_factory(name):
         else:
             raise NotImplementedError()
         return (opcode | ((imm & 7) << 7) | ((rn & 7) << 10) |
-                ((rd & 7) << 13) | ((imm & (0xFF << 3)) << 13) |
+                ((rd & 7) << 13) | ((imm & (0xff << 3)) << 13) |
                 ((rn & 56) << 23) | ((rd & 56) << 26))
     return arith32_immediate
 
@@ -306,10 +306,10 @@ def make_mov_special_factory(is16bit, is_from):
     def mov(rd=0, rn=0):
         if is_from:
             rd_address = get_address_of_register_by_name(rd)
-            rd = (rd_address - 0xF0400) / 0x4
+            rd = (rd_address - 0xf0400) / 0x4
         else:
             rn_address = get_address_of_register_by_name(rn)
-            rn = (rn_address - 0xF0400) / 0x4
+            rn = (rn_address - 0xf0400) / 0x4
         if is16bit and is_from:
             opcode = 0b0100010010
         elif is16bit and not is_from:
@@ -351,7 +351,7 @@ def make_ldstrdisp32_factory(with_postmodify):
         bit25 = 1 if with_postmodify else 0
         return (opcode | (s << 4) | (bb << 5) | ((imm & 7) << 7) |
                 ((rn & 7) << 10) | ((rd & 7) << 13) |
-                ((imm & (0xFF << 3)) << 13) | (sub << 24) | (bit25 << 25) |
+                ((imm & (0xff << 3)) << 13) | (sub << 24) | (bit25 << 25) |
                 ((rn & 56) << 23) | ((rd & 56) << 26))
     return ldstrdisp32
 
