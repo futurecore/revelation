@@ -217,10 +217,10 @@ def compare_instructions(py_inst, e_inst):
         if e_mem_sorted != py_mem_sorted:
             msg = 'Memory regions differ. Revelation: '
             for (addr, value) in py_mem_sorted:
-                msg += hex(addr) + '<-' + value + ' '
+                msg += hex(addr) + '<-' + hex(value) + ' '
             msg += 'e-sim: '
             for (addr, value) in e_mem_sorted:
-                msg += hex(addr) + '<-' + value + ' '
+                msg += hex(addr) + '<-' + hex(value) + ' '
             return msg
     for flag in _py_flags:
         # e-sim only prints flags if they have been updated.
