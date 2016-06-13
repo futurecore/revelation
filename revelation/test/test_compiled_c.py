@@ -14,6 +14,7 @@ elf_dir = os.path.join('revelation', 'test', 'c')
                           pytest.mark.skip(('div_by_zero.elf',     'Exception_isr 214023\nEnd.\nDONE! Status = 1')),
                           ('hello.elf',           'Hello, world!\n'),
                           pytest.mark.skip(('fib_print.elf',       '10946')),
+                          pytest.mark.skip(('printf_arg.elf',       '99999')),
                           pytest.mark.skip(('read_file.elf',       'Hello, world!')),
                           ('selfmod.elf',         'Hello\nWorld\n'),
                           ('selfmod2.elf',        'Hello\nWorld\n'),
