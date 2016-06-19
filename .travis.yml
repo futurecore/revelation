@@ -28,7 +28,7 @@ install:
 
 script:
     - py.test -n 4 -rxXs --color=yes --doctest-modules --cov-config=.coveragerc --cov-report=term-missing --cov=revelation revelation/test/ scripts/
-    - test "$TRANSLATE" == "true" && PYTHONPATH=${HOME}/pydgin/:${HOME}/pypy:. ${HOME}/pypy/rpython/bin/rpython --opt=jit revelation/sim.py || true
+    - test "$TRANSLATE" == "true" && PYTHONPATH=${HOME}/pydgin/:${HOME}/pypy:. ${HOME}/pypy/rpython/bin/rpython --no-pdb --opt=jit revelation/sim.py || true
 
 after_success: coveralls
 
