@@ -7,6 +7,12 @@ from pydgin.storage import Memory, RegisterFile
 
 from revelation.isa import reg_map
 
+try:
+   from rpython.rlib.rarithmetic import r_uint, intmask
+except ImportError:
+    r_uint = lambda x : x
+    intmask = lambda x : x
+
 RESET_ADDR = 0
 
 
@@ -23,7 +29,6 @@ class RevelationMemory(object):
     def __init__(self, data=None, size=2**32, byte_storage=True):
         self.memory = Memory(data=data, size=size, byte_storage=byte_storage)
         self.rf = None  # Set by Sim.init_state(). Also sets self.fetch_pc()
-        self.iread = self.memory.iread
         self.debug = None  # Set after ELF file loaded.
 
     def set_debug(self, debug):
@@ -33,17 +38,24 @@ class RevelationMemory(object):
         if self.debug.enabled('memcheck'):
             self.memory.debug.enabled_flags.append('memcheck')
 
+    def iread(self, address, nbytes=4):
+        if 0xf0718 >= address >= 0xf0000:
+            _, reg_num = _register_map[r_uint(address)]
+            return intmask(self.rf[reg_num])
+        else:
+            return self.memory.iread(address, nbytes)
+
     def read(self, address, nbytes=4):
         if 0xf0718 >= address >= 0xf0000:
-            _, reg_num = _register_map[address]
-            return self.rf[reg_num]
+            _, reg_num = _register_map[r_uint(address)]
+            return intmask(self.rf[reg_num])
         else:
             return self.memory.read(address, nbytes)
 
     def write(self, address, nbytes, value):
         if 0xf0718 >= address >= 0xf0000:
-            _, reg_num = _register_map[address]
-            self.rf[reg_num] = value
+            _, reg_num = _register_map[r_uint(address)]
+            self.rf[r_uint(reg_num)] = r_uint(value)
         else:
             self.memory.write(address, nbytes, value)
 

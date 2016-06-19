@@ -14,6 +14,7 @@ exclude_lines =
     # Don't complain if tests take a path which is only used in a test harness:
     .*we_are_translated.*
     def init_state
+    def iread
 
     # Don't complain about not generating debug output.
     if self.debug.enabled('flags'):

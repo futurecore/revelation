@@ -6,6 +6,11 @@ from revelation.isa import decode, reg_map
 from revelation.machine import RevelationMemory, State, RESET_ADDR
 from revelation.instruction import Instruction
 
+try:
+   from rpython.rlib.rarithmetic import r_uint
+except ImportError:
+    r_uint = lambda x : x
+
 MEMORY_SIZE = 2**32  # Global on-chip address space.
 
 def new_memory():
@@ -74,7 +79,7 @@ class Revelation(Sim):
         #     Bit N in ILAT is cleared.
         self.state.rf[reg_map['ILAT']] &= ~(1 << interrupt_level)
         #     Bit N in IPEND is set.
-        self.state.rf[reg_map['IPEND']] |= (1 << interrupt_level)
+        self.state.rf[reg_map['IPEND']] |= r_uint(1 << interrupt_level)
         #     The GID bit in STATUS is set.
         self.state.rf[reg_map['STATUS']] |= (1 << 1)
         #     PC is set to an index into the IVT.
