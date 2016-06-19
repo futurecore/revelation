@@ -1,5 +1,7 @@
 [run]
 omit = revelation/test/*
+data_file = ./.coverage
+source = revelation/
 
 [report]
 # Regexes for lines to exclude from consideration
@@ -19,6 +21,9 @@ exclude_lines =
     # Don't complain about not generating debug output.
     if self.debug.enabled('flags'):
     if self.debug.enabled('rf'):
+    if self.debug.enabled('mem'):
+    if self.debug.enabled('memcheck'):
+    self.memory.debug.enabled_flags
     s.debug_flags()
     print
 
