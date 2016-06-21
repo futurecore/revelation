@@ -1,6 +1,6 @@
 #include "epiphany-macros.h"
-.global _main
-_main:
+.global main
+main:
     mov  r0, %low(0xFFFFFFFF)
     movt r0, %high(0xFFFFFFFF)
     mov  r1, %low(0x00100000)

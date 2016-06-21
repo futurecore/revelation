@@ -1,6 +1,6 @@
 #include "epiphany-macros.h"
-.global _main
-_main:
+.global main
+main:
     mov r1, #100
     mov r0, #10          ; loop 10 times
     _loopa:

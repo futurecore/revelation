@@ -1,5 +1,5 @@
 #include "epiphany-macros.h"
-.global _main
-_main:
+.global main
+main:
     nop
 TEAR_DOWN

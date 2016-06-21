@@ -1,6 +1,6 @@
 #include "epiphany-macros.h"
-.global _main
-_main:
+.global main
+main:
     mov  r3, %low(_add_label)  ; _add_label is small, don't have to use %high.
     jr r3  ; jump to add_label
 _add_label:

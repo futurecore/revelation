@@ -14,7 +14,7 @@ elf_dir = os.path.join('revelation', 'test', 'c')
                           pytest.mark.skip(('div_by_zero.elf',     'Exception_isr 214023\nEnd.\nDONE! Status = 1')),
                           ('hello.elf',           'Hello, world!\n'),
                           pytest.mark.skip(('fib_print.elf',       '10946')),
-                          pytest.mark.skip(('printf_arg.elf',       '99999')),
+                          pytest.mark.skip(('printf_arg.elf',      '99999')),
                           pytest.mark.skip(('read_file.elf',       'Hello, world!')),
                           ('selfmod.elf',         'Hello\nWorld\n'),
                           ('selfmod2.elf',        'Hello\nWorld\n'),
@@ -72,8 +72,8 @@ def test_compiled_c_with_return(elf_file, expected):
         assert not revelation.state.running
 
 
-@pytest.mark.parametrize('elf_file,expected', [('nothing.elf',   236),
-                                               ('fib.elf',       441),
+@pytest.mark.parametrize('elf_file,expected', [('nothing.elf',   250),
+                                               ('fib.elf',       461),
                                               ])
 def test_compiled_c(elf_file, expected, capsys):
     """Test an ELF file that has been compiled from a C function.

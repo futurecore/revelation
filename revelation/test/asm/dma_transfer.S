@@ -1,6 +1,6 @@
 #include "epiphany-macros.h"
-.global _main
-_main:
+.global main
+main:
 /*
     mov r1, 0x8             ; set the startup bit
     movt r1, _1D_DESCR      ; put descriptor pointer in the upper 16 bits

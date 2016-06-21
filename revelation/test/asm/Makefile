@@ -1,21 +1,24 @@
-# Compile ASM files to Epiphany ELF.
 ASMS=$(wildcard *.S)
 ELFS=$(patsubst %.S,%.elf,$(ASMS))
 
 ESDK=${EPIPHANY_HOME}
-ELDF=${ESDK}/bsps/parallella_E16G3_1GB/fast.ldf
+LDF=${ESDK}/bsps/parallella_E16G3_1GB/fast.ldf
 
-LD_EXTRAS=-le-hal -le-lib
+CC=e-gcc
+CFLAGS=-Wall -Wno-unused -Werror -falign-functions=8
+
+LDFLAGS=-T${LDF}
+LDLIBS=-le-lib
 
 LIBDIR=${ESDK}/tools/host/lib
 INCDIR=${ESDK}/tools/host/include
 
 .PHONY: all clean
 
-all: $(ELFS)
+all: ${ELFS}
 
 %.elf: %.S
-	- epiphany-elf-gcc -static -T ${EPIPHANY_HOME}/bsps/parallella_E16G3_1GB/fast.ldf epiphany-macros.h $< -o $@
+	${CC} -o $@ ${CFLAGS} -L${LIBDIR} -I${INCDIR} ${LDLIBS} ${LDFLAGS} $< -static
 
 clean:
-	rm -f *.elf
+	- rm -f ${ELFS}
