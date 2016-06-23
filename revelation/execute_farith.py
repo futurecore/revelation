@@ -12,7 +12,7 @@ def make_farith_executor(name, is16bit, is_unary=False):
         RD = RN <OP> RM
         BN = RD[31]
         if (RD[30:0] == 0) { BZ=1 } else { BZ=0 }
-        if (UnbiasedExponent(RD) > 127) { BUV=1 } else { BV=0 }
+        if (UnbiasedExponent(RD) > 127) { BV=1 } else { BV=0 }
         if (UbiasedExponent(RD) < -126) { BUS=1 } else { BUS=BUS }
         if (RM or RN == NAN) { BIS=1 } else { BIS=BIS }
         BVS = BVS | BV;
@@ -50,10 +50,10 @@ def make_farith_executor(name, is16bit, is_unary=False):
         s.BN = True if result < 0.0 else False
         # if (RD[30:0] == 0) { BZ=1 } else { BZ=0 }
         s.BZ = True if abs(result) < 0.0001 else False
-        # if (UnbiasedExponent(RD) > 127) { BUV=1 } else { BV=0 }
-        s.BUV = True if get_exponent(s.rf[inst.rd]) > 127 else False
+        # if (UnbiasedExponent(RD) > 127) { BV=1 } else { BV=0 }
+        s.BV = True if get_exponent(s.rf[inst.rd]) > 127 else False
         # if (UbiasedExponent(RD) < -126) { BUS=1 } else { BUS=BUS }
-        if get_exponent(s.rf[inst.rd]) > 127:
+        if get_exponent(s.rf[inst.rd]) < -126:
             s.BUS = True
         # if (RM or RN == NAN) { BIS=1 } else { BIS=BIS }
         if ((is_unary and math.isnan(rn)) or
@@ -61,7 +61,7 @@ def make_farith_executor(name, is16bit, is_unary=False):
                 (math.isnan(rn) or math.isnan(rm))):
             s.BIS = True
         # BVS = BVS | BV;
-        s.BVS = s.BVS or s.BV
+        s.BVS = s.BVS | s.BV
 
         # Deal with fp interrupts.
         if (((s.rf[revelation.isa.reg_map['CONFIG']] & (1 << 1)) and s.BIS) or
