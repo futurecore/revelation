@@ -6,11 +6,6 @@ from revelation.isa import decode, reg_map
 from revelation.machine import RevelationMemory, State, RESET_ADDR
 from revelation.instruction import Instruction
 
-try:
-   from rpython.rlib.rarithmetic import r_uint
-except ImportError:
-    r_uint = lambda x : x
-
 MEMORY_SIZE = 2**32  # Global on-chip address space.
 
 def new_memory():
@@ -48,8 +43,7 @@ class Revelation(Sim):
         #     LC register decrements automatically every time the program
         #     scheduler completes one iteration of the code loop defined by LS
         #     and LE.
-        if ((self.state.rf[reg_map['STATUS']] & (1 << 1)) and
-            self.state.pc == self.state.rf[reg_map['LE']]):
+        if (self.state.GID and self.state.pc == self.state.rf[reg_map['LE']]):
             self.state.rf[reg_map['LC']] -= 1
             self.hardware_loop = True
 
@@ -62,8 +56,7 @@ class Revelation(Sim):
             return
         # Service interrupts. See: http://blog.alexrp.com/revelation-notes/
         if not (self.state.rf[reg_map['ILAT']] == 0 or
-            (self.state.rf[reg_map['STATUS']] & (1 << 1)) or
-            self.state.rf[reg_map['DEBUGSTATUS']] == 1):
+                self.state.GID or self.state.rf[reg_map['DEBUGSTATUS']] == 1):
             self._service_interrupts()
 
     def _service_interrupts(self):
@@ -79,9 +72,9 @@ class Revelation(Sim):
         #     Bit N in ILAT is cleared.
         self.state.rf[reg_map['ILAT']] &= ~(1 << interrupt_level)
         #     Bit N in IPEND is set.
-        self.state.rf[reg_map['IPEND']] |= r_uint(1 << interrupt_level)
+        self.state.rf[reg_map['IPEND']] |= 1 << interrupt_level
         #     The GID bit in STATUS is set.
-        self.state.rf[reg_map['STATUS']] |= (1 << 1)
+        self.state.GID = True
         #     PC is set to an index into the IVT.
         self.state.pc = self.ivt[interrupt_level]
 
@@ -98,6 +91,7 @@ class Revelation(Sim):
         # Epiphany has memory-mapped register files, we need to intercept
         # any read / write which should actually go to the registers.
         memory.rf = self.state.rf
-
+        self.state.ACTIVE = True
+        self.state.SUPERUSER = True
 
 init_sim(Revelation())

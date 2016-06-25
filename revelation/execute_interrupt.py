@@ -20,13 +20,7 @@ def execute_idle16(s, inst):
             PC=PC;
         }
     """
-    status = s.rf[revelation.isa.reg_map['STATUS']]
-    mask = 0b1111111111111111111111111110
-    status &= mask
-    s.rf[revelation.isa.reg_map['STATUS']] = status
-    if not s.rf[revelation.isa.reg_map['ILAT']]: # TODO: Use threads here?
-        print 'IDLE16 does not wait in this simulator.',
-        print 'Moving to next instruction.'
+    s.ACTIVE = False
     s.pc += 2
 
 
@@ -61,7 +55,7 @@ def execute_gie16(s, inst):
     for index in range(10):
         if not (s.rf[revelation.isa.reg_map['IMASK']] & (1 << index)):
             s.rf[revelation.isa.reg_map['ILAT']] &= ~(1 << index)
-    s.rf[revelation.isa.reg_map['STATUS']] &= ~(1 << 1)
+    s.GID = 0
     s.pc += 2
 
 
@@ -69,7 +63,7 @@ def execute_gid16(s, inst):
     """Disable all interrupts.
         STATUS[1]=1
     """
-    s.rf[revelation.isa.reg_map['STATUS']] |= (1 << 1)
+    s.GID = 1
     s.pc += 2
 
 
@@ -107,7 +101,7 @@ def execute_rti16(s, inst):
     if interrupt_level > 0:
         s.rf[revelation.isa.reg_map['IPEND']] &= ~(1 << interrupt_level)
     #     The GID bit in STATUS is cleared.
-    s.rf[revelation.isa.reg_map['STATUS']] &= ~(1 << 1)
+    s.GID = 0
     #     PC is set to IRET.
     s.pc = s.rf[revelation.isa.reg_map['IRET']]
 
@@ -121,10 +115,7 @@ def execute_swi16(s, inst):
     # exception. It sets bit 1 of ILAT and sets the EXCAUSE bits in STATUS to
     # 0b0001 (for Epiphany III) or 0b1110 (for Epiphany IV).
     s.rf[revelation.isa.reg_map['ILAT']] |= (1 << 1)
-    s.rf[revelation.isa.reg_map['STATUS']] |= (1 << 16)
-    s.rf[revelation.isa.reg_map['STATUS']] &= ~(1 << 17)
-    s.rf[revelation.isa.reg_map['STATUS']] &= ~(1 << 18)
-    s.rf[revelation.isa.reg_map['STATUS']] &= ~(1 << 19)
+    s.EXCAUSE = s.exceptions['SWI']
     s.pc += 2
 
 
@@ -199,6 +190,9 @@ def execute_wand16(s, inst):
 # unimpl
 #-----------------------------------------------------------------------
 def execute_unimpl(s, inst):
-    """Not implemented.
+    """Not implemented exception.
+    STATUS[16-19] = 0100  [Epiphany III]
+    STATUS[16-19] = 1111  [Epiphany IV]
     """
-    raise NotImplementedError('UNIMPL')
+    s.EXCAUSE = s.exceptions['UNIMPLEMENTED']
+    s.pc += 4

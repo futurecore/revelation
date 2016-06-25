@@ -20,17 +20,20 @@ def test_condition_passed():
     state.AC = 0
     assert condition_passed(state, 0b0101)
     state.AZ = 0
-    state.AV = state.AN = 2
+    state.AV = state.AN = 1
     assert condition_passed(state, 0b0110)
     state.AZ = 1
-    state.AV = state.AN = 3
+    state.AV = state.AN = 1
     assert condition_passed(state, 0b0111)
-    state.AV = 4
-    state.AN = 3
+    state.AV = 0
+    state.AN = 1
+    assert condition_passed(state, 0b1000)
+    state.AV = 1
+    state.AN = 0
     assert condition_passed(state, 0b1000)
     state.AZ = 1
-    state.AV = 3
-    state.AN = 4
+    state.AV = 1
+    state.AN = 1
     assert condition_passed(state, 0b1001)
     state.BZ = 1
     assert condition_passed(state, 0b1010)

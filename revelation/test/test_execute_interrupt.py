@@ -12,7 +12,7 @@ def test_execute_gid16():
     instr = opcode_factory.gid16()
     name, executefn = decode(instr)
     executefn(state, Instruction(instr, None))
-    expected_state = StateChecker(rfSTATUS=0b10)
+    expected_state = StateChecker(GID=True)
     expected_state.check(state)
 
 
@@ -21,7 +21,7 @@ def test_execute_gie16():
     instr = opcode_factory.gie16()
     name, executefn = decode(instr)
     executefn(state, Instruction(instr, None))
-    expected_state = StateChecker(rfSTATUS=0b00)
+    expected_state = StateChecker(GID=False)
     expected_state.check(state)
 
 
@@ -34,19 +34,13 @@ def test_execute_nop16():
     expected_state.check(state)
 
 
-def test_execute_idle16(capsys):
-    state = new_state(rfSTATUS=1)
+def test_execute_idle16():
+    state = new_state(ACTIVE=True)
     instr = opcode_factory.idle16()
     name, executefn = decode(instr)
     executefn(state, Instruction(instr, None))
-    out, err = capsys.readouterr()
-    expected_state = StateChecker(pc=(2 + RESET_ADDR), rfSTATUS=0)
-    expected_text = ('IDLE16 does not wait in this simulator. ' +
-                     'Moving to next instruction.')
+    expected_state = StateChecker(pc=(2 + RESET_ADDR), rfSTATUS=0, ACTIVE=False)
     expected_state.check(state)
-    assert expected_text in out
-    assert err == ''
-    assert state.running
 
 
 def test_execute_bkpt16():
@@ -64,16 +58,16 @@ def test_execute_rti16_no_interrupt():
     instr = opcode_factory.rti16()
     name, executefn = decode(instr)
     executefn(state, Instruction(instr, None))
-    expected_state = StateChecker(pc=224, rfIRET=224, rfSTATUS=0b00)
+    expected_state = StateChecker(pc=224, rfIRET=224, GID=0)
     expected_state.check(state)
 
 
 def test_execute_rti16_with_interrupt():
-    state = new_state(rfIRET=224, rfSTATUS=0b10, rfIPEND=0b1000000000, pc=0)
+    state = new_state(rfIRET=224, GID=1, rfIPEND=0b1000000000, pc=0)
     instr = opcode_factory.rti16()
     name, executefn = decode(instr)
     executefn(state, Instruction(instr, None))
-    expected_state = StateChecker(pc=224, rfIRET=224, rfIPEND=0b0, rfSTATUS=0b00)
+    expected_state = StateChecker(pc=224, rfIRET=224, rfIPEND=0b0, GID=0)
     expected_state.check(state)
 
 
@@ -82,7 +76,7 @@ def test_execute_swi16():
     instr = opcode_factory.swi16()
     name, executefn = decode(instr)
     executefn(state, Instruction(instr, None))
-    expected_state = StateChecker(rfILAT=0b10, rfSTATUS=0b00010000000000000000)
+    expected_state = StateChecker(rfILAT=0b10, EXCAUSE=0b0001)
     expected_state.check(state)
 
 
@@ -121,8 +115,9 @@ def test_execute_multicore_instructions(name, instr):
 
 
 def test_execute_unimpl():
-    with pytest.raises(NotImplementedError):
-        state = new_state()
-        instr = opcode_factory.unimpl()
-        name, executefn = decode(instr)
-        executefn(state, Instruction(instr, None))
+    state = new_state()
+    instr = opcode_factory.unimpl()
+    name, executefn = decode(instr)
+    executefn(state, Instruction(instr, None))
+    expected_state = StateChecker(EXCAUSE=0b0100)
+    expected_state.check(state)

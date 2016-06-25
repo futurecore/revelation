@@ -4,18 +4,18 @@ from revelation.sim import new_memory
 from revelation.isa import reg_map
 from revelation.utils import bits2float
 
-possible_attributes = 'AN AZ AC AV AVS BN BV BIS BVS BUS BZ pc'.split()
+flags = 'ACTIVE GID SUPERUSER WAND AN AZ AC AV AVS BN BV BIS BVS BUS BZ EXCAUSE pc'.split()
 
 
 def new_state(mem=None, debug=Debug(), **args):
     if mem is None:
         mem = new_memory()
     state = State(mem, debug)
-    for attr in possible_attributes:
+    for attr in flags:
         if attr in args:
             setattr(state, attr, args[attr])
     for arg, value in args.items():
-        if arg in possible_attributes:
+        if arg in flags:
             continue
         elif arg.startswith('rf') and arg[2].isdigit():
             index = int(arg[2:])
@@ -42,13 +42,13 @@ class StateChecker(object):
     epsilon = 0.0001
     def __init__(self, **args):
         self.interesting_state = []
-        for attr in possible_attributes:
+        for attr in flags:
             if attr in args:
                 self.interesting_state.append(attr)
                 setattr(self, attr, args[attr])
         self.expected_registers = []
         for arg, value in args.items():
-            if arg in possible_attributes:
+            if arg in flags:
                 continue
             elif arg.startswith('rf') and arg[2].isdigit():
                 index = int(arg[2:])
@@ -64,7 +64,7 @@ class StateChecker(object):
     def check_flags(self, state):
         """Check all machine flags against an expected state.
         """
-        for attr in possible_attributes:
+        for attr in flags:
             if attr in self.interesting_state:
                 expected = getattr(self, attr)
                 got = getattr(state, attr)

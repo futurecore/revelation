@@ -2,15 +2,16 @@
 # machine.py
 #=======================================================================
 
+from pydgin.debug import Debug, pad, pad_hex
 from pydgin.machine import Machine
-from pydgin.storage import Memory, RegisterFile
+from pydgin.storage import Memory
+from pydgin.utils import r_uint, specialize
 
 from revelation.isa import reg_map
 
 try:
-   from rpython.rlib.rarithmetic import r_uint, intmask
+    from rpython.rlib.rarithmetic import intmask
 except ImportError:
-    r_uint = lambda x : x
     intmask = lambda x : x
 
 RESET_ADDR = 0
@@ -61,11 +62,39 @@ class RevelationMemory(object):
 
 
 #-----------------------------------------------------------------------
+# RegisterFile
+#-----------------------------------------------------------------------
+class RegisterFile( object ):
+    def __init__(self, constant_zero=True, num_regs=32, nbits=32):
+        self.num_regs = num_regs
+        self.regs = [r_uint(0)] * self.num_regs
+        self.debug = Debug()
+        self.nbits = nbits
+        self.debug_nchars = nbits / 4
+        # Ignore constant_zero, but keep it here to maintain
+        # compatibility with Pydgin.
+
+    def __getitem__(self, idx):
+        if self.debug.enabled('rf') and idx < 64:
+            print (':: RD.RF[%s] = %s' %
+                   (pad('%d' % idx, 2),
+                    pad_hex(self.regs[idx], len=self.debug_nchars))),
+        return intmask(self.regs[idx])
+
+    @specialize.argtype(2)
+    def __setitem__(self, idx, value):
+        self.regs[idx] = r_uint(value)
+        if self.debug.enabled('rf') and idx < 64:
+            print (':: WR.RF[%s] = %s' %
+                   (pad('%d' % idx, 2),
+                    pad_hex(self.regs[idx], len=self.debug_nchars))),
+
+
+#-----------------------------------------------------------------------
 # State
 #-----------------------------------------------------------------------
 class State(Machine):
-    _virtualizable_ = ['pc', 'num_insts', 'AN', 'AZ', 'AC', 'AV',
-                       'AVS', 'BN', 'BIS', 'BUS', 'BVS', 'BZ']
+    _virtualizable_ = ['pc', 'num_insts']
 
     def __init__(self, memory, debug, reset_addr=RESET_ADDR):
         Machine.__init__(self,
@@ -73,19 +102,154 @@ class State(Machine):
                          RegisterFile(constant_zero=False, num_regs=107),
                          debug,
                          reset_addr=RESET_ADDR)
+        # Epiphany III exceptions.
+        self.exceptions = { 'UNIMPLEMENTED'  : 0b0100,
+                            'SWI'            : 0b0001,
+                            'UNALIGNED'      : 0b0010,
+                            'ILLEGAL ACCESS' : 0b0101,
+                            'FPU EXCEPTION'  : 0b0011,
+        }
 
-        # Epiphany-specific flags.
-        self.AN  = False
-        self.AZ  = False
-        self.AC  = False
-        self.AV  = False
-        self.AVS = False
-        self.BN  = False
-        self.BZ  = False
-        self.BIS = False
-        self.BUS = False
-        self.BV  = False
-        self.BVS = False
+    def _get_nth_bit_of_register(self, register, n):
+        return bool(self.rf[reg_map[register]] & (1 << n))
+
+    def _set_nth_bit_of_register(self, register, n, value):
+        if value:
+            self.rf[reg_map[register]] |= (1 << n)
+        else:
+             self.rf[reg_map[register]] &= ~(1 << n)
+
+    @property
+    def ACTIVE(self):
+        return self._get_nth_bit_of_register('STATUS', 0)
+
+    @ACTIVE.setter
+    def ACTIVE(self, value):
+        self._set_nth_bit_of_register('STATUS', 0, value)
+
+    @property
+    def GID(self):
+        return self._get_nth_bit_of_register('STATUS', 1)
+
+    @GID.setter
+    def GID(self, value):
+        self._set_nth_bit_of_register('STATUS', 1, value)
+
+    @property
+    def SUPERUSER(self):
+        return self._get_nth_bit_of_register('STATUS', 2)
+
+    @SUPERUSER.setter
+    def SUPERUSER(self, value):
+        self._set_nth_bit_of_register('STATUS', 2, value)
+
+    @property
+    def WAND(self):
+        return self._get_nth_bit_of_register('STATUS', 3)
+
+    @WAND.setter
+    def WAND(self, value):
+        self._set_nth_bit_of_register('STATUS', 3, value)
+
+    @property
+    def AZ(self):
+        return self._get_nth_bit_of_register('STATUS', 4)
+
+    @AZ.setter
+    def AZ(self, value):
+        self._set_nth_bit_of_register('STATUS', 4, value)
+
+    @property
+    def AN(self):
+        return self._get_nth_bit_of_register('STATUS', 5)
+
+    @AN.setter
+    def AN(self, value):
+        self._set_nth_bit_of_register('STATUS', 5, value)
+
+    @property
+    def AC(self):
+        return self._get_nth_bit_of_register('STATUS', 6)
+
+    @AC.setter
+    def AC(self, value):
+        self._set_nth_bit_of_register('STATUS', 6, value)
+
+    @property
+    def AV(self):
+        return self._get_nth_bit_of_register('STATUS', 7)
+
+    @AV.setter
+    def AV(self, value):
+        self._set_nth_bit_of_register('STATUS', 7, value)
+
+    @property
+    def BZ(self):
+        return self._get_nth_bit_of_register('STATUS', 8)
+
+    @BZ.setter
+    def BZ(self, value):
+        self._set_nth_bit_of_register('STATUS', 8, value)
+
+    @property
+    def BN(self):
+        return self._get_nth_bit_of_register('STATUS', 9)
+
+    @BN.setter
+    def BN(self, value):
+        self._set_nth_bit_of_register('STATUS', 9, value)
+
+    @property
+    def BV(self):
+        return self._get_nth_bit_of_register('STATUS', 10)
+
+    @BV.setter
+    def BV(self, value):
+        self._set_nth_bit_of_register('STATUS', 10, value)
+
+    @property
+    def AVS(self):
+        return self._get_nth_bit_of_register('STATUS', 12)
+
+    @AVS.setter
+    def AVS(self, value):
+        self._set_nth_bit_of_register('STATUS', 12, value)
+
+    @property
+    def BIS(self):
+        return self._get_nth_bit_of_register('STATUS', 13)
+
+    @BIS.setter
+    def BIS(self, value):
+        self._set_nth_bit_of_register('STATUS', 13, value)
+
+    @property
+    def BVS(self):
+        return self._get_nth_bit_of_register('STATUS', 14)
+
+    @BVS.setter
+    def BVS(self, value):
+        self._set_nth_bit_of_register('STATUS', 14, value)
+
+    @property
+    def BUS(self):
+        return self._get_nth_bit_of_register('STATUS', 15)
+
+    @BUS.setter
+    def BUS(self, value):
+        self._set_nth_bit_of_register('STATUS', 15, value)
+
+    @property
+    def EXCAUSE(self):
+        print 'STATUS', bin(self.rf[reg_map['STATUS']])
+        return (self.rf[reg_map['STATUS']] >> 16) & 0xf
+
+    @EXCAUSE.setter
+    def EXCAUSE(self, value):
+        self._set_nth_bit_of_register('STATUS', 16, value & 0x1)
+        self._set_nth_bit_of_register('STATUS', 17, (value >> 1) & 0x1)
+        self._set_nth_bit_of_register('STATUS', 18, (value >> 2) & 0x1)
+        self._set_nth_bit_of_register('STATUS', 19, (value >> 3) & 0x1)
 
     def fetch_pc(self):
         # Override method from base class. Needed by Pydgin.

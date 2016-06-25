@@ -36,13 +36,14 @@ def test_elf_with_stdout(elf, expected, capfd):
         pytest.mark.xfail(('dma_transfer.elf', StateChecker())),
         ('eor.elf',          StateChecker(rf0=5, rf1=7, rf2=2)),
         ('fix.elf',          StateChecker(rf0=5)),
-        ('gid.elf',          StateChecker(rfSTATUS=2)),
-        ('gie.elf',          StateChecker(rfSTATUS=0)),
+        ('gid.elf',          StateChecker(GID=1)),
+        ('gie.elf',          StateChecker(GID=0)),
         ('hardware_loop.elf',
-                             StateChecker(pc=0x39c, rfSTATUS=0b00,
+                             StateChecker(pc=0x39c, rfSTATUS=0b101,
                                           rf1=0x650, rf2=0x640, rf3=0x640,
                                           rf4=0x640, rf5=0x640, rf6=0x640,
                                           rf7=0x640, rf8=0x640)),
+        ('idle.elf',         StateChecker(ACTIVE=0)),
         ('jalr.elf',         StateChecker(rfLR=0x356)),
         ('jr.elf',           StateChecker(rf0=3, rf1=1, rf2=2)),
         ('low_high.elf',     StateChecker(rf3=0xffffffff)),
@@ -55,7 +56,7 @@ def test_elf_with_stdout(elf, expected, capfd):
         ('movts.elf',        StateChecker(rf0=7, rfIRET=7)),
         ('nop.elf',          StateChecker(pc=0x354)),
         ('orr.elf',          StateChecker(rf0=5, rf1=7, rf2=7)),
-        ('rti.elf',          StateChecker(rfSTATUS=0)),
+        ('rti.elf',          StateChecker(GID=0)),
         ('rts.elf',          StateChecker(rf1=100, rf2=200, rf3=300, rfLR=0x352)),
         ('special_regs.elf', StateChecker(rf0=1, rf1=2, rf2=3, rf3=4, rf4=5,
                                           rf5=6, rf6=7, rf7=8, rf8=9, rf10=11,
@@ -64,8 +65,9 @@ def test_elf_with_stdout(elf, expected, capfd):
                                           rfLC=4, rfLS=5, rfLE=6, rfIRET=7,
                                           rfIMASK=8, rfILAT=9, rfILATST=10,
                                           rfILATCL=11, rfIPEND=12)),
-        ('sub.elf', StateChecker(rf0=100, rf1=20, rf2=80, rf3=80)),
-        ('swi.elf', StateChecker(rfILAT=0b10, rfSTATUS=0b00010000000000000010)),
+        ('sub.elf',          StateChecker(rf0=100, rf1=20, rf2=80, rf3=80)),
+        ('swi.elf',          StateChecker(rfILAT=0b10, EXCAUSE=0b0001)),
+        ('unimpl.elf',       StateChecker(EXCAUSE=0b0100)),
        ])
 def test_elf(elf, expected):
     """Test ELF files that deal in unsigned integers (rather than floats).
@@ -223,34 +225,3 @@ within the on-chip local memory and must be greater than 0x00100000 (2^20).
             revelation.max_insts = 100000
             revelation.run()
     assert expected_text == expected_exn.value.message
-
-
-def test_execute_idle16(capsys):
-    """Check that the idle16 prints out the correct warning on STDOUT.
-    """
-    elf_filename = os.path.join(elf_dir, 'idle.elf')
-    revelation = Revelation()
-    with open(elf_filename, 'rb') as elf:
-        revelation.init_state(elf, elf_filename, '', [], False, is_test=True)
-        revelation.state.rfSTATUS = 1
-        revelation.max_insts = 10000
-        revelation.run()
-        out, err = capsys.readouterr()
-        expected_state = StateChecker(rfSTATUS=0)
-        expected_text = ('IDLE16 does not wait in this simulator. ' +
-                         'Moving to next instruction.')
-        expected_state.check(revelation.state)
-        assert expected_text in out
-        assert err == ''
-        assert not revelation.state.running  # Set by bkpt16 instruction.
-
-
-def test_unimpl():
-    """Check that the unimpl instruction throws a NotImplementedError.
-    """
-    elf_filename = os.path.join(elf_dir, 'unimpl.elf')
-    with pytest.raises(NotImplementedError):
-        revelation = Revelation()
-        with open(elf_filename, 'rb') as elf:
-            revelation.init_state(elf, elf_filename, '', [], False, is_test=True)
-            revelation.run()
