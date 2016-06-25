@@ -110,6 +110,23 @@ class State(Machine):
                             'FPU EXCEPTION'  : 0b0011,
         }
 
+    def get_pending_interrupt(self):
+        ipend_highest_bit = -1
+        for index in range(10):
+            if (self.rf[reg_map['IPEND']] & (1 << index)):
+                ipend_highest_bit = index
+                break
+        return ipend_highest_bit
+
+    def get_lateched_interrupt(self):
+        ilat_highest_bit= -1
+        for index in range(10):
+            if ((self.rf[reg_map['ILAT']] & (1 << index)) and
+                not (self.rf[reg_map['IMASK']] & (1 << index))):
+                ilat_highest_bit = index
+                break
+        return ilat_highest_bit
+
     def _get_nth_bit_of_register(self, register, n):
         return bool(self.rf[reg_map[register]] & (1 << n))
 

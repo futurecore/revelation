@@ -25,18 +25,18 @@ elf_dir = os.path.join('revelation', 'test', 'c')
                                                    'User interrupt 3.\n'
                                                    'User interrupt 4.\n'
                                                    'Another user interrupt.\n')),
-                          pytest.mark.skip(('user_interrupt2.elf',
-                           ('main:    trigger user interrupt with swi\n'
-                            'user_isr:  begin\n'
-                            'user_isr:  before float overflow\n'
-                            'exception_isr:  begin\n'
-                            'exception_isr:  trigger user interrupt with swi.\n'
-                            'exception_isr:  end\n'
-                            'user_isr:  begin\n'
-                            'user_isr:  again, will not trigger float exception\n'
-                            'user_isr:  end\n'
-                            'user_isr:  after float overflow\n'
-                            'user_isr:  end\n'))),
+                          ('user_interrupt2.elf',
+                           ('main:\t\ttrigger user interrupt with swi\n'
+                            'user_isr:\tbegin\n'
+                            'user_isr:\tbefore float overflow\n'
+                            'exception_isr:\tbegin\n'
+                            'exception_isr:\ttrigger user interrupt with swi.\n'
+                            'exception_isr:\tend\n'
+                            'user_isr:\tbegin\n'
+                            'user_isr:\tagain, will not trigger float exception\n'
+                            'user_isr:\tend\n'
+                            'user_isr:\tafter float overflow\n'
+                            'user_isr:\tend\n')),
                          ])
 def test_compiled_c_with_output(elf_file, expected, capfd):
     """Test an ELF file that has been compiled from a C function.

@@ -91,14 +91,9 @@ def execute_rti16(s, inst):
     https://parallella.org/forums/viewtopic.php?f=23&t=818&hilit=interrupt#p5185
     """
     # Let N be the interrupt level.
-    interrupt_level = 0
-    if s.rf[revelation.isa.reg_map['IPEND']] > 0:
-        for index in range(10):
-            if (s.rf[revelation.isa.reg_map['IPEND']] & (1 << index)):
-                interrupt_level = index
-                break
+    interrupt_level = s.get_pending_interrupt()
     #     Bit N of IPEND is cleared.
-    if interrupt_level > 0:
+    if interrupt_level >= 0:
         s.rf[revelation.isa.reg_map['IPEND']] &= ~(1 << interrupt_level)
     #     The GID bit in STATUS is cleared.
     s.GID = 0

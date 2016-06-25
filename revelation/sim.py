@@ -55,18 +55,24 @@ class Revelation(Sim):
             self.hardware_loop = False
             return
         # Service interrupts. See: http://blog.alexrp.com/revelation-notes/
-        if not (self.state.rf[reg_map['ILAT']] == 0 or
-                self.state.GID or self.state.rf[reg_map['DEBUGSTATUS']] == 1):
+        if (self.state.rf[reg_map['ILAT']] > 0 and not (self.state.GID or
+            self.state.rf[reg_map['DEBUGSTATUS']] == 1)):
             self._service_interrupts()
 
     def _service_interrupts(self):
         # Let N be the interrupt level:
-        interrupt_level = 0
-        for index in range(10):
-            if ((self.state.rf[reg_map['ILAT']] & (1 << index)) and
-                not (self.state.rf[reg_map['IMASK']] & (1 << index))):
-                interrupt_level = index
-                break
+        latched_interrupt = self.state.get_lateched_interrupt()
+        pending_interrupt = self.state.get_pending_interrupt()
+        # If there is no interrupt to process, return.
+        if latched_interrupt == pending_interrupt == -1:
+            return
+        # If a currently pending interrupt is of a higher priority than
+        # the latched interrupt, carry on with the pending interrupt.
+        elif (pending_interrupt > -1 and latched_interrupt > -1 and
+              latched_interrupt > pending_interrupt):
+            return
+        # Process the currently latched interrupt.
+        interrupt_level = latched_interrupt
         #     The PC is saved in IRET.
         self.state.rf[reg_map['IRET']] = self.state.pc
         #     Bit N in ILAT is cleared.

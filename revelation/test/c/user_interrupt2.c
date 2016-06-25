@@ -40,9 +40,7 @@ void user_isr() {
     i = 1;
     printf("user_isr:\tbefore float overflow\n");
     /* Trigger software exception with higher priority. */
-    __asm__("movt r40, 0");
-    __asm__("mov r40, 0x100");
-    __asm__("movts ilatst, r40");
+    c = a * b;
     printf("user_isr:\tafter float overflow\n");
 out:
     printf("user_isr:\tend\n");
