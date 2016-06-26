@@ -23,9 +23,16 @@ exclude_lines =
     if self.debug.enabled('rf'):
     if self.debug.enabled('mem'):
     if self.debug.enabled('memcheck'):
+    if not sparse_storage:
     self.memory.debug.enabled_flags
     s.debug_flags()
+    self.bounds_check
     print
+
+    # Don't complain about invalid memory accesses.
+    if addr > self.size:
+    if addr == 0:
+
 
     # Don't complain about assertions in syscalls -- special code for debuggers
     inst.t5 == 4
