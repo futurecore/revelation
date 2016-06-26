@@ -268,9 +268,17 @@ class State(Machine):
         self._set_nth_bit_of_register('STATUS', 18, (value >> 2) & 0x1)
         self._set_nth_bit_of_register('STATUS', 19, (value >> 3) & 0x1)
 
+    @property
+    def pc(self):
+        return self.rf[reg_map['pc']]
+
+    @pc.setter
+    def pc(self, value):
+        self.rf[reg_map['pc']] = value
+
     def fetch_pc(self):
         # Override method from base class. Needed by Pydgin.
-        return self.pc
+        return self.rf[reg_map['pc']]
 
     def debug_flags(self):
         if self.debug.enabled('flags'):
