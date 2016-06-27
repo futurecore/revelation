@@ -68,6 +68,14 @@ def trim_32(value):
 #
 # Floating point arithmetic.
 #
+# Type     Sign     Exponent         Mantissa     Value
+# -----------------------------------------------------------------------------
+# NAN       X       255              Nonzero      Undefined
+# Infinity  S       255              Zero         (-1)^S * Infinity
+# Normal    S       1 <= e <=254     Any          (-1)^S * (1.M_22-0 ) 2^e-127
+# Denormal  S       0                Any          (-1)^S * Zero
+# Zero      S       0                0            (-1)^S * Zero
+#
 
 def float_factory(sign=0, exponent=0, mantissa=0):
     return (sign << 31) | (exponent << 23) | mantissa
@@ -107,10 +115,15 @@ def get_mantissa(bits):
     return bits & 0x7fffff
 
 
+def get_exponent_as_decimal(bits):
+    """Given a value representing a float (in the machine), return the exponent.
+    """
+    return ((bits >> 23) & 0xff) - 127
+
 def get_exponent(bits):
     """Given a value representing a float (in the machine), return the exponent.
     """
-    return (bits >> 23) & 0xff
+    return ((bits >> 23) & 0xff)
 
 
 def is_nan(bits):

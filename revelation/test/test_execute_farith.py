@@ -129,3 +129,15 @@ def test_execute_farith_binary32(factory, rn, rm, ex):
     name, executefn = decode(instr)
     executefn(state, Instruction(instr, None))
     ex.fp_check(state)
+
+
+@pytest.mark.parametrize('factory,rn,rm,ex',
+    [(opcode_factory.fmul16, 1, 1, StateChecker(BV=True, BVS=True, BIS=False, BUS=False)),
+     (opcode_factory.fmul16, 2, 2, StateChecker(BV=False, BVS=False, BIS=False, BUS=True)),
+    ])
+def test_underflow_overflow(factory, rn, rm, ex):
+    state = new_state(rf1=float2bits(1.0e+38), rf2=float2bits(1e-19), rf3=1)
+    instr = factory(rd=0, rn=rn, rm=rm)
+    name, executefn = decode(instr)
+    executefn(state, Instruction(instr, None))
+    ex.fp_check(state)
