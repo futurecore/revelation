@@ -1,7 +1,6 @@
 import revelation.execute_bitwise    as execute_bitwise
 import revelation.execute_branch     as execute_branch
 import revelation.execute_farith     as execute_farith
-import revelation.execute_iarith     as execute_iarith
 import revelation.execute_interrupt  as execute_interrupts
 import revelation.execute_jump       as execute_jump
 import revelation.execute_load_store as execute_load_store
@@ -145,7 +144,7 @@ encodings = [
     ['asrimm16',    'xxxxxxxx_xxxxxxxx_xxxxxxxx_xxx01110'],  # ASRIMM16
     ['bitrimm16',   'xxxxxxxx_xxxxxxxx_xxxxxxxx_xxx11110'],  # BITRIMM16
     #---------------------------------------------------------------------
-    # Floating point and integer arithmetic.
+    # Floating point and signed integer arithmetic.
     #---------------------------------------------------------------------
     ['fadd16',      'xxxxxxxx_xxxxxxxx_xxxxxxxx_x0000111'],
     ['fsub16',      'xxxxxxxx_xxxxxxxx_xxxxxxxx_x0010111'],
@@ -219,16 +218,13 @@ execute_ldstrpm32   = execute_load_store.make_ldstrindpm_executor(False, True)
 execute_testset32   = execute_load_store.testset32
 
 #-----------------------------------------------------------------------
-# Integer arithmetic instructions
-#-----------------------------------------------------------------------
-execute_sub32 = execute_iarith.make_addsub_executor(False, 'sub')
-execute_sub16 = execute_iarith.make_addsub_executor(True, 'sub')
-execute_add32 = execute_iarith.make_addsub_executor(False, 'add')
-execute_add16 = execute_iarith.make_addsub_executor(True, 'add')
-
-#-----------------------------------------------------------------------
 # Bitwise instructions
 #-----------------------------------------------------------------------
+# Addition and subtraction.
+execute_sub32     = execute_bitwise.make_addsub_executor(False, 'sub')
+execute_sub16     = execute_bitwise.make_addsub_executor(True, 'sub')
+execute_add32     = execute_bitwise.make_addsub_executor(False, 'add')
+execute_add16     = execute_bitwise.make_addsub_executor(True, 'add')
 # 16 bit instructions without immediate.
 execute_and16     = execute_bitwise.make_bit_executor("and", True,  False)
 execute_orr16     = execute_bitwise.make_bit_executor("orr", True,  False)
