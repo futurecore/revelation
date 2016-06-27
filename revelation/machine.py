@@ -283,14 +283,6 @@ class State(Machine):
         self._set_nth_bit_of_register('CONFIG', 15, (value >> 3) & 0x1)
 
     @property
-    def RESERVED0(self):
-        return self._get_nth_bit_of_register('CONFIG', 16)
-
-    @RESERVED0.setter
-    def RESERVED0(self, value):
-        self._set_nth_bit_of_register('CONFIG', 16, value)
-
-    @property
     def ARITHMODE(self):
         return (self.rf[reg_map['CONFIG']] >> 17) & 0x7
 
@@ -301,30 +293,12 @@ class State(Machine):
         self._set_nth_bit_of_register('CONFIG', 19, (value >> 2) & 0x1)
 
     @property
-    def RESERVED1(self):
-        return (self.rf[reg_map['CONFIG']] >> 20) & 0x3
-
-    @RESERVED1.setter
-    def RESERVED1(self, value):
-        self._set_nth_bit_of_register('CONFIG', 20, value & 0x1)
-        self._set_nth_bit_of_register('CONFIG', 21, (value >> 1) & 0x1)
-
-    @property
     def LPMODE(self):
         return self._get_nth_bit_of_register('CONFIG', 22)
 
     @LPMODE.setter
     def LPMODE(self, value):
         self._set_nth_bit_of_register('CONFIG', 22, value)
-
-    @property
-    def RESERVED2(self):
-        return (self.rf[reg_map['CONFIG']] >> 23) & 0x3
-
-    @RESERVED2.setter
-    def RESERVED2(self, value):
-        self._set_nth_bit_of_register('CONFIG', 23, value & 0x1)
-        self._set_nth_bit_of_register('CONFIG', 24, (value >> 1) & 0x1)
 
     @property
     def ENABLE_USER_MODE(self):
@@ -341,18 +315,6 @@ class State(Machine):
     @TIMEWRAP.setter
     def TIMEWRAP(self, value):
         self._set_nth_bit_of_register('CONFIG', 26, value)
-
-    @property
-    def RESERVED3(self):
-        return (self.rf[reg_map['CONFIG']] >> 27) & 0x1f
-
-    @RESERVED3.setter
-    def RESERVED3(self, value):
-        self._set_nth_bit_of_register('CONFIG', 27, value & 0x1)
-        self._set_nth_bit_of_register('CONFIG', 28, (value >> 1) & 0x1)
-        self._set_nth_bit_of_register('CONFIG', 29, (value >> 2) & 0x1)
-        self._set_nth_bit_of_register('CONFIG', 30, (value >> 3) & 0x1)
-        self._set_nth_bit_of_register('CONFIG', 31, (value >> 4) & 0x1)
 
     # PC
 
