@@ -39,7 +39,7 @@ def test_execute_idle16():
     instr = opcode_factory.idle16()
     name, executefn = decode(instr)
     executefn(state, Instruction(instr, None))
-    expected_state = StateChecker(pc=(2 + RESET_ADDR), rfSTATUS=0, ACTIVE=False)
+    expected_state = StateChecker(pc=(2 + RESET_ADDR), ACTIVE=False)
     expected_state.check(state)
 
 

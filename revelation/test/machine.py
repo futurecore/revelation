@@ -4,7 +4,7 @@ from revelation.sim import new_memory
 from revelation.isa import reg_map
 from revelation.utils import bits2float
 
-flags = 'ACTIVE GID SUPERUSER WAND AN AZ AC AV AVS BN BV BIS BVS BUS BZ EXCAUSE pc'.split()
+flags = 'ACTIVE GID KERNEL WAND AN AZ AC AV AVS BN BV BIS BVS BUS BZ EXCAUSE pc'.split()
 
 
 def new_state(mem=None, debug=Debug(), **args):
@@ -27,10 +27,6 @@ def new_state(mem=None, debug=Debug(), **args):
             state.rf[reg_map[arg[2:]]] = value
         else:
             raise KeyError('No such register: {0}'.format(arg[2:]))
-    # Give the RAM model a reference to the register files. Since the
-    # Epiphany has memory-mapped register files, we need to intercept
-    # any read / write to memory which should actually go to the registers.
-    state.mem.rf = state.rf
     return state
 
 

@@ -18,6 +18,10 @@ exclude_lines =
     def init_state
     def iread
 
+    # Don't complain about every single status bit.
+    self._get_nth_bit_of_register
+    self._set_nth_bit_of_register
+
     # Don't complain about not generating debug output.
     if self.debug.enabled('flags'):
     if self.debug.enabled('rf'):

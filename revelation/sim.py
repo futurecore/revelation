@@ -62,7 +62,7 @@ class Revelation(Sim):
 
     def _service_interrupts(self):
         # Let N be the interrupt level:
-        latched_interrupt = self.state.get_lateched_interrupt()
+        latched_interrupt = self.state.get_latched_interrupt()
         pending_interrupt = self.state.get_pending_interrupt()
         # If there is no interrupt to process, return.
         if latched_interrupt == pending_interrupt == -1:
@@ -93,7 +93,5 @@ class Revelation(Sim):
         memory = new_memory()
         _, _ = load_program(exe_file, memory)
         self.state = State(memory, self.debug, reset_addr=RESET_ADDR)
-        self.state.ACTIVE = True
-        self.state.SUPERUSER = True
 
 init_sim(Revelation())
