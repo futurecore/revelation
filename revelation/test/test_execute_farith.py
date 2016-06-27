@@ -141,3 +141,69 @@ def test_underflow_overflow(factory, rn, rm, ex):
     name, executefn = decode(instr)
     executefn(state, Instruction(instr, None))
     ex.fp_check(state)
+
+
+@pytest.mark.parametrize('factory,rn,rm,ex',
+    [(opcode_factory.fadd16,  1, 1, StateChecker(rf0=14,  BZ=0, BN=0)),
+     (opcode_factory.fadd16,  2, 2, StateChecker(rf0=-14, BZ=0, BN=1)),
+     (opcode_factory.fadd16,  3, 3, StateChecker(rf0=0,   BZ=1, BN=0)),
+
+     (opcode_factory.fsub16,  1, 1, StateChecker(rf0=0,   BZ=1, BN=0)),
+     (opcode_factory.fsub16,  2, 1, StateChecker(rf0=-14, BZ=0, BN=1)),
+     (opcode_factory.fsub16,  2, 2, StateChecker(rf0=0,   BZ=1, BN=0)),
+
+     (opcode_factory.fmul16,  1, 1, StateChecker(rf0=49,  BZ=0, BN=0)),
+     (opcode_factory.fmul16,  2, 2, StateChecker(rf0=49,  BZ=0, BN=0)),
+     (opcode_factory.fmul16,  1, 2, StateChecker(rf0=-49, BZ=0, BN=1)),
+     (opcode_factory.fmul16,  1, 3, StateChecker(rf0=0,   BZ=1, BN=0)),
+
+     (opcode_factory.fmadd16, 1, 1, StateChecker(rf0=49,  BZ=0, BN=0)),
+     (opcode_factory.fmadd16, 2, 2, StateChecker(rf0=49,  BZ=0, BN=0)),
+     (opcode_factory.fmadd16, 1, 2, StateChecker(rf0=-49, BZ=0, BN=1)),
+     (opcode_factory.fmadd16, 1, 3, StateChecker(rf0=0,   BZ=1, BN=0)),
+
+     (opcode_factory.fmsub16, 1, 1, StateChecker(rf0=-49, BZ=0, BN=1)),
+     (opcode_factory.fmsub16, 2, 2, StateChecker(rf0=-49, BZ=0, BN=1)),
+     (opcode_factory.fmsub16, 1, 2, StateChecker(rf0=49,  BZ=0, BN=0)),
+     (opcode_factory.fmsub16, 1, 3, StateChecker(rf0=0,   BZ=1, BN=0)),
+    ])
+def test_execute_iarith16(factory, rn, rm, ex):
+    state = new_state(rf0=0, rf1=7, rf2=-7,rf3=0, rf4=1,
+                      rfCONFIG=0b10000000000000000000)  # Signed Integer mode.
+    instr = factory(rd=0, rn=rn, rm=rm)
+    name, executefn = decode(instr)
+    executefn(state, Instruction(instr, None))
+    ex.fp_check(state)
+
+
+@pytest.mark.parametrize('factory,rn,rm,ex',
+    [(opcode_factory.fadd32,  1, 1, StateChecker(rf0=14,  BZ=0, BN=0)),
+     (opcode_factory.fadd32,  2, 2, StateChecker(rf0=-14, BZ=0, BN=1)),
+     (opcode_factory.fadd32,  3, 3, StateChecker(rf0=0,   BZ=1, BN=0)),
+
+     (opcode_factory.fsub32,  1, 1, StateChecker(rf0=0,   BZ=1, BN=0)),
+     (opcode_factory.fsub32,  2, 1, StateChecker(rf0=-14, BZ=0, BN=1)),
+     (opcode_factory.fsub32,  2, 2, StateChecker(rf0=0,   BZ=1, BN=0)),
+
+     (opcode_factory.fmul32,  1, 1, StateChecker(rf0=49,  BZ=0, BN=0)),
+     (opcode_factory.fmul32,  2, 2, StateChecker(rf0=49,  BZ=0, BN=0)),
+     (opcode_factory.fmul32,  1, 2, StateChecker(rf0=-49, BZ=0, BN=1)),
+     (opcode_factory.fmul32,  1, 3, StateChecker(rf0=0,   BZ=1, BN=0)),
+
+     (opcode_factory.fmadd32, 1, 1, StateChecker(rf0=49,  BZ=0, BN=0)),
+     (opcode_factory.fmadd32, 2, 2, StateChecker(rf0=49,  BZ=0, BN=0)),
+     (opcode_factory.fmadd32, 1, 2, StateChecker(rf0=-49, BZ=0, BN=1)),
+     (opcode_factory.fmadd32, 1, 3, StateChecker(rf0=0,   BZ=1, BN=0)),
+
+     (opcode_factory.fmsub32, 1, 1, StateChecker(rf0=-49, BZ=0, BN=1)),
+     (opcode_factory.fmsub32, 2, 2, StateChecker(rf0=-49, BZ=0, BN=1)),
+     (opcode_factory.fmsub32, 1, 2, StateChecker(rf0=49,  BZ=0, BN=0)),
+     (opcode_factory.fmsub32, 1, 3, StateChecker(rf0=0,   BZ=1, BN=0)),
+    ])
+def test_execute_iarith32(factory, rn, rm, ex):
+    state = new_state(rf0=0, rf1=7, rf2=-7,rf3=0, rf4=1,
+                      rfCONFIG=0b10000000000000000000)  # Signed Integer mode.
+    instr = factory(rd=0, rn=rn, rm=rm)
+    name, executefn = decode(instr)
+    executefn(state, Instruction(instr, None))
+    ex.fp_check(state)

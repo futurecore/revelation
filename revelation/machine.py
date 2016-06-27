@@ -52,8 +52,10 @@ class State(Machine):
                               'MESH TRAFFIC 0'        : 0b1110,
                               'MESH TRAFFIC 1'        : 0b1111,
         }
+        self.FPU_MODES = {'FLOATING POINT' : 0b000, 'SIGNED INTEGER' : 0b100}
+        # Default configuration.
+        self.ARITHMODE = self.FPU_MODES['FLOATING POINT']
         self.ACTIVE = True
-        # Kernel mode on by default.
         self.KERNEL = True
 
     def get_pending_interrupt(self):
