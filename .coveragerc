@@ -27,7 +27,12 @@ exclude_lines =
     if self.debug.enabled('rf'):
     if self.debug.enabled('mem'):
     if self.debug.enabled('memcheck'):
+    if s.debug.enabled('trace'):
     if not sparse_storage:
+    if self.debug.enabled_flags:
+    if self.logger:
+    self.logger.log
+    self.logger = Logger(LOG_FILENAME)
     self.memory.debug.enabled_flags
     s.debug_flags()
     self.bounds_check

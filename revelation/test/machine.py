@@ -9,7 +9,7 @@ flags = 'ACTIVE GID KERNEL WAND AN AZ AC AV AVS BN BV BIS BVS BUS BZ EXCAUSE pc'
 
 def new_state(mem=None, debug=Debug(), **args):
     if mem is None:
-        mem = new_memory()
+        mem = new_memory(None)
     state = State(mem, debug)
     for attr in flags:
         if attr in args:

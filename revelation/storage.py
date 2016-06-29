@@ -7,53 +7,46 @@ from pydgin.utils import specialize
 #-----------------------------------------------------------------------
 # Memory
 #-----------------------------------------------------------------------
-def Memory(data=None, size=2**10):
+def Memory(data=None, size=2**10, logger=None):
     try:
         from rpython.rlib.objectmodel import we_are_translated
         sparse_storage = not we_are_translated()
     except ImportError:
         sparse_storage = True
     if not sparse_storage:
-        return _ByteMemory(data, size)
+        return _ByteMemory(data, size, logger=logger)
     else:
         print "NOTE: Using sparse storage"
-        return _SparseMemory(_ByteMemory)
+        return _SparseMemory(_ByteMemory, logger=logger)
 
 
 #-----------------------------------------------------------------------
 # _ByteMemory
 #-----------------------------------------------------------------------
 class _ByteMemory(object):
-    def __init__(self, data=None, size=2**10):
+    def __init__(self, data=None, size=2**10, logger=None):
         self.data  = data if data else [' '] * size
         self.size  = len(self.data)
-        self.debug = Debug()
+        self.logger = logger
 
     def bounds_check(self, addr):
         # Check if the accessed data is larger than the memory size.
         if addr > self.size:
-            print 'WARNING: accessing larger address than memory size. ' + \
-                'addr=%s size=%s' % (pad_hex(addr), pad_hex(self.size))
+            print ('WARNING: accessing larger address than memory size. ' +
+                   'addr=%s size=%s' % (pad_hex(addr), pad_hex(self.size)))
         if addr == 0:
             print 'WARNING: writing null pointer!'
             raise Exception()
 
     @unroll_safe
     def read(self, start_addr, num_bytes):
-        if self.debug.enabled('memcheck'):
-            self.bounds_check(start_addr)
         value = 0
-        if (self.debug.enabled('mem') and
-              (start_addr < 0xf0000 or start_addr > 0xf0718)):
-            print ':: RD.MEM[%s] = ' % pad_hex(start_addr),
         for i in range(num_bytes - 1, -1, -1):
             value = value << 8
             value = value | ord(self.data[start_addr + i])
-        if self.debug.enabled('mem'):
-            print '%s' % pad_hex(value),
         return value
 
-    # this is instruction read, which is otherwise identical to read. The
+    # This is instruction read, which is otherwise identical to read. The
     # only difference is the elidable annotation, which we assume the
     # instructions are not modified (no side effects, assumes the addresses
     # correspond to the same instructions)
@@ -67,11 +60,6 @@ class _ByteMemory(object):
 
     @unroll_safe
     def write(self, start_addr, num_bytes, value):
-        if self.debug.enabled('memcheck'):
-            self.bounds_check(start_addr)
-        if (self.debug.enabled('mem') and
-              (start_addr < 0xf0000 or start_addr > 0xf0718)):
-            print ':: WR.MEM[%s] = %s' % (pad_hex(start_addr), pad_hex(value)),
         for i in range(num_bytes):
             self.data[start_addr + i] = chr(value & 0xff)
             value = value >> 8
@@ -83,19 +71,20 @@ class _ByteMemory(object):
 class _SparseMemory(object):
     _immutable_fields_ = ['BlockMemory', 'block_size', 'addr_mask', 'block_mask']
 
-    def __init__(self, BlockMemory, block_size=2**10):
+    def __init__(self, BlockMemory, block_size=2**10, logger=None):
         self.BlockMemory = BlockMemory
         self.block_size = block_size
+        self.debug = Debug()
+        self.logger = logger
         self.addr_mask  = block_size - 1
         self.block_mask = 0xffffffff ^ self.addr_mask
-        self.debug = Debug()
         print 'sparse memory size %x addr mask %x block mask %x' \
               % (self.block_size, self.addr_mask, self.block_mask)
         self.block_dict = {}
-        self.debug = Debug()
 
     def add_block(self, block_addr):
-        self.block_dict[block_addr] = self.BlockMemory(size=self.block_size)
+        self.block_dict[block_addr] = self.BlockMemory(size=self.block_size,
+                                                       logger=self.logger)
 
     @elidable
     def get_block_mem(self, block_addr):
@@ -114,7 +103,7 @@ class _SparseMemory(object):
         # For mixed-width ISAs, the start_addr is not necessarily
         # word-aligned, and can cross block memory boundaries. If there is
         # such a case, we have two instruction reads and then form the word
-        # for it
+        # for it.
         block_end_addr = self.block_mask & end_addr
         if block_addr == block_end_addr:
             return block_mem.iread(start_addr & self.addr_mask, num_bytes)
@@ -130,22 +119,21 @@ class _SparseMemory(object):
             return value
 
     def read(self, start_addr, num_bytes):
-        if (self.debug.enabled('mem') and
-              (start_addr < 0xf0000 or start_addr > 0xf0718)):
-            print ':: RD.MEM[%s] = ' % pad_hex(start_addr),
         block_addr = self.block_mask & start_addr
         block_addr = hint(block_addr, promote=True)
         block_mem = self.get_block_mem(block_addr)
         value = block_mem.read(start_addr & self.addr_mask, num_bytes)
-        if (self.debug.enabled('mem') and
+        if (self.debug.enabled('mem') and self.logger and
               (start_addr < 0xf0000 or start_addr > 0xf0718)):
-            print '%s' % pad_hex(value),
+            self.logger.log(' :: RD.MEM[%s] = %s' %\
+                              (pad_hex(start_addr), pad_hex(value)))
         return value
 
     def write(self, start_addr, num_bytes, value):
-        if (self.debug.enabled('mem') and
+        if (self.debug.enabled('mem') and self.logger and
               (start_addr < 0xf0000 or start_addr > 0xf0718)):
-            print ':: WR.MEM[%s] = %s' % (pad_hex(start_addr), pad_hex(value)),
+            self.logger.log(' :: WR.MEM[%s] = %s' % \
+                              (pad_hex(start_addr), pad_hex(value)))
         block_addr = self.block_mask & start_addr
         block_addr = hint(block_addr, promote=True)
         block_mem = self.get_block_mem(block_addr)
@@ -161,8 +149,9 @@ class MemoryMappedRegisterFile(object):
     multiple of 8. Note that memory objects can only read and write
     aligned words.
     """
-    def __init__(self, memory):
-        self.debug    = Debug()
+    def __init__(self, memory, logger):
+        self.debug = Debug()
+        self.logger = logger
         self.memory = memory
         self.num_regs = len(_register_map)
         self.debug_nchars = 8
@@ -174,31 +163,21 @@ class MemoryMappedRegisterFile(object):
     def __getitem__(self, index):
         address, nbytes, _ = _register_map[index]
         value = self.memory.read(address, nbytes)
-        if self.debug.enabled('rf') and index < 64:
-            print (':: RD.RF[%s] = %s' % (pad('%d' % index, 2),
-                    pad_hex(value, len=self.debug_nchars))),
+        if self.debug.enabled('rf') and self.logger and index < 64:
+            self.logger.log(' :: RD.RF[%s] = %s' % (pad('%d' % index, 2),
+                              pad_hex(value, len=self.debug_nchars)))
         return value
 
     @specialize.argtype(2)
     def __setitem__(self, index, value):
         address, nbytes, _ = _register_map[index]
         self.memory.write(address, nbytes, value)
-        if self.debug.enabled('rf') and index < 64:
-            print (':: WR.RF[%s] = %s' % ((pad('%d' % index, 2),
-                   pad_hex(value, len=self.debug_nchars)))),
+        if self.debug.enabled('rf') and self.logger and index < 64:
+            self.logger.log(' :: WR.RF[%s] = %s' % ((pad('%d' % index, 2),
+                              pad_hex(value, len=self.debug_nchars))))
 
     def print_regs(self, per_row=6):
-        """Prints all registers (register dump).
-        per_row specifies the number of registers to display per row.
-        """
-        for col in xrange(0, self.num_regs, per_row):
-            line = ''
-            for row in xrange(col, min(self.num_regs, col + per_row)):
-                _, _, name = _register_map[row]
-                value = self.__getitem__(row)
-                line += '%s:%s ' % (pad('%s' % name, 2), pad_hex(value))
-            print line
-
+        pass
 
 def get_address_of_register_by_name(register_name):
     for reg_index in _register_map:

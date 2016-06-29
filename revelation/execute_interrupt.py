@@ -163,22 +163,50 @@ def execute_trap16(s, inst):
         s.rf[3] = errno
     elif inst.t5 == 3:  # Exit.
         syscall_handler = pydgin.syscalls.syscall_exit
-        retval, errno = syscall_handler(s, s.rf[0], s.rf[1], s.rf[2])
+        exit_code = s.rf[0]
+        if s.debug.enabled('trace'):
+            s.logger.log(' syscall_exit(status=%x)' % exit_code)
+        retval, errno = syscall_handler(s, exit_code, s.rf[1], s.rf[2])
     elif inst.t5 == 4:
-        if s.debug.enabled('syscalls'):
-            print 'TRAP: Assertion SUCCEEDED.'
+        if s.debug.enabled('trace'):
+            s.logger.log(' TRAP: Assertion SUCCEEDED.')
     elif inst.t5 == 5:
-        if s.debug.enabled('syscalls'):
-            print 'TRAP: Assertion FAILED.'
+        if s.debug.enabled('trace'):
+            s.logger.log(' TRAP: Assertion FAILED.')
     elif inst.t5 == 7: # Initiate system call.
-        syscall_handler = syscall_funcs[s.rf[3]]
-        retval, errno = syscall_handler(s, s.rf[0], s.rf[1], s.rf[2])
+        syscall = s.rf[3]
+        syscall_handler = syscall_funcs[syscall]
+        arg0, arg1, arg2 = s.rf[0], s.rf[1], s.rf[2]
+        if s.debug.enabled('trace'):
+            if syscall == 2:
+                s.logger.log(' syscall_open(filename=%x, flags=%x, mode=%x)' % \
+                             (arg0, arg1, arg2))
+            elif syscall == 3:
+                s.logger.log(' syscall_close(fd=%x)' % arg0)
+            elif syscall == 4:
+                s.logger.log(' syscall_read(fd=%x, buf=%x, count=%x)' % \
+                             (arg0, arg1, arg2))
+            elif syscall == 5:
+                s.logger.log(' syscall_write(fd=%x, buf=%x, count=%x)' % \
+                             (arg0, arg1, arg2))
+            elif syscall == 6:
+                s.logger.log(' syscall_lseek(fd=%x, pos=%x, how=%x)' % \
+                             (arg0, arg1, arg2))
+            elif syscall == 7:
+                s.logger.log(' syscall_unlink(path=%x)' % arg0)
+            elif syscall == 10:
+                s.logger.log(' syscall_fstat(fd=%x, buf=%x)' % (arg0, arg1))
+            elif syscall == 15:
+                s.logger.log('syscall_stat(path=%x, buf=%x)' % (arg0, arg1))
+            elif syscall == 21:
+                s.logger.log('syscall_link(src=%x, link=%x)' % (arg0, arg1))
+        retval, errno = syscall_handler(s, arg0, arg1, arg2)
         # Undocumented:
         s.rf[0] = trim_32(retval)
         s.rf[3] = errno
     else:
-        print ('WARNING: syscall not implemented: %d. Should be unreachable' %
-               inst.t5)
+        print('WARNING: syscall not implemented: %d. Should be unreachable' %
+              inst.t5)
     s.pc += 2
 
 

@@ -1,7 +1,6 @@
 #=======================================================================
 # machine.py
 #=======================================================================
-
 from pydgin.machine import Machine
 
 from revelation.isa import reg_map
@@ -21,12 +20,13 @@ RESET_ADDR = 0
 class State(Machine):
     _virtualizable_ = ['num_insts']
 
-    def __init__(self, memory, debug, reset_addr=RESET_ADDR):
+    def __init__(self, memory, debug, logger=None, reset_addr=RESET_ADDR):
         Machine.__init__(self,
                          memory,
-                         MemoryMappedRegisterFile(memory),
+                         MemoryMappedRegisterFile(memory, logger),
                          debug,
                          reset_addr=RESET_ADDR)
+        self.logger = logger
         # Epiphany III exceptions.
         self.exceptions = { 'UNIMPLEMENTED'  : 0b0100,
                             'SWI'            : 0b0001,
@@ -333,7 +333,8 @@ class State(Machine):
         return self.rf[reg_map['pc']]
 
     def debug_flags(self):
-        if self.debug.enabled('flags'):
-            print ('AN=%s AZ=%s AC=%s AV=%s AVS=%s BN=%s BZ=%s BIS=%s BUS=%s BV=%s BVS=%s ' %
+        if self.debug.enabled('flags') and self.logger:
+            self.logger.log(' AN=%s AZ=%s AC=%s AV=%s AVS=%s BN=%s BZ=%s '
+                            'BIS=%s BUS=%s BV=%s BVS=%s' %
                    (self.AN, self.AZ, self.AC, self.AV, self.AVS,
-                    self.BN, self.BZ, self.BIS, self.BUS, self.BV, self.BVS)),
+                    self.BN, self.BZ, self.BIS, self.BUS, self.BV, self.BVS))

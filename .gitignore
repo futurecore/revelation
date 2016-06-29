@@ -2,7 +2,7 @@ venv/
 bin/
 syscall-layout/*.native
 e_trace.out
-py_trace.out
+r_trace.out
 .cache/
 pydgin-revelation-jit
 pydgin-revelation-nojit
