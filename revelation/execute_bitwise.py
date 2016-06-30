@@ -24,16 +24,16 @@ def make_addsub_executor(is16bit, name):
         """
         if is16bit:
             inst.bits &= 0xffff
+        rn = s.rf[inst.rn]
         op2 = reg_or_simm(s, inst, is16bit)
-        result = (s.rf[inst.rn] + op2 if name == 'add'
-                  else s.rf[inst.rn] - op2)
+        result = rn + op2 if name == 'add' else rn - op2
         s.rf[inst.rd] = trim_32(result)
         if name == 'add':
             s.AC = carry_from(result)
-            s.AV = bool(overflow_from_add(s.rf[inst.rn], op2, result))
+            s.AV = bool(overflow_from_add(rn, op2, result))
         else:
             s.AC = not borrow_from(result)
-            s.AV = bool(overflow_from_sub(s.rf[inst.rn], op2, result))
+            s.AV = bool(overflow_from_sub(rn, op2, result))
         s.AN = bool((result >> 31) & 1)
         s.AZ = True if trim_32(result) == 0 else False
         s.AVS = s.AVS or s.AV
@@ -56,18 +56,19 @@ def make_bit_executor(name, is16bit, imm):
         if is16bit:
             inst.bits &= 0xffff
         rm = inst.imm5 if imm else s.rf[inst.rm]
+        rn = s.rf[inst.rn]
         if name == "and":
-            result = s.rf[inst.rn] & rm
+            result = rn & rm
         elif name == "orr":
-            result = s.rf[inst.rn] | rm
+            result = rn | rm
         elif name == "eor":
-            result = s.rf[inst.rn] ^ rm
+            result = rn ^ rm
         elif name == "asr":
-            result = signed(s.rf[inst.rn]) >> rm
+            result = signed(rn) >> (rm & 0x1f)
         elif name == "lsr":
-            result = s.rf[inst.rn] >> rm
+            result = rn >> (rm & 0x1f)
         elif name == "lsl":
-            result = s.rf[inst.rn] << rm
+            result = rn << (rm & 0x1f)
         elif name == "bitr":
             # The description of this instruction is confused in the ISA
             # reference. The decode table states that the instruction always
@@ -75,7 +76,7 @@ def make_bit_executor(name, is16bit, imm):
             # states that it does not.
             result = 0
             for i in range(32):
-                if (s.rf[inst.rn] & (1 << i)):
+                if (rn & (1 << i)):
                     result |= (1 << (32 - 1 - i))
         s.rf[inst.rd] = trim_32(result)
         s.AN = bool((result >> 31) & 1)

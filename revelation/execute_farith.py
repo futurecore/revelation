@@ -45,11 +45,12 @@ def make_farith_executor(name, is16bit, is_unary=False):
                     result = int(rn)
             elif name == 'abs':    # FABS
                 result = abs(rn)
-            # 'result' is always a Python float.
+            # 'result' is always a Python float, result_bits is an int.
+            result_bits = float2bits(result)
             # RD = RN <OP> RM
-            s.rf[inst.rd] = trim_32(result if name == 'fix' else float2bits(result))
+            s.rf[inst.rd] = trim_32(result if name == 'fix' else result_bits)
             # BN = RD[31]
-            s.BN = True if result < 0.0 else False
+            s.BN = bool((result_bits >> 31) & 1)
             # if (RD[30:0] == 0) { BZ=1 } else { BZ=0 }
             s.BZ = True if abs(result) < 0.0001 else False
             # if (UnbiasedExponent(RD) > 127) { BV=1 } else { BV=0 }
@@ -87,7 +88,8 @@ def make_farith_executor(name, is16bit, is_unary=False):
             # RD = RN <OP> RM
             s.rf[inst.rd] = trim_32(result)
             # BN = RD[31]
-            s.BN = True if result < 0 else False
+            s.BN = bool((result >> 31) & 1)
+            # s.BN = True if result < 0 else False
             # if (RD[30:0] == 0) { BZ=1 } else { BZ=0 }
             s.BZ = True if result == 0 else False
         s.debug_flags()
