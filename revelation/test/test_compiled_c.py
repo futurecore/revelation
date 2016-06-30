@@ -8,12 +8,12 @@ elf_dir = os.path.join('revelation', 'test', 'c')
 
 
 @pytest.mark.parametrize('elf_file,expected',
-                         [pytest.mark.skip(('arithmode.elf',       'a + b = 4.450\n'
+                         [('arithmode.elf',       'a + b = 4.450\n'
                                                   'a - b = -1.010\n'
                                                   'a * b = 4.696\n'
                                                   'd + e = 5\n'
                                                   'd - e = -1\n'
-                                                  'd * e = 6\n')),
+                                                  'd * e = 6\n'),
                           ('clearilat.elf',
                            'Sync interrupt caused by ILATST (should only appear once).\n'
                            'Clearing all ILAT with ILATCL.\n'),

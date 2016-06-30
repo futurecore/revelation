@@ -187,7 +187,7 @@ def test_str_index(is16bit):
 def test_ldr_pm(is16bit):
     # Load.
     state = new_state(rf0=0, rf5=8, rf6=8)
-    state.mem.write(16, 4, 0xffffffff)
+    state.mem.write(8, 4, 0xffffffff)
     if is16bit:
         instr = opcode_factory.ldstrpm16(rd=0, rn=5, rm=6, bb=0b10, s=0)
     else:
@@ -209,7 +209,36 @@ def test_str_pm(is16bit):
     name, executefn = decode(instr)
     executefn(state, Instruction(instr, None))
     expected_state = StateChecker(rf0=0xffffffff, rf5=16, rf6=8)
-    expected_state.check(state, memory=[(16, 4, 0xffffffff)])
+    expected_state.check(state, memory=[(8, 4, 0xffffffff)])
+
+
+@pytest.mark.parametrize('is16bit', [True, False])
+def test_ldr_pm_double(is16bit):
+    # Load.
+    state = new_state(rf0=0, rf5=8, rf6=8)
+    state.mem.write(8, 8, 0xffffffffffffffff)
+    if is16bit:
+        instr = opcode_factory.ldstrpm16(rd=0, rn=5, rm=6, bb=0b11, s=0)
+    else:
+        instr = opcode_factory.ldstrpm32(rd=0, rn=5, rm=6, sub=0, bb=0b11, s=0)
+    name, executefn = decode(instr)
+    executefn(state, Instruction(instr, None))
+    expected_state = StateChecker(rf0=0xffffffff, rf1=0xffffffff, rf5=16, rf6=8)
+    expected_state.check(state)
+
+
+@pytest.mark.parametrize('is16bit', [True, False])
+def test_str_pm_double(is16bit):
+    # Store.
+    state = new_state(rf0=0xffffffff, rf1=0xffffffff, rf5=8, rf6=8)
+    if is16bit:
+        instr = opcode_factory.ldstrpm16(rd=0, rn=5, rm=6, bb=0b11, s=1)
+    else:
+        instr = opcode_factory.ldstrpm32(rd=0, rn=5, rm=6, sub=0, bb=0b11, s=1)
+    name, executefn = decode(instr)
+    executefn(state, Instruction(instr, None))
+    expected_state = StateChecker(rf0=0xffffffff, rf5=16, rf6=8)
+    expected_state.check(state, memory=[(8, 8, 0xffffffffffffffff)])
 
 
 def test_testset32_zero():

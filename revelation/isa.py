@@ -211,10 +211,10 @@ execute_bcond16 = execute_branch.make_bcond_executor(True)
 execute_ldstrpmd32  = execute_load_store.execute_ldstrpmd32
 execute_ldstrdisp16 = execute_load_store.make_ldstrdisp_executor(True)
 execute_ldstrdisp32 = execute_load_store.make_ldstrdisp_executor(False)
-execute_ldstrind16  = execute_load_store.make_ldstrindpm_executor(True,  False)
-execute_ldstrind32  = execute_load_store.make_ldstrindpm_executor(False, False)
-execute_ldstrpm16   = execute_load_store.make_ldstrindpm_executor(True,  True)
-execute_ldstrpm32   = execute_load_store.make_ldstrindpm_executor(False, True)
+execute_ldstrind16  = execute_load_store.make_ldstrind_executor(True)
+execute_ldstrind32  = execute_load_store.make_ldstrind_executor(False)
+execute_ldstrpm16   = execute_load_store.make_ldstrpm_executor(True)
+execute_ldstrpm32   = execute_load_store.make_ldstrpm_executor(False)
 execute_testset32   = execute_load_store.testset32
 
 #-----------------------------------------------------------------------

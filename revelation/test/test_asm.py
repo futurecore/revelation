@@ -162,8 +162,6 @@ def test_fp_elf(elf, expected):
        [('ldr_disp.elf',    StateChecker(rf0=0xffffffff, rf1=0x00100000)),
         ('ldr_disp_pm.elf', StateChecker(rf0=0xffffffff, rf1=0x00100004)),
         ('ldr_index.elf',   StateChecker(rf0=0xffffffff, rf1=0x00100004, rf2=0)),
-        ('ldr_pm.elf',      StateChecker(rf0=0xffffffff, rf1=0x00100004,
-                                         rf2=0x80002)),
        ])
 def test_load(elf, expected):
     """Test ELF files that load values from memory into a register.
@@ -182,7 +180,6 @@ def test_load(elf, expected):
        [('str_disp.elf', StateChecker(rf0=0xffffffff, rf1=0x00100000)),
         ('str_disp_pm.elf', StateChecker(rf0=0xffffffff, rf1=0x00100004)),
         ('str_index.elf', StateChecker(rf0=0xffffffff, rf1=0x00100004, rf2=0)),
-        ('str_pm.elf', StateChecker(rf0=0xffffffff, rf1=0x00100004, rf2=4)),
        ])
 def test_store(elf, expected):
     """Test ELF files that transfer data from registers to memory.
@@ -194,6 +191,31 @@ def test_store(elf, expected):
         revelation.max_insts = 10000
         revelation.run()
         expected.check(revelation.state, memory=[(0x00100004, 4, 0xffffffff)])
+
+
+def test_elf_load_pm():
+    elf_filename = os.path.join(elf_dir, 'ldr_pm.elf')
+    revelation = Revelation()
+    with open(elf_filename, 'rb') as elf:
+        revelation.init_state(elf, elf_filename, '', [], False, is_test=True)
+        revelation.state.mem.write(0x80002, 4, 0xffffffff)
+        revelation.max_insts = 10000
+        revelation.run()
+        expected = StateChecker(rf0=0xffffffff, rf1=0x100004, rf2=0x80002)
+        expected.check(revelation.state)
+
+
+def test_elf_store_pm():
+    """Test ELF files that transfer data from registers to memory.
+    """
+    elf_filename = os.path.join(elf_dir, 'str_pm.elf')
+    revelation = Revelation()
+    with open(elf_filename, 'rb') as elf:
+        revelation.init_state(elf, elf_filename, '', [], False, is_test=True)
+        revelation.max_insts = 10000
+        revelation.run()
+        expected = StateChecker(rf0=0xffffffff, rf1=0x00100004, rf2=4)
+        expected.check(revelation.state, memory=[(0x100000, 4, 0xffffffff)])
 
 
 def test_testset32():
