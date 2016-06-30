@@ -2,7 +2,7 @@
 #include <stdio.h>
 
 /* Assume the ELF will be simulated from the top-level directory. */
-const char *file = "epiphany/test/c/hello.txt";
+const char *file = "revelation/test/c/hello.txt";
 
 int main() {
     FILE *fp;
