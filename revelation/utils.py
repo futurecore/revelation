@@ -1,3 +1,5 @@
+from revelation.storage import get_register_size_by_address
+
 import pydgin.utils
 
 import math
@@ -12,6 +14,18 @@ except ImportError:
         def argtype(self, fun, *args):
             return lambda fun : fun
     specialize = Specialize()
+
+
+def get_mmr_address(rn, m0m1):
+    """Return address of an memory-mapped register and its size in bits.
+    """
+    mmr_map = { 0b00 : 0xf0400,
+                0b01 : 0xf0500,
+                0b10 : 0xf0600,
+                0b11 : 0xf0700 }
+    address = mmr_map[m0m1] + (rn * 0x4)
+    size = get_register_size_by_address(address)
+    return address, size
 
 
 def signed(value):

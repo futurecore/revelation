@@ -161,8 +161,9 @@ class MemoryMappedRegisterFile(object):
         return
 
     def __getitem__(self, index):
-        address, nbytes, _ = _register_map[index]
-        value = self.memory.read(address, nbytes)
+        address, bitsize, _ = _register_map[index]
+        mask = (1 << bitsize) - 1
+        value = self.memory.read(address, 4) & mask
         if self.debug.enabled('rf') and self.logger and index < 64:
             self.logger.log(' :: RD.RF[%s] = %s' % (pad('%d' % index, 2),
                               pad_hex(value, len=self.debug_nchars)))
@@ -170,8 +171,9 @@ class MemoryMappedRegisterFile(object):
 
     @specialize.argtype(2)
     def __setitem__(self, index, value):
-        address, nbytes, _ = _register_map[index]
-        self.memory.write(address, nbytes, value)
+        address, bitsize, _ = _register_map[index]
+        mask = (1 << bitsize) - 1
+        self.memory.write(address, 4, value & mask)
         if self.debug.enabled('rf') and self.logger and index < 64:
             self.logger.log(' :: WR.RF[%s] = %s' % ((pad('%d' % index, 2),
                               pad_hex(value, len=self.debug_nchars))))
@@ -185,55 +187,66 @@ def get_address_of_register_by_name(register_name):
             return _register_map[reg_index][0]
 
 
+def get_register_size_by_address(register_address):
+    """Returns size of register in bits.
+    """
+    size = 32
+    for address, size, _ in _special_purpose_registers:
+        if address == register_address:
+            break
+    return size
+
+
+
 _special_purpose_registers = [
-    (0xf0400, 4, 'CONFIG'),       # Core configuration
-    (0xf0404, 4, 'STATUS'),       # Core status
-    (0xf0408, 4, 'pc'),           # Program counter
-    (0xf040c, 4, 'DEBUGSTATUS'),  # Debug status
-    (0xf0414, 4, 'LC'),           # Hardware counter loop
-    (0xf0418, 4, 'LS'),           # Hardware counter start address
-    (0xf041c, 4, 'LE'),           # Hardware counter end address
-    (0xf0420, 4, 'IRET'),         # Interrupt PC return address
-    (0xf0424, 4, 'IMASK'),        # Interrupt mask
-    (0xf0428, 4, 'ILAT'),         # Interrupt latch
-    (0xf042c, 4, 'ILATST'),       # Alias for setting interrupts
-    (0xf0430, 4, 'ILATCL'),       # Alias for clearing interrupts
-    (0xf0434, 4, 'IPEND'),        # Interrupt currently in progress
-    (0xf0440, 4, 'FSTATUS'),      # Alias for writing to all STATUS bits
-    (0xf0448, 1, 'DEBUGCMD'),     # Debug command register (2 bits)
+    (0xf0400, 32, 'CONFIG'),       # Core configuration
+    (0xf0404, 32, 'STATUS'),       # Core status
+    (0xf0408, 32, 'pc'),           # Program counter
+    (0xf040c, 32, 'DEBUGSTATUS'),  # Debug status
+    (0xf0414, 32, 'LC'),           # Hardware counter loop
+    (0xf0418, 32, 'LS'),           # Hardware counter start address
+    (0xf041c, 32, 'LE'),           # Hardware counter end address
+    (0xf0420, 32, 'IRET'),         # Interrupt PC return address
+    (0xf0424, 10, 'IMASK'),        # Interrupt mask
+    (0xf0428, 10, 'ILAT'),         # Interrupt latch
+    (0xf042c, 10, 'ILATST'),       # Alias for setting interrupts
+    (0xf0430, 10, 'ILATCL'),       # Alias for clearing interrupts
+    (0xf0434, 10, 'IPEND'),        # Interrupt currently in progress
+    (0xf0440, 32, 'FSTATUS'),      # Alias for writing to all STATUS bits
+    (0xf0448, 2, 'DEBUGCMD'),     # Debug command register (2 bits)
     (0xf070c, 1, 'RESETCORE'),    # Per core software reset (1 bit)
     # Event timer registers
-    (0xf0438, 4, 'CTIMER0'),      # Core timer 0
-    (0xf043c, 4, 'CTIMER1'),      # Core timer 1
+    (0xf0438, 32, 'CTIMER0'),      # Core timer 0
+    (0xf043c, 32, 'CTIMER1'),      # Core timer 1
     # Process control registers
-    (0xf0604, 2, 'MEMSTATUS'),    # Memory protection status
+    (0xf0604, 3, 'MEMSTATUS'),    # Memory protection status
                                   # Epiphany IV: 14 bits, III: 1 bit ([2])
-    (0xf0608, 2, 'MEMPROTECT'),   # Memory protection registration
+    (0xf0608, 8, 'MEMPROTECT'),   # Memory protection registration
                                   # Epiphany IV: 16 bits, III: 8 bits.
     # DMA registers
-    (0xf0500, 4, 'DMA0CONFIG'),   # DMA channel 0 configuration
-    (0xf0504, 4, 'DMA0STRIDE'),   # DMA channel 0 stride
-    (0xf0508, 4, 'DMA0COUNT'),    # DMA channel 0 count
-    (0xf050c, 4, 'DMA0SRCADDR'),  # DMA channel 0 source address
-    (0xf0510, 4, 'DMA0DSTADDR'),  # DMA channel 0 destination address
-    (0xf0514, 4, 'DMA0AUTO0'),    # DMA channel 0 slave lower data
-    (0xf0518, 4, 'DMA0AUTO1'),    # DMA channel 0 slave upper data
-    (0xf051c, 4, 'DMA0STATUS'),   # DMA channel 0 status
-    (0xf0520, 4, 'DMA1CONFIG'),   # DMA channel 1 configuration
-    (0xf0524, 4, 'DMA1STRIDE'),   # DMA channel 1 stride
-    (0xf0528, 4, 'DMA1COUNT'),    # DMA channel 1 count
-    (0xf052c, 4, 'DMA1SRCADDR'),  # DMA channel 1 source address
-    (0xf0530, 4, 'DMA1DSTADDR'),  # DMA channel 1 destination address
-    (0xf0534, 4, 'DMA1AUTO0'),    # DMA channel 1 slave lower data
-    (0xf0538, 4, 'DMA1AUTO1'),    # DMA channel 1 slave upper data
-    (0xf053c, 4, 'DMA1STATUS'),   # DMA channel 1 status
+    (0xf0500, 32, 'DMA0CONFIG'),   # DMA channel 0 configuration
+    (0xf0504, 32, 'DMA0STRIDE'),   # DMA channel 0 stride
+    (0xf0508, 32, 'DMA0COUNT'),    # DMA channel 0 count
+    (0xf050c, 32, 'DMA0SRCADDR'),  # DMA channel 0 source address
+    (0xf0510, 32, 'DMA0DSTADDR'),  # DMA channel 0 destination address
+    (0xf0514, 32, 'DMA0AUTO0'),    # DMA channel 0 slave lower data
+    (0xf0518, 32, 'DMA0AUTO1'),    # DMA channel 0 slave upper data
+    (0xf051c, 32, 'DMA0STATUS'),   # DMA channel 0 status
+    (0xf0520, 32, 'DMA1CONFIG'),   # DMA channel 1 configuration
+    (0xf0524, 32, 'DMA1STRIDE'),   # DMA channel 1 stride
+    (0xf0528, 32, 'DMA1COUNT'),    # DMA channel 1 count
+    (0xf052c, 32, 'DMA1SRCADDR'),  # DMA channel 1 source address
+    (0xf0530, 32, 'DMA1DSTADDR'),  # DMA channel 1 destination address
+    (0xf0534, 32, 'DMA1AUTO0'),    # DMA channel 1 slave lower data
+    (0xf0538, 32, 'DMA1AUTO1'),    # DMA channel 1 slave upper data
+    (0xf053c, 32, 'DMA1STATUS'),   # DMA channel 1 status
     # Mesh node control registers
-    (0xf0700, 2, 'MESHCONFIG'),   # Mesh node configuration
-    (0xf0704, 3, 'COREID'),       # Processor core ID (12 bits)
-    (0xf0708, 4, 'MULTICAST'),    # Multicast configuration
-    (0xf0710, 3, 'CMESHROUTE'),   # cMesh routing configuration (12 bits)
-    (0xf0714, 3, 'XMESHROUTE'),   # xMesh routing configuration (12 bits)
-    (0xf0718, 3, 'RMESHROUTE'),   # rMesh routing configuration (12 bits)
+    (0xf0700, 16, 'MESHCONFIG'),   # Mesh node configuration
+    (0xf0704, 12, 'COREID'),       # Processor core ID (12 bits)
+    (0xf0708, 12, 'MULTICAST'),    # Multicast configuration
+    (0xf0710, 12, 'CMESHROUTE'),   # cMesh routing configuration (12 bits)
+    (0xf0714, 12, 'XMESHROUTE'),   # xMesh routing configuration (12 bits)
+    (0xf0718, 12, 'RMESHROUTE'),   # rMesh routing configuration (12 bits)
 ]
 
 
@@ -241,7 +254,7 @@ _special_purpose_registers = [
 _register_map = OrderedDict()
 # Add general purpose registers to register_map.
 for index, address in enumerate(xrange(0xf0000, 0xf0100, 0x4)):
-    _register_map[index] = (address, 4, 'r%d' % ((address - 0xf0000) / 0x4))
+    _register_map[index] = (address, 32, 'r%d' % ((address - 0xf0000) / 0x4))
 # Add special purpose registers to _register_map.
 for index in xrange(len(_special_purpose_registers)):
     _register_map[index + 64] = _special_purpose_registers[index]

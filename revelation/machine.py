@@ -57,6 +57,7 @@ class State(Machine):
         self.ARITHMODE = self.FPU_MODES['FLOATING POINT']
         self.ACTIVE = True
         self.KERNEL = True
+        self.rf[reg_map['COREID']] = 0x808  # Single-core Epiphany.
 
     def get_pending_interrupt(self):
         ipend_highest_bit = -1

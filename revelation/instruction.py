@@ -36,6 +36,10 @@ class Instruction(object):
         return ((self.bits >> 5) & 255) | ((self.bits >> 12) & 0xff00)
 
     @property
+    def mmr(self):
+        return (self.bits >> 20) & 0x3
+
+    @property
     def t5(self):
         return (self.bits >> 10) & 31
 

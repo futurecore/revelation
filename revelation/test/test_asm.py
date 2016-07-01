@@ -33,6 +33,7 @@ def test_elf_with_stdout(elf, expected, capfd):
         ('bcond.elf',        StateChecker(rf0=0, rf1=110)),
         ('bitr.elf',         StateChecker(rf0=0x84c2a6e1)),
         ('bl.elf',           StateChecker(rf0=15, rf1=0, rf2=15)),
+        ('coreid.elf',       StateChecker(rf0=0x808)),
         pytest.mark.xfail(('dma_transfer.elf', StateChecker())),
         ('eor.elf',          StateChecker(rf0=5, rf1=7, rf2=2)),
         ('fix.elf',          StateChecker(rf0=5)),
@@ -79,6 +80,22 @@ def test_elf(elf, expected):
         revelation.max_insts = 10000
         revelation.run()
         expected.check(revelation.state)
+
+
+@pytest.mark.parametrize("elf,expected,memory",
+      [('imask.elf', StateChecker(rf0=0x3ff), [(0xf0424, 3, 0x3ff)]),
+      ])
+def test_elf_writes_to_memory(elf, expected, memory):
+    """Test ELF files that deal in unsigned integers (rather than floats).
+    """
+    elf_filename = os.path.join(elf_dir, elf)
+    revelation = Revelation()
+    with open(elf_filename, 'rb') as elf:
+        revelation.init_state(elf, elf_filename, '', [], False, is_test=True)
+        revelation.max_insts = 10000
+        revelation.run()
+        expected.check(revelation.state, memory)
+
 
 
 @pytest.mark.parametrize("elf,expected",
