@@ -1,4 +1,4 @@
-SOURCES = fstat-test.c stat-test.c open-close-test.c
+SOURCES = fstat_test.c stat_test.c open_close_test.c
 NATIVE_TARGETS   = $(patsubst %.c, %.native, $(SOURCES))
 EPIPHANY_TARGETS = $(patsubst %.c, %.elf,    $(SOURCES))
 

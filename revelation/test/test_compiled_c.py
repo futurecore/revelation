@@ -4,7 +4,8 @@ from revelation.test.machine import StateChecker
 import os.path
 import pytest
 
-elf_dir = os.path.join('revelation', 'test', 'c')
+elf_dir = os.path.join(os.path.dirname(os.path.abspath('__file__')),
+                       'revelation', 'test', 'c')
 
 
 @pytest.mark.parametrize('elf_file,expected',

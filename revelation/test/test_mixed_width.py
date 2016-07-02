@@ -93,8 +93,11 @@ class ExampleMachine(Sim):
             num_bytes = width / 8
             mem.write(written_so_far, num_bytes, data)
             written_so_far += num_bytes
+        self.state = ExampleState(mem, Debug(flags=['insts', 'mem', 'rf', 'regdump']))
+
+    def print_program(self, instructions, mem):
         print
-        print 'Program in memory just after writing:'
+        print 'Program in memory:'
         # We are expecting to see a nop16 and a halt16, i.e.:
         #    1: 418      # 16bits
         #    2: 29492163 # 32bits
@@ -106,7 +109,7 @@ class ExampleMachine(Sim):
             inst = mem.read(read_so_far, num_bytes)
             print "{0}: {1:016b} ({2})  # width={3}bits".format(i, inst, inst, width)
         print
-        self.state = ExampleState(mem, Debug(flags=['insts', 'mem', 'rf', 'regdump']))
+
 
 init_sim(ExampleMachine())
 
@@ -117,13 +120,13 @@ def test_16bit_instructions():
                     ]
     machine = ExampleMachine()
     machine.load_program(instructions)
-    print
-    print 'Program in memory just before simulation:'
-    for i in range(4):
-        inst = machine.state.mem.read(i, 1)
-        print "{0}: {1:016b} ({2})  # width={3}bytes".format(i, inst, inst, 2),
-        if (i + 1) % 2 == 0: print
-    print
+    # print
+    # print 'Program in memory just before simulation:'
+    # for i in range(4):
+    #     inst = machine.state.mem.read(i, 1)
+    #     print "{0}: {1:016b} ({2})  # width={3}bytes".format(i, inst, inst, 2),
+    #     if (i + 1) % 2 == 0: print
+    # print
     machine.run()
     # nop16 increments by 2, halt16 increments by 2.
     assert machine.state.pc == 4, "Expected pc = 4, got pc = {0}".format(machine.state.pc)
@@ -136,13 +139,13 @@ def test_mixed_widths():
                     ]
     machine = ExampleMachine()
     machine.load_program(instructions)
-    print
-    print 'Program in memory just before simulation:'
-    for i in range(8):
-        inst = machine.state.mem.read(i, 1)
-        print "{0}: {1:016b} ({2})  # width={3}bytes".format(i, inst, inst, 2),
-        if (i + 1) % 2 == 0: print
-    print
+    # print
+    # print 'Program in memory just before simulation:'
+    # for i in range(8):
+    #     inst = machine.state.mem.read(i, 1)
+    #     print "{0}: {1:016b} ({2})  # width={3}bytes".format(i, inst, inst, 2),
+    #     if (i + 1) % 2 == 0: print
+    # print
     machine.run()
     # nop16 increments by 2, hello32 increments by 4, halt16 increments by 2.
     assert machine.state.pc == 8, "Expected pc = 8, got pc = {0}".format(machine.state.pc)

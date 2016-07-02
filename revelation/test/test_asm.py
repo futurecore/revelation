@@ -5,7 +5,8 @@ from revelation.test.machine import StateChecker
 import os.path
 import pytest
 
-elf_dir = os.path.join('revelation', 'test', 'asm')
+elf_dir = os.path.join(os.path.dirname(os.path.abspath('__file__')),
+                       'revelation', 'test', 'asm')
 
 @pytest.mark.parametrize("elf,expected",
        [('trap.elf', "Hello, world!"),
@@ -239,7 +240,6 @@ def test_testset32():
     elf_filename = os.path.join(elf_dir, 'testset.elf')
     revelation = Revelation()
     with open(elf_filename, 'rb') as elf:
-        if elf == 'movts.elf': print 'MOVTS'
         revelation.init_state(elf, elf_filename, '', [], False, is_test=True)
         revelation.state.mem.write(0x100004, 4, 0x0)
         revelation.max_insts = 100000

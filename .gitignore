@@ -1,6 +1,6 @@
 venv/
 bin/
-syscall-layout/*.native
+revelation/test/syscall_layout/*.native
 e_trace.out
 r_trace.out
 .cache/
