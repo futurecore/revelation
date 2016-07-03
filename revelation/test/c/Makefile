@@ -7,7 +7,7 @@ LDF=${ESDK}/bsps/parallella_E16G3_1GB/fast.ldf
 CC=e-gcc
 CFLAGS=-Wall -Wno-unused -Werror -falign-functions=8
 
-LDFLAGS=-T ${LDF}
+LDFLAGS=-T${LDF}
 LDLIBS=-le-lib
 
 LIBDIR=${ESDK}/tools/host/lib
@@ -18,7 +18,7 @@ INCDIR=${ESDK}/tools/host/include
 all: ${ELFS}
 
 %.elf: %.c
-	${CC} ${CFLAGS} -L${LIBDIR} -I${INCDIR} ${LDLIBS} ${LDFLAGS} $< -static -o $@
+	${CC} $< -o $@ ${CFLAGS} -static -L${LIBDIR} -I${INCDIR} ${LDLIBS} ${LDFLAGS}
 
 clean:
 	-rm -f ${ELFS}

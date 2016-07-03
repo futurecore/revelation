@@ -25,7 +25,9 @@ def Memory(data=None, size=2**10, logger=None):
 #-----------------------------------------------------------------------
 class _ByteMemory(object):
     def __init__(self, data=None, size=2**10, logger=None):
-        self.data  = data if data else [' '] * size
+        # Initialise all memory to zero, as we don't know which memory
+        # segments might hold memory-mapped registers.
+        self.data  = data if data else ['\0'] * size
         self.size  = len(self.data)
         self.logger = logger
 
@@ -76,6 +78,8 @@ class _SparseMemory(object):
         self.block_size = block_size
         self.debug = Debug()
         self.logger = logger
+        self.core_start = 0xf0000
+        self.core_end = 0xf0718
         self.addr_mask  = block_size - 1
         self.block_mask = 0xffffffff ^ self.addr_mask
         print 'sparse memory size %x addr mask %x block mask %x' \
@@ -123,21 +127,42 @@ class _SparseMemory(object):
         block_addr = hint(block_addr, promote=True)
         block_mem = self.get_block_mem(block_addr)
         value = block_mem.read(start_addr & self.addr_mask, num_bytes)
+        masked_addr = 0xfffff & start_addr
         if (self.debug.enabled('mem') and self.logger and
-              (start_addr < 0xf0000 or start_addr > 0xf0718)):
+              (masked_addr < self.core_start or masked_addr > self.core_end)):
             self.logger.log(' :: RD.MEM[%s] = %s' %\
                               (pad_hex(start_addr), pad_hex(value)))
         return value
 
     def write(self, start_addr, num_bytes, value):
-        if (self.debug.enabled('mem') and self.logger and
-              (start_addr < 0xf0000 or start_addr > 0xf0718)):
-            self.logger.log(' :: WR.MEM[%s] = %s' % \
-                              (pad_hex(start_addr), pad_hex(value)))
+        # Deal with register writes that are aliases to other locations. Better
+        # not to put these in the instruction semantics, as the aliased
+        # registers may be written to by a variety of instructions, and accessed
+        # as either registers or memory locations.
+        if start_addr & 0xfffff == 0xf042c:  # ILATST
+            coreid_mask = start_addr & (0xfff << 20)
+            ilat = self.read(coreid_mask | 0xf0428, 4) & 0x3ff
+            ilat |= (value & ((2 << 10) - 1))
+            self.write(coreid_mask | 0xf0428, 4, ilat)
+        elif start_addr & 0xfffff == 0xf0430:  # ILATCL
+            coreid_mask = start_addr & (0xfff << 20)
+            ilat = self.read(coreid_mask | 0xf0428, 4) & 0x3ff
+            ilat &= ~(value &  ((2 << 10) - 1))
+            self.write(coreid_mask | 0xf0428, 4, ilat)
+        elif start_addr & 0xfffff == 0xf0440:  # FSTATUS
+            coreid_mask = start_addr & (0xfff << 20)
+            status = self.read(coreid_mask | 0xf0404, 4)
+            status |= (value & 0xfffffffc)  # Can't write to lowest 2 bits.
+            self.write(coreid_mask | 0xf0404, 4, status)
         block_addr = self.block_mask & start_addr
         block_addr = hint(block_addr, promote=True)
         block_mem = self.get_block_mem(block_addr)
         block_mem.write(start_addr & self.addr_mask, num_bytes, value)
+        masked_addr = 0xfffff & start_addr
+        if (self.debug.enabled('mem') and self.logger and
+              (masked_addr < self.core_start or masked_addr > self.core_end)):
+            self.logger.log(' :: WR.MEM[%s] = %s' % \
+                              (pad_hex(start_addr), pad_hex(value)))
 
 
 #-----------------------------------------------------------------------
@@ -145,25 +170,21 @@ class _SparseMemory(object):
 #-----------------------------------------------------------------------
 class MemoryMappedRegisterFile(object):
     """Simulate the memory-mapped registers of a single Epiphany core.
-    FIXME: Use correct bit-width for registers whose width is not a
-    multiple of 8. Note that memory objects can only read and write
-    aligned words.
+    Note that memory objects can only read and write aligned words.
     """
-    def __init__(self, memory, logger):
+    def __init__(self, memory, coreid, logger):
         self.debug = Debug()
         self.logger = logger
         self.memory = memory
+        self[0x65] = coreid
+        self.coreid_mask = coreid << 20  # Top 12 bits of 32 bit addresses.
         self.num_regs = len(_register_map)
         self.debug_nchars = 8
-        # All registers hold zero when the simulator starts.
-        for index in _register_map:
-            self.__setitem__(index, 0)
-        return
 
     def __getitem__(self, index):
-        address, bitsize, _ = _register_map[index]
+        address, bitsize, _ = _register_map[index]  # Lower 20 bits of address.
         mask = (1 << bitsize) - 1
-        value = self.memory.read(address, 4) & mask
+        value = self.memory.read(self.coreid_mask | address, 4) & mask
         if self.debug.enabled('rf') and self.logger and index < 64:
             self.logger.log(' :: RD.RF[%s] = %s' % (pad('%d' % index, 2),
                               pad_hex(value, len=self.debug_nchars)))
@@ -171,14 +192,17 @@ class MemoryMappedRegisterFile(object):
 
     @specialize.argtype(2)
     def __setitem__(self, index, value):
-        address, bitsize, _ = _register_map[index]
+        if index == 0x65:  # COREID register.
+            self.coreid_mask = value << 20
+        address, bitsize, _ = _register_map[index]  # Lower 20 bits of address.
         mask = (1 << bitsize) - 1
-        self.memory.write(address, 4, value & mask)
+        self.memory.write(self.coreid_mask | address, 4, value & mask)
         if self.debug.enabled('rf') and self.logger and index < 64:
             self.logger.log(' :: WR.RF[%s] = %s' % ((pad('%d' % index, 2),
                               pad_hex(value, len=self.debug_nchars))))
 
     def print_regs(self, per_row=6):
+        # Necessary to be compatible with Pydgin.
         pass
 
 def get_address_of_register_by_name(register_name):

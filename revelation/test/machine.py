@@ -10,7 +10,7 @@ flags = 'ACTIVE GID KERNEL WAND AN AZ AC AV AVS BN BV BIS BVS BUS BZ EXCAUSE pc'
 def new_state(mem=None, debug=Debug(), **args):
     if mem is None:
         mem = new_memory(None)
-    state = State(mem, debug)
+    state = State(mem, debug, coreid=0x0)
     for attr in flags:
         if attr in args:
             setattr(state, attr, args[attr])
@@ -79,7 +79,7 @@ class StateChecker(object):
             got = state.mem.read(location, size)
             if expected != got:
                     raise ValueError('Memory location %s differs; expected: %s got: %s. ' %
-                                     (location, hex(expected), hex(got)))
+                                     (hex(location), hex(expected), hex(got)))
 
     def check(self, state, memory=[]):
         """Check all registers and flags against an expected state.

@@ -148,7 +148,7 @@ usage: %s <args> <sim_exe> <sim_args>
         memory = new_memory(self.logger)
         _, _ = load_program(exe_file, memory)
         self.state = State(memory, self.debug, logger=self.logger,
-                           reset_addr=RESET_ADDR)
+                           coreid=0x808, reset_addr=RESET_ADDR)
 
 
 init_sim(Revelation())

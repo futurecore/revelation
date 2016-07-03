@@ -66,9 +66,7 @@ def make_farith_executor(name, is16bit, is_unary=False):
             # BVS = BVS | BV;
             s.BVS = s.BVS | s.BV
             # Deal with fpu interrupts.
-            if (((s.rf[revelation.isa.reg_map['CONFIG']] & (1 << 1)) and s.BIS) or
-                  ((s.rf[revelation.isa.reg_map['CONFIG']] & (1 << 2)) and s.BV) or
-                  ((s.rf[revelation.isa.reg_map['CONFIG']] & (1 << 3)) and s.BUS)):
+            if (s.IEN and s.BIS) or (s.OEN and s.BV) or (s.UEN and s.BUS):
                 s.rf[revelation.isa.reg_map['ILAT']] |= (1 << 1)
                 s.EXCAUSE = s.exceptions['FPU EXCEPTION']
         elif s.ARITHMODE == s.FPU_MODES['SIGNED INTEGER']:

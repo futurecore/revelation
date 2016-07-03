@@ -38,6 +38,8 @@ def test_elf_with_stdout(elf, expected, capfd):
         pytest.mark.xfail(('dma_transfer.elf', StateChecker())),
         ('eor.elf',          StateChecker(rf0=5, rf1=7, rf2=2)),
         ('fix.elf',          StateChecker(rf0=5)),
+        ('fstatus.elf',      StateChecker(rf0=0xffffffff, rfFSTATUS=0xffffffff,
+                                          rfSTATUS=0xfffffffd)),
         ('gid.elf',          StateChecker(GID=1)),
         ('gie.elf',          StateChecker(GID=0)),
         ('hardware_loop.elf',
@@ -46,6 +48,9 @@ def test_elf_with_stdout(elf, expected, capfd):
                                           rf4=0x640, rf5=0x640, rf6=0x640,
                                           rf7=0x640, rf8=0x640)),
         ('idle.elf',         StateChecker(ACTIVE=0)),
+        ('ilatcl.elf',       StateChecker(rf0=0x3ff, rfILATCL=0x3ff, rfILAT=0)),
+        ('ilatst.elf',       StateChecker(rf0=0x3ff, rfILATST=0x3ff,
+                                          rfILAT=0x3fe, rfIPEND=0x1)),
         ('jalr.elf',         StateChecker(rfLR=0x356)),
         ('jr.elf',           StateChecker(rf0=3, rf1=1, rf2=2)),
         ('low_high.elf',     StateChecker(rf3=0xffffffff)),
@@ -84,7 +89,7 @@ def test_elf(elf, expected):
 
 
 @pytest.mark.parametrize("elf,expected,memory",
-      [('imask.elf', StateChecker(rf0=0x3ff), [(0xf0424, 3, 0x3ff)]),
+      [('imask.elf', StateChecker(rf0=0x3ff), [((0x808 << 20) | 0xf0424, 3, 0x3ff)]),
       ])
 def test_elf_writes_to_memory(elf, expected, memory):
     """Test ELF files that deal in unsigned integers (rather than floats).

@@ -72,28 +72,14 @@ def make_mov_executor(is16bit, rd_is_special=False, rn_is_special=False):
         """
         if is16bit:
             inst.bits &= 0xffff
+        coreid_mask = s.coreid << 20
         if rd_is_special:
             rd_address, rd_bitsize = get_mmr_address(inst.rn, inst.mmr)
             rn = s.rf[inst.rd]
-            if rd_address == 0xf042c:  # ILATST
-                value = s.mem.read(rd_address, 4)
-                value |= rn
-                s.mem.write(rd_address, 4, value)  # Set ILATST.
-                ilat = s.mem.read(0xf0428, 4)  # ILAT
-                ilat |= rn
-                s.mem.write(0xf0428, 4, ilat)
-            elif rd_address  == 0xf0430:  # ILATCL
-                value = s.mem.read(rd_address, 4)
-                value |= rn
-                s.mem.write(rd_address, 4, value)  # Set ILATCL.
-                ilat = s.mem.read(0xf0428, 4)  # ILAT
-                ilat &= ~rn
-                s.mem.write(0xf0428, 4, ilat)
-            else:
-                s.mem.write(rd_address, 4, rn)
+            s.mem.write(coreid_mask | rd_address, 4, rn)
         elif rn_is_special:
             rn_address, rn_bitsize = get_mmr_address(inst.rn, inst.mmr)
-            value = s.mem.read(rn_address, 4)
+            value = s.mem.read(coreid_mask | rn_address, 4)
             s.rf[inst.rd] = value
         s.pc += 2 if is16bit else 4
     return execute_mov

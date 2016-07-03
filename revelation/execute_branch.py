@@ -20,10 +20,6 @@ def make_bcond_executor(is16bit):
             inst.bits &= 0xffff
         cond = inst.cond
         imm = inst.bcond_imm
-        if cond == 0 and imm == 0:
-            raise RuntimeError(('Revelation simulator caught infinite loop at runtime. ' +
-                                'Instruction at pc=%s is attempting to ' +
-                                'branch unconditionally to itself.') % hex(s.pc))
         if cond == 0b1111:  # Branch and link (BL).
             s.rf[revelation.isa.reg_map['LR']] = s.pc + (2 if is16bit else 4)
         if condition_passed(s, cond):

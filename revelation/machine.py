@@ -20,12 +20,14 @@ RESET_ADDR = 0
 class State(Machine):
     _virtualizable_ = ['num_insts']
 
-    def __init__(self, memory, debug, logger=None, reset_addr=RESET_ADDR):
+    def __init__(self, memory, debug, coreid=0x808, logger=None,
+                 reset_addr=RESET_ADDR):
         Machine.__init__(self,
                          memory,
-                         MemoryMappedRegisterFile(memory, logger),
+                         MemoryMappedRegisterFile(memory, coreid, logger),
                          debug,
                          reset_addr=RESET_ADDR)
+        self.coreid = coreid
         self.logger = logger
         # Epiphany III exceptions.
         self.exceptions = { 'UNIMPLEMENTED'  : 0b0100,
@@ -54,10 +56,10 @@ class State(Machine):
         }
         self.FPU_MODES = {'FLOATING POINT' : 0b000, 'SIGNED INTEGER' : 0b100}
         # Default configuration.
+        self.rf[reg_map['pc']] = RESET_ADDR
         self.ARITHMODE = self.FPU_MODES['FLOATING POINT']
         self.ACTIVE = True
         self.KERNEL = True
-        self.rf[reg_map['COREID']] = 0x808  # Single-core Epiphany.
 
     def get_pending_interrupt(self):
         ipend_highest_bit = -1
