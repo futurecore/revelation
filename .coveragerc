@@ -14,9 +14,13 @@ exclude_lines =
     raise NotImplementedError
 
     # Don't complain if tests take a path which is only used in a test harness:
-    .*we_are_translated.*
     def init_state
     def iread
+
+    # Don't complain about code that only executes when translated.
+    .*we_are_translated.*
+    def get_location
+    _RevelationByteMemory
 
     # Don't complain about every single status bit.
     self._get_nth_bit_of_register
@@ -35,12 +39,10 @@ exclude_lines =
     self.logger = Logger(LOG_FILENAME)
     self.memory.debug.enabled_flags
     s.debug_flags()
-    self.bounds_check
     print
 
     # Don't complain about invalid memory accesses.
     if addr > self.size:
-    if addr == 0:
 
 
     # Don't complain about assertions in syscalls -- special code for debuggers

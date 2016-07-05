@@ -21,7 +21,6 @@ def execute_idle16(s, inst):
         }
     """
     s.ACTIVE = False
-    s.pc += 2
 
 
 #-----------------------------------------------------------------------
@@ -164,20 +163,20 @@ def execute_trap16(s, inst):
     elif inst.t5 == 3:  # Exit.
         syscall_handler = pydgin.syscalls.syscall_exit
         exit_code = s.rf[0]
-        if s.debug.enabled('trace'):  # pragma: no cover
+        if s.debug.enabled('syscalls'):  # pragma: no cover
             s.logger.log(' syscall_exit(status=%x)' % exit_code)
         retval, errno = syscall_handler(s, exit_code, s.rf[1], s.rf[2])
     elif inst.t5 == 4:
-        if s.debug.enabled('trace'):
+        if s.debug.enabled('syscalls'):
             s.logger.log(' TRAP: Assertion SUCCEEDED.')
     elif inst.t5 == 5:
-        if s.debug.enabled('trace'):
+        if s.debug.enabled('syscalls'):
             s.logger.log(' TRAP: Assertion FAILED.')
     elif inst.t5 == 7: # Initiate system call.
         syscall = s.rf[3]
         syscall_handler = syscall_funcs[syscall]
         arg0, arg1, arg2 = s.rf[0], s.rf[1], s.rf[2]
-        if s.debug.enabled('trace'):
+        if s.debug.enabled('syscalls'):
             if syscall == 2:  # pragma: no cover
                 s.logger.log(' syscall_open(filename=%x, flags=%x, mode=%x)' % \
                              (arg0, arg1, arg2))
@@ -200,6 +199,10 @@ def execute_trap16(s, inst):
                 s.logger.log('syscall_stat(path=%x, buf=%x)' % (arg0, arg1))
             elif syscall == 21:  # pragma: no cover
                 s.logger.log('syscall_link(src=%x, link=%x)' % (arg0, arg1))
+        # Map any buffers to core-local addresses, where necessary.
+        if syscall in (4, 5, 10, 15):
+            if (arg1 >> 20) == 0x0:
+                arg1 = s.map_address_to_core_local(arg1)
         retval, errno = syscall_handler(s, arg0, arg1, arg2)
         # Undocumented:
         s.rf[0] = trim_32(retval)

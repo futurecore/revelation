@@ -41,10 +41,10 @@ def test_stat_syscall_layouts(elf_file, patterns, capfd):
     elf_filename = os.path.join(elf_dir, elf_file)
     revelation = Revelation()
     with open(elf_filename, 'rb') as elf:
-        revelation.init_state(elf, elf_filename, '', [], False, is_test=True)
+        revelation.init_state(elf, elf_filename, False, is_test=True)
         revelation.max_insts = 45000
         revelation.run()
-        assert not revelation.state.running
+        assert not revelation.states[0].running
         out, err = capfd.readouterr()
         assert err == ''
         for pattern in patterns:
@@ -59,15 +59,17 @@ def test_open_close_syscall_layout(capfd):
     elf_filename = os.path.join(elf_dir, 'open_close_test.elf')
     revelation = Revelation()
     with open(elf_filename, 'rb') as elf:
-        revelation.init_state(elf, elf_filename, '', [], False, is_test=True)
+        revelation.init_state(elf, elf_filename, False, is_test=True)
         revelation.max_insts = 7500
         revelation.run()
-        assert not revelation.state.running
+        assert not revelation.states[0].running
         out, err = capfd.readouterr()
         assert err == ''
         expected = ('open() successful.\nRead: 14 bytes.\nHello, world!\n'
                     'Read: 0 bytes.\nclose() successful.\n')
-        expected_full = ('NOTE: Using sparse storage\n'
-                         'sparse memory size 400 addr mask 3ff '
-                         'block mask fffffc00\n') + expected + 'DONE!'
+        expected_full = (('NOTE: Using sparse storage\n'
+                          'sparse memory size 400 addr mask 3ff '
+                          'block mask fffffc00\n'
+                          'Loading program %s on to core 0x808\n' % elf_filename)
+                          + expected)
         assert out.startswith(expected_full)
