@@ -5,7 +5,7 @@ To use this script, first produce a trace from the e-sim tool:
     $ e-sim -r 1 -c 1 --extra-args="--trace=on --trace-file e_trace.out" myfile.elf
 
 Then create a trace from Revelation:
-    $ python epiphany/sim.py --debug insts,mem,rf,flags,syscalls myfile.elf > py_trace.out
+    $ python revelation/sim.py --debug insts,mem,rf,flags,syscalls myfile.elf > py_trace.out
 
 Then call this script (order of the CLI arguments matters):
     $ python diff_trace.py e_trace.out py_trace.out
@@ -217,10 +217,10 @@ def compare_instructions(py_inst, e_inst):
         if e_mem_sorted != py_mem_sorted:
             msg = 'Memory regions differ. Revelation: '
             for (addr, value) in py_mem_sorted:
-                msg += hex(addr) + '<-' + value + ' '
+                msg += hex(addr) + '<-' + hex(value) + ' '
             msg += 'e-sim: '
             for (addr, value) in e_mem_sorted:
-                msg += hex(addr) + '<-' + value + ' '
+                msg += hex(addr) + '<-' + hex(value) + ' '
             return msg
     for flag in _py_flags:
         # e-sim only prints flags if they have been updated.

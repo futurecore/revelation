@@ -1,5 +1,7 @@
 [run]
-omit = epiphany/test/*
+omit = revelation/test/*
+data_file = ./.coverage
+source = revelation/
 
 [report]
 # Regexes for lines to exclude from consideration
@@ -14,14 +16,34 @@ exclude_lines =
     # Don't complain if tests take a path which is only used in a test harness:
     .*we_are_translated.*
     def init_state
+    def iread
+
+    # Don't complain about every single status bit.
+    self._get_nth_bit_of_register
+    self._set_nth_bit_of_register
 
     # Don't complain about not generating debug output.
     if self.debug.enabled('flags'):
     if self.debug.enabled('rf'):
+    if self.debug.enabled('mem'):
+    if self.debug.enabled('memcheck'):
+    if s.debug.enabled('trace'):
+    if not sparse_storage:
+    if self.debug.enabled_flags:
+    if self.logger:
+    self.logger.log
+    self.logger = Logger(LOG_FILENAME)
+    self.memory.debug.enabled_flags
     s.debug_flags()
+    self.bounds_check
     print
 
-    # Don't complain about assertions in syscalls -- special code fore debuggers
+    # Don't complain about invalid memory accesses.
+    if addr > self.size:
+    if addr == 0:
+
+
+    # Don't complain about assertions in syscalls -- special code for debuggers
     inst.t5 == 4
     inst.t5 == 5
 
@@ -31,3 +53,6 @@ exclude_lines =
 
     # Don't complain about code that executes if pypy is not on the PYTHONPATH.
     except ImportError:
+
+    # Don't complain about importing anything rpython related.
+    from rpython*

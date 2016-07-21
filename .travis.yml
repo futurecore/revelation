@@ -3,12 +3,10 @@ language: python
 python:
     - '2.7'
 
-env:
-    - TRANSLATE=false
+cache: pip
 
-cache:
-    directories:
-        - $HOME/.cache/pip
+env:
+    - TRANSLATE=true
 
 install:
     - pip install --disable-pip-version-check --upgrade pip
@@ -23,19 +21,14 @@ install:
     - cd ${HOME}
     - wget https://bitbucket.org/pypy/pypy/get/default.tar.gz
     - tar xf default.tar.gz --transform 's/pypy-pypy-[0-9a-f]\+/pypy/'
-                            --exclude 'pypy-pypy-*/_pytest/*'
-                            --exclude 'pypy-pypy-*/pytest.py'
                             --exclude 'pypy-pypy-*/pytest_cov.py'
 
     - cd $TRAVIS_BUILD_DIR
-    - export PYTHONPATH=${PYTHONPATH}:${HOME}/pydgin/:${HOME}/pypy
+    - export PYTHONPATH=${PYTHONPATH}:${HOME}/pydgin/
 
 script:
-    - py.test -n 4 --cov-config .coveragerc
-                   --cov-report term-missing
-                   --cov=epiphany epiphany/test/
-    - python -m doctest scripts/diff_trace.py
-    - test "$TRANSLATE" == "true" && ${HOME}/pypy/rpython/bin/rpython --opt=jit epiphany/sim.py || true
+    - py.test -n 4 -rxXs --color=yes --doctest-modules --cov-config=.coveragerc --cov-report=term-missing --cov=revelation revelation/test/ scripts/
+    - test "$TRANSLATE" == "true" && PYTHONPATH=${HOME}/pydgin/:${HOME}/pypy:. ${HOME}/pypy/rpython/bin/rpython --no-pdb --opt=jit revelation/sim.py || true
 
 after_success: coveralls
 

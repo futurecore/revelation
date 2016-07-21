@@ -1,0 +1,5 @@
+pylint:
+  disable:
+    - too-many-arguments
+    - unused-argument
+    - unused-import      
