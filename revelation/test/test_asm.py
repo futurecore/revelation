@@ -9,7 +9,8 @@ elf_dir = os.path.join(os.path.dirname(os.path.abspath('__file__')),
                        'revelation', 'test', 'asm')
 
 @pytest.mark.parametrize("elf,expected",
-       [('trap.elf', "Hello, world!"),
+       [('trap.elf',              "Hello, world!"),
+        ('trap_undocumented.elf', "Hello, world!"),
        ])
 def test_elf_with_stdout(elf, expected, capfd):
     """Test ELF files by checking STDOUT.
