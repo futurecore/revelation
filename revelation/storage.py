@@ -207,6 +207,14 @@ class _SparseMemory(object):
             status = self.read(coreid_mask | 0xf0404, 4)
             status |= (value & 0xfffffffc)  # Can't write to lowest 2 bits.
             self.write(coreid_mask | 0xf0404, 4, status)
+        elif start_addr & 0xfffff == 0xf0438 and value == 0:  # CTIMER0 expired.
+            ilat = self.read(coreid_mask | 0xf0428, 4) & 0x3ff
+            ilat |= 0x8
+            self.write(coreid_mask | 0xf0428, 4, ilat)
+        elif start_addr & 0xfffff == 0xf043c and value == 0:  # CTIMER1 expired.
+            ilat = self.read(coreid_mask | 0xf0428, 4) & 0x3ff
+            ilat |= 0x10
+            self.write(coreid_mask | 0xf0428, 4, ilat)
         block_addr = self.block_mask & start_addr
         block_addr = hint(block_addr, promote=True)
         block_mem = self.get_block_mem(block_addr)

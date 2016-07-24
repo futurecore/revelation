@@ -69,6 +69,10 @@ def make_farith_executor(name, is16bit, is_unary=False):
             if (s.IEN and s.BIS) or (s.OEN and s.BV) or (s.UEN and s.BUS):
                 s.rf[revelation.isa.reg_map['ILAT']] |= (1 << 1)
                 s.EXCAUSE = s.exceptions['FPU EXCEPTION']
+            if s.CTIMER0CONFIG == s.timer_config['FPU VALID'] and not s.BIS:
+                s.rf[revelation.isa.reg_map['CTIMER0']] -= 1
+            if s.CTIMER1CONFIG == s.timer_config['FPU VALID'] and not s.BIS:
+                s.rf[revelation.isa.reg_map['CTIMER1']] -= 1
         elif s.ARITHMODE == s.FPU_MODES['SIGNED INTEGER']:
             rd = signed(s.rf[inst.rd])
             rn = signed(s.rf[inst.rn])
@@ -90,6 +94,10 @@ def make_farith_executor(name, is16bit, is_unary=False):
             # s.BN = True if result < 0 else False
             # if (RD[30:0] == 0) { BZ=1 } else { BZ=0 }
             s.BZ = True if result == 0 else False
+            if s.CTIMER0CONFIG == s.timer_config['IALU VALID']:
+                s.rf[revelation.isa.reg_map['CTIMER0']] -= 1
+            if s.CTIMER1CONFIG == s.timer_config['IALU VALID']:
+                s.rf[revelation.isa.reg_map['CTIMER1']] -= 1
         s.debug_flags()
         s.pc += 2 if is16bit else 4
     return farith

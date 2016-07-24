@@ -329,9 +329,11 @@ class State(object):
         self._set_nth_bit_of_register('CONFIG', 25, value)
 
     @property
-    def TIMEWRAP(self):
+    def TIMERWRAP(self):
+        """IGNORED: Only available in Epiphany-IV."""
         return self._get_nth_bit_of_register('CONFIG', 26)
 
-    @TIMEWRAP.setter
-    def TIMEWRAP(self, value):
+    @TIMERWRAP.setter
+    def TIMERWRAP(self, value):
+        """IGNORED: Only available in Epiphany-IV."""
         self._set_nth_bit_of_register('CONFIG', 26, value)

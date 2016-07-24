@@ -44,6 +44,8 @@ elf_dir = os.path.join(os.path.dirname(os.path.abspath('__file__')),
                                 'user_isr:\tend\n'
                                 'user_isr:\tafter float overflow\n'
                                 'user_isr:\tend\n'),
+     ('interrupt_ctimer0.elf',  'CTIMER0 has expired.\n'),
+     ('interrupt_ctimer1.elf',  'CTIMER1 has expired.\n'),
      ('interrupt_user.elf',     'User interrupt 1.\nUser interrupt 2.\n'
                                 'User interrupt 3.\nUser interrupt 4.\n'
                                 'Another user interrupt.\n'),

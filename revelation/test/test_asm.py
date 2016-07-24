@@ -35,6 +35,8 @@ def test_elf_with_stdout(elf, expected, capfd):
         ('bitr.elf',         StateChecker(rf0=0x84c2a6e1)),
         ('bl.elf',           StateChecker(rf0=15, rf1=0, rf2=15)),
         ('coreid.elf',       StateChecker(rf0=0x808)),
+        ('ctimer0.elf',      StateChecker(rf16=94, rfCTIMER0=95)),
+        ('ctimer1.elf',      StateChecker(rf16=94, rfCTIMER1=95)),
         pytest.mark.xfail(('dma_transfer.elf', StateChecker())),
         ('eor.elf',          StateChecker(rf0=5, rf1=7, rf2=2)),
         ('fix.elf',          StateChecker(rf0=5)),

@@ -24,6 +24,7 @@ exclude_lines =
     # Don't complain about every single status bit.
     self._get_nth_bit_of_register
     self._set_nth_bit_of_register
+    def CTRLMODE
 
     # Don't complain about not generating debug output.
     if self.debug.enabled('flags'):
