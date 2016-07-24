@@ -71,6 +71,24 @@ def test_execute_rti16_with_interrupt():
     expected_state.check(state)
 
 
+def test_execute_rti16_user_mode_on():
+    state = new_state(rfSTATUS=1, rfCONFIG=0x2000000)
+    instr = opcode_factory.rti16()
+    name, executefn = decode(instr)
+    executefn(state, Instruction(instr, None))
+    expected_state = StateChecker(rfSTATUS=5)
+    expected_state.check(state)
+
+
+def test_execute_rti16_user_mode_off():
+    state = new_state(rfSTATUS=1)
+    instr = opcode_factory.rti16()
+    name, executefn = decode(instr)
+    executefn(state, Instruction(instr, None))
+    expected_state = StateChecker(rfSTATUS=1)
+    expected_state.check(state)
+
+
 def test_execute_swi16():
     state = new_state(rfSTATUS=0b0, rfILAT=0b0, pc=0)
     instr = opcode_factory.swi16()
