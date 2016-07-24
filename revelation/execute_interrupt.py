@@ -167,9 +167,11 @@ def execute_trap16(s, inst):
             s.logger.log(' syscall_exit(status=%x)' % exit_code)
         retval, errno = syscall_handler(s, exit_code, s.rf[1], s.rf[2])
     elif inst.t5 == 4:
+        s.rf[0] = 1
         if s.debug.enabled('syscalls'):
             s.logger.log(' TRAP: Assertion SUCCEEDED.')
     elif inst.t5 == 5:
+        s.rf[0] = 0
         if s.debug.enabled('syscalls'):
             s.logger.log(' TRAP: Assertion FAILED.')
     elif inst.t5 == 7: # Initiate system call.

@@ -1,7 +1,7 @@
 [run]
 omit = revelation/test/*
 data_file = ./.coverage
-source = revelation/
+source = ./revelation/
 
 [report]
 # Regexes for lines to exclude from consideration
@@ -9,8 +9,7 @@ exclude_lines =
     # Have to re-enable the standard pragma
     pragma: no cover
 
-    # Don't complain if tests don't hit defensive assertion code:
-    except subprocess.CalledProcessError as excn:
+    # Don't complain about unimplemented code:
     raise NotImplementedError
 
     # Don't complain if tests take a path which is only used in a test harness:
@@ -31,10 +30,14 @@ exclude_lines =
     if self.debug.enabled('rf'):
     if self.debug.enabled('mem'):
     if self.debug.enabled('memcheck'):
+    if self.debug.enabled('trace'):
     if s.debug.enabled('trace'):
+    if self.debug.enabled('syscalls'):
+    if s.debug.enabled('syscalls'):
     if not sparse_storage:
     if self.debug.enabled_flags:
     if self.logger:
+    s.logger.log
     self.logger.log
     self.logger = Logger(LOG_FILENAME)
     self.memory.debug.enabled_flags
@@ -43,15 +46,6 @@ exclude_lines =
 
     # Don't complain about invalid memory accesses.
     if addr > self.size:
-
-
-    # Don't complain about assertions in syscalls -- special code for debuggers
-    inst.t5 == 4
-    inst.t5 == 5
-
-    # Don't complain if non-runnable code isn't run:
-    if 0:
-    if __name__ == .__main__.:
 
     # Don't complain about code that executes if pypy is not on the PYTHONPATH.
     except ImportError:

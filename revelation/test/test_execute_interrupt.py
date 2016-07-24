@@ -80,13 +80,30 @@ def test_execute_swi16():
     expected_state.check(state)
 
 
-def test_execute_trap16():
+def test_execute_trap16_exit():
     state = new_state()
     instr = opcode_factory.trap16(trap=3)  # Exit.
     name, executefn = decode(instr)
     executefn(state, Instruction(instr, None))
     assert not state.running
-    # FIXME: Test other syscalls.
+
+
+def test_execute_trap16_assert_success():
+    state = new_state()
+    instr = opcode_factory.trap16(trap=4)  # Assert success.
+    name, executefn = decode(instr)
+    executefn(state, Instruction(instr, None))
+    expected_state = StateChecker(rf0=1)
+    expected_state.check(state)
+
+
+def test_execute_trap16_assert_failure():
+    state = new_state()
+    instr = opcode_factory.trap16(trap=5)  # Assert failure.
+    name, executefn = decode(instr)
+    executefn(state, Instruction(instr, None))
+    expected_state = StateChecker(rf0=0)
+    expected_state.check(state)
 
 
 def test_execute_trap_warning(capsys):
