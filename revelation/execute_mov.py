@@ -2,9 +2,6 @@ from revelation.condition_codes import condition_passed
 from revelation.utils import get_mmr_address
 
 
-#-----------------------------------------------------------------------
-# movcond32 and movcond16 - move on condition.
-#-----------------------------------------------------------------------
 def make_movcond_executor(is16bit):
     def execute_movcond(s, inst):
         """
@@ -22,9 +19,6 @@ def make_movcond_executor(is16bit):
     return execute_movcond
 
 
-#-----------------------------------------------------------------------
-# movimm32, movtimm32 and movimm16 - move with immediate
-#-----------------------------------------------------------------------
 def make_movimm_executor(is16bit, is_t):
     def execute_movimm(s, inst):
         """
@@ -40,9 +34,6 @@ def make_movimm_executor(is16bit, is_t):
     return execute_movimm
 
 
-#-----------------------------------------------------------------------
-# movts16, movts32, movfs16 and movfs32 - move
-#-----------------------------------------------------------------------
 def make_mov_executor(is16bit, rd_is_special=False, rn_is_special=False):
     # Note that in the MOV 'special' instructions rd and rn are swapped.
     #
@@ -73,11 +64,11 @@ def make_mov_executor(is16bit, rd_is_special=False, rn_is_special=False):
         if is16bit:
             inst.bits &= 0xffff
         if rd_is_special:
-            rd_address, rd_bitsize = get_mmr_address(inst.rn, inst.mmr)
+            rd_address, _ = get_mmr_address(inst.rn, inst.mmr)
             rn = s.rf[inst.rd]
             s.mem.write(rd_address, 4, rn, from_core=s.coreid)
         elif rn_is_special:
-            rn_address, rn_bitsize = get_mmr_address(inst.rn, inst.mmr)
+            rn_address, _ = get_mmr_address(inst.rn, inst.mmr)
             value = s.mem.read(rn_address, 4, from_core=s.coreid)
             s.rf[inst.rd] = value
         s.pc += 2 if is16bit else 4

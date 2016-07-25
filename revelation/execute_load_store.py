@@ -1,8 +1,6 @@
 from revelation.utils import trim_32
 
-#-----------------------------------------------------------------------
-# ldstrpmd32 - load-store post-modify with displacement.
-#-----------------------------------------------------------------------
+
 def execute_ldstrpmd32(s, inst):
     """
     address = RN;
@@ -32,9 +30,6 @@ def execute_ldstrpmd32(s, inst):
     s.pc += 4
 
 
-#-----------------------------------------------------------------------
-# ldstrdisp16 and ldstrdisp32 - load or store with displacement.
-#-----------------------------------------------------------------------
 def make_ldstrdisp_executor(is16bit):
     def ldstrdisp(s, inst):
         """
@@ -67,9 +62,6 @@ def make_ldstrdisp_executor(is16bit):
     return ldstrdisp
 
 
-#-----------------------------------------------------------------------
-# ldstrin16 and ldstrin32 - load or store with index.
-#-----------------------------------------------------------------------
 def make_ldstrind_executor(is16bit):
     def ldstrind(s, inst):
         """
@@ -103,9 +95,6 @@ def make_ldstrind_executor(is16bit):
     return ldstrind
 
 
-#-----------------------------------------------------------------------
-# ldstrpm16 and ldstrpm32 - load or store post-modify.
-#-----------------------------------------------------------------------
 def make_ldstrpm_executor(is16bit):
     def ldstrpm(s, inst):
         """
@@ -143,9 +132,6 @@ def make_ldstrpm_executor(is16bit):
     return ldstrpm
 
 
-#-----------------------------------------------------------------------
-# testset32
-#-----------------------------------------------------------------------
 def testset32(s, inst):
     """From the Epiphany Architecture Reference Manual (c) Adapteva Inc:
 

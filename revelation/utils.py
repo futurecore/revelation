@@ -157,36 +157,16 @@ def is_zero(bits):
 # Code under BSD License: http://choosealicense.com/licenses/bsd-3-clause/
 #
 
-#-----------------------------------------------------------------------
-# carry_from
-#-----------------------------------------------------------------------
-# CarryFrom (ref: ARM DDI 0100I - Glossary-12)
-#
-#   if   result > (2**32 - 1)
-#
 def carry_from(result):
     return result > 0xffffffff
 
-#-----------------------------------------------------------------------
-# borrow_from
-#-----------------------------------------------------------------------
-# BorrowFrom (ref: ARM DDI 0100I - Glossary-3)
-#
-#  if result < 0
-#
 def borrow_from(result):
     return result < 0
 
 
-#-----------------------------------------------------------------------
-# overflow_from_add
-#-----------------------------------------------------------------------
 def overflow_from_add(rn, rm, rd):
     return (rn >> 31 == rm >> 31) & (rn >> 31 != (rm >> 31) & 1)
 
 
-#-----------------------------------------------------------------------
-# overflow_from_sub
-#-----------------------------------------------------------------------
 def overflow_from_sub(rn, rm, rd):
     return (rn >> 31 != rm >> 31) & (rn >> 31 != (rd >> 31) & 1)

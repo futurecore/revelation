@@ -3,9 +3,6 @@ from revelation.utils import signed, sext_8, sext_24, trim_32
 
 import revelation.isa
 
-#-----------------------------------------------------------------------
-# bcond16 and bcond32 - branch on condition.
-#-----------------------------------------------------------------------
 def make_bcond_executor(is16bit):
     def execute_bcond(s, inst):
         """

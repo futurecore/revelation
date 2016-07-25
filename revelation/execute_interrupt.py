@@ -1,18 +1,13 @@
 from revelation.utils import trim_32
 import revelation.isa
 
-#-----------------------------------------------------------------------
-# nop16
-#-----------------------------------------------------------------------
+
 def execute_nop16(s, inst):
     """The instruction does nothing, but holds an instruction slot.
     """
     s.pc += 2
 
 
-#-----------------------------------------------------------------------
-# idle16
-#-----------------------------------------------------------------------
 def execute_idle16(s, inst):
     """
         STATUS[0]=0
@@ -23,9 +18,6 @@ def execute_idle16(s, inst):
     s.ACTIVE = False
 
 
-#-----------------------------------------------------------------------
-# bkpt16 and mbkpt16
-#-----------------------------------------------------------------------
 def execute_bkpt16(s, inst):
     """The BKPT instruction causes the processor to halt and wait for external
     inputs. The instruction is only be used by the debugging tools such as
@@ -43,9 +35,6 @@ def execute_mbkpt16(s, inst):
     raise NotImplementedError('Multicore not implemented.')
 
 
-#-----------------------------------------------------------------------
-# gie16 and gid16
-#-----------------------------------------------------------------------
 def execute_gie16(s, inst):
     """Enables all interrupts in ILAT register, dependent on the per bit
     settings in the IMASK register.
@@ -73,18 +62,12 @@ def execute_gid16(s, inst):
     s.pc += 2
 
 
-#-----------------------------------------------------------------------
-# sync16
-#-----------------------------------------------------------------------
 def execute_sync16(s, inst):
     """Sets the ILAT[0] of all cores within a work group to 1.
     """
     raise NotImplementedError('Interrupts not implemented.')
 
 
-#-----------------------------------------------------------------------
-# rti16
-#-----------------------------------------------------------------------
 def execute_rti16(s, inst):
     """
     IPEND[_i_] = 0; where _i_ is the current interrupt level being serviced
@@ -111,9 +94,6 @@ def execute_rti16(s, inst):
     s.pc = s.rf[revelation.isa.reg_map['IRET']]
 
 
-#-----------------------------------------------------------------------
-# swi16
-#-----------------------------------------------------------------------
 def execute_swi16(s, inst):
     # http://blog.alexrp.com/revelation-notes/
     # The architecture has an undocumented SWI instruction which raises a software
@@ -124,9 +104,6 @@ def execute_swi16(s, inst):
     s.pc += 2
 
 
-#-----------------------------------------------------------------------
-# trap16
-#-----------------------------------------------------------------------
 def execute_trap16(s, inst):
     """The TRAP instruction causes the processor to halt and wait for external
     inputs. The immediate field within the instruction opcode is not processed
@@ -218,9 +195,6 @@ def _debug_syscalls(syscall, arg0, arg1, arg2, logger):
         logger.log('syscall_link(src=%x, link=%x)' % (arg0, arg1))
 
 
-#-----------------------------------------------------------------------
-# wand16
-#-----------------------------------------------------------------------
 def execute_wand16(s, inst):
     """
     STATUS[3] = 1
@@ -228,9 +202,6 @@ def execute_wand16(s, inst):
     raise NotImplementedError('Multicore not implemented.')
 
 
-#-----------------------------------------------------------------------
-# unimpl
-#-----------------------------------------------------------------------
 def execute_unimpl(s, inst):
     """Not implemented exception.
     STATUS[16-19] = 0100  [Epiphany III]
