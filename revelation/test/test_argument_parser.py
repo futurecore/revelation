@@ -1,3 +1,4 @@
+from revelation.argument_parser import USAGE_TEXT
 from revelation.sim import Revelation
 
 import os.path
@@ -80,7 +81,7 @@ def test_argv_flags_with_no_args(argv, capfd):
 
 @pytest.mark.parametrize('argv,expected',
 [(('sim.py', '-r', '1', 'dummy.elf'),    'Could not open file dummy.elf\n'),
- (('sim.py', '-t'),                      'You must supply a filename\n'),
+ (('sim.py', '-t'),                      'You must supply a file name\n'),
  (('sim.py', '--flibble', 'dummy.elf'),  'Unknown argument --flibble\n'),
  (('sim.py', '--env', '@', 'dummy.elf'), '--env can be OPERATING or USER.\n'),
  (('sim.py', '-e', '@', 'dummy.elf'),    '--env can be OPERATING or USER.\n'),
@@ -88,8 +89,8 @@ def test_argv_flags_with_no_args(argv, capfd):
 def test_argv_with_errors(argv, expected, capfd):
     revelation = Revelation()
     entry_point = revelation.get_entry_point()
-    retval = entry_point(argv)
-    assert retval == 1  # Exit failure.
+    with pytest.raises(SystemExit):
+        entry_point(argv)
     out, err = capfd.readouterr()
     assert err == ''
     assert out == expected
@@ -98,11 +99,11 @@ def test_argv_with_errors(argv, expected, capfd):
 @pytest.mark.parametrize('argv', [('sim.py', '--help'), ('sim.py', '-h')])
 def test_argv_help(argv, capfd):
     revelation = Revelation()
-    expected = (revelation.help_message % ('revelation', 'sim.py', 'sim.py',
-                                           'sim.py', 'sim.py', 'sim.py') + '\n')
+    expected = (USAGE_TEXT % ('revelation', 'sim.py', 'sim.py', 'sim.py',
+                              'sim.py', 'sim.py') + '\n')
     entry_point = revelation.get_entry_point()
-    retval = entry_point(argv)
-    assert retval == 0  # Exit success.
+    with pytest.raises(SystemExit):
+        entry_point(argv)
     out, err = capfd.readouterr()
     assert err == ''
     assert out == expected
