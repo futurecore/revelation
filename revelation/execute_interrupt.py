@@ -134,6 +134,12 @@ def execute_trap16(s, inst):
     operating system to find out the reason for the TRAP instruction.
     """
     import pydgin.syscalls
+    undocumented_syscall_funcs = {
+        0:  pydgin.syscalls.syscall_write,
+        1:  pydgin.syscalls.syscall_read,
+        2:  pydgin.syscalls.syscall_open,
+        6:  pydgin.syscalls.syscall_close,
+    }
     syscall_funcs = {
         2:  pydgin.syscalls.syscall_open,
         3:  pydgin.syscalls.syscall_close,
@@ -148,15 +154,8 @@ def execute_trap16(s, inst):
     }
     # Undocumented traps: 0, 1, 2, 6. These are listed as "Reserved" in
     # the reference manual, but have been reported to appear in real programs.
-    if inst.t5 == 0 or inst.t5 == 1 or inst.t5 == 2 or inst.t5 == 6:
-        if inst.t5 == 0:  # Write.
-            syscall_handler = syscall_funcs[5]
-        elif inst.t5 == 1:  # Read.
-            syscall_handler = syscall_funcs[4]
-        elif inst.t5 == 2:  # Open.
-            syscall_handler = syscall_funcs[2]
-        else:  # Close.
-            syscall_handler = syscall_funcs[3]
+    if inst.t5 in undocumented_syscall_funcs:
+        syscall_handler = undocumented_syscall_funcs[inst.t5]
         retval, errno = syscall_handler(s, s.rf[0], s.rf[1], s.rf[2])
         s.rf[0] = trim_32(retval)
         s.rf[3] = errno
@@ -178,29 +177,8 @@ def execute_trap16(s, inst):
         syscall = s.rf[3]
         syscall_handler = syscall_funcs[syscall]
         arg0, arg1, arg2 = s.rf[0], s.rf[1], s.rf[2]
-        if s.debug.enabled('syscalls'):
-            if syscall == 2:  # pragma: no cover
-                s.logger.log(' syscall_open(filename=%x, flags=%x, mode=%x)' % \
-                             (arg0, arg1, arg2))
-            elif syscall == 3:  # pragma: no cover
-                s.logger.log(' syscall_close(fd=%x)' % arg0)
-            elif syscall == 4:  # pragma: no cover
-                s.logger.log(' syscall_read(fd=%x, buf=%x, count=%x)' % \
-                             (arg0, arg1, arg2))
-            elif syscall == 5:  # pragma: no cover
-                s.logger.log(' syscall_write(fd=%x, buf=%x, count=%x)' % \
-                             (arg0, arg1, arg2))
-            elif syscall == 6:  # pragma: no cover
-                s.logger.log(' syscall_lseek(fd=%x, pos=%x, how=%x)' % \
-                             (arg0, arg1, arg2))
-            elif syscall == 7:  # pragma: no cover
-                s.logger.log(' syscall_unlink(path=%x)' % arg0)
-            elif syscall == 10:  # pragma: no cover
-                s.logger.log(' syscall_fstat(fd=%x, buf=%x)' % (arg0, arg1))
-            elif syscall == 15:  # pragma: no cover
-                s.logger.log('syscall_stat(path=%x, buf=%x)' % (arg0, arg1))
-            elif syscall == 21:  # pragma: no cover
-                s.logger.log('syscall_link(src=%x, link=%x)' % (arg0, arg1))
+        if s.debug.enabled('syscalls'):  # pragma: no cover
+            _debug_syscalls(syscall, arg0, arg1, arg2, s.logger)
         # Map any buffers to core-local addresses, where necessary.
         if syscall in (4, 5, 10, 15):
             if (arg1 >> 20) == 0x0:
@@ -213,6 +191,31 @@ def execute_trap16(s, inst):
         print('WARNING: syscall not implemented: %d. Should be unreachable' %
               inst.t5)
     s.pc += 2
+
+
+def _debug_syscalls(syscall, arg0, arg1, arg2, logger):
+    if syscall == 2:  # pragma: no cover
+        logger.log(' syscall_open(filename=%x, flags=%x, mode=%x)' % \
+                     (arg0, arg1, arg2))
+    elif syscall == 3:  # pragma: no cover
+        logger.log(' syscall_close(fd=%x)' % arg0)
+    elif syscall == 4:  # pragma: no cover
+        logger.log(' syscall_read(fd=%x, buf=%x, count=%x)' % \
+                     (arg0, arg1, arg2))
+    elif syscall == 5:  # pragma: no cover
+        logger.log(' syscall_write(fd=%x, buf=%x, count=%x)' % \
+                     (arg0, arg1, arg2))
+    elif syscall == 6:  # pragma: no cover
+        logger.log(' syscall_lseek(fd=%x, pos=%x, how=%x)' % \
+                     (arg0, arg1, arg2))
+    elif syscall == 7:  # pragma: no cover
+        logger.log(' syscall_unlink(path=%x)' % arg0)
+    elif syscall == 10:  # pragma: no cover
+        logger.log(' syscall_fstat(fd=%x, buf=%x)' % (arg0, arg1))
+    elif syscall == 15:  # pragma: no cover
+        logger.log('syscall_stat(path=%x, buf=%x)' % (arg0, arg1))
+    elif syscall == 21:  # pragma: no cover
+        logger.log('syscall_link(src=%x, link=%x)' % (arg0, arg1))
 
 
 #-----------------------------------------------------------------------
