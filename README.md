@@ -3,6 +3,7 @@
 [![Build Status](https://travis-ci.org/futurecore/revelation.svg?branch=master)](https://travis-ci.org/futurecore/revelation)
 [![Coverage Status](https://coveralls.io/repos/futurecore/revelation/badge.svg?branch=master&service=github)](https://coveralls.io/github/futurecore/revelation?branch=master)
 [![Code Health](https://landscape.io/github/futurecore/revelation/master/landscape.svg?style=flat)](https://landscape.io/github/futurecore/revelation/master)
+[![Requirements Status](https://requires.io/github/futurecore/revelation/requirements.svg?branch=master)](https://requires.io/github/futurecore/revelation/requirements/?branch=master)
 [![Documentation Status](https://readthedocs.org/projects/revelation/badge/?version=latest)](https://readthedocs.org/projects/revelation/?badge=latest)
 
 
