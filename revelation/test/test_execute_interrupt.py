@@ -39,7 +39,7 @@ def test_execute_idle16():
     instr = opcode_factory.idle16()
     name, executefn = decode(instr)
     executefn(state, Instruction(instr, None))
-    expected_state = StateChecker(pc=(2 + RESET_ADDR), ACTIVE=False)
+    expected_state = StateChecker(pc=RESET_ADDR, ACTIVE=False)
     expected_state.check(state)
 
 
@@ -71,6 +71,24 @@ def test_execute_rti16_with_interrupt():
     expected_state.check(state)
 
 
+def test_execute_rti16_user_mode_on():
+    state = new_state(rfSTATUS=1, rfCONFIG=0x2000000)
+    instr = opcode_factory.rti16()
+    name, executefn = decode(instr)
+    executefn(state, Instruction(instr, None))
+    expected_state = StateChecker(rfSTATUS=5)
+    expected_state.check(state)
+
+
+def test_execute_rti16_user_mode_off():
+    state = new_state(rfSTATUS=1)
+    instr = opcode_factory.rti16()
+    name, executefn = decode(instr)
+    executefn(state, Instruction(instr, None))
+    expected_state = StateChecker(rfSTATUS=1)
+    expected_state.check(state)
+
+
 def test_execute_swi16():
     state = new_state(rfSTATUS=0b0, rfILAT=0b0, pc=0)
     instr = opcode_factory.swi16()
@@ -80,13 +98,30 @@ def test_execute_swi16():
     expected_state.check(state)
 
 
-def test_execute_trap16():
+def test_execute_trap16_exit():
     state = new_state()
     instr = opcode_factory.trap16(trap=3)  # Exit.
     name, executefn = decode(instr)
     executefn(state, Instruction(instr, None))
     assert not state.running
-    # FIXME: Test other syscalls.
+
+
+def test_execute_trap16_assert_success():
+    state = new_state()
+    instr = opcode_factory.trap16(trap=4)  # Assert success.
+    name, executefn = decode(instr)
+    executefn(state, Instruction(instr, None))
+    expected_state = StateChecker(rf0=1)
+    expected_state.check(state)
+
+
+def test_execute_trap16_assert_failure():
+    state = new_state()
+    instr = opcode_factory.trap16(trap=5)  # Assert failure.
+    name, executefn = decode(instr)
+    executefn(state, Instruction(instr, None))
+    expected_state = StateChecker(rf0=0)
+    expected_state.check(state)
 
 
 def test_execute_trap_warning(capsys):

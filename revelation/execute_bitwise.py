@@ -3,7 +3,6 @@ from revelation.utils import (borrow_from,
                               overflow_from_add,
                               overflow_from_sub,
                               reg_or_simm,
-                              signed,
                               trim_32)
 
 #-----------------------------------------------------------------------
@@ -64,7 +63,12 @@ def make_bit_executor(name, is16bit, imm):
         elif name == "eor":
             result = rn ^ rm
         elif name == "asr":
-            result = signed(rn) >> (rm & 0x1f)
+            nbit = (rn >> 31) & 1
+            shift = rm & 0x1f
+            signbits = 0
+            if nbit == 1:
+                signbits = 0xffffffff << (32 - shift)
+            result = (rn >> shift) | signbits
         elif name == "lsr":
             result = rn >> (rm & 0x1f)
         elif name == "lsl":

@@ -1,8 +1,6 @@
 from revelation.utils import trim_32
 
-#-----------------------------------------------------------------------
-# ldstrpmd32 - load-store post-modify with displacement.
-#-----------------------------------------------------------------------
+
 def execute_ldstrpmd32(s, inst):
     """
     address = RN;
@@ -17,24 +15,21 @@ def execute_ldstrpmd32(s, inst):
     size = {0:1, 1:2, 2:4, 3:8}[inst.size]  # Size in bytes.
     if inst.s:     # STORE
         if size == 8:  # 64 bit store.
-            s.mem.write(s.rf[inst.rn],     4, s.rf[inst.rd])
-            s.mem.write(s.rf[inst.rn] + 4, 4, s.rf[inst.rd + 1])
+            s.mem.write(s.rf[inst.rn],     4, s.rf[inst.rd], from_core=s.coreid)
+            s.mem.write(s.rf[inst.rn] + 4, 4, s.rf[inst.rd + 1], from_core=s.coreid)
         else:
-            s.mem.write(s.rf[inst.rn], size, s.rf[inst.rd])
+            s.mem.write(s.rf[inst.rn], size, s.rf[inst.rd], from_core=s.coreid)
     else:          # LOAD
         if size == 8:  # 64 bit load.
-            value = s.mem.read(s.rf[inst.rn], size)
+            value = s.mem.read(s.rf[inst.rn], size, from_core=s.coreid)
             s.rf[inst.rd + 1] = (value >> 32) & 0xffffffff
             s.rf[inst.rd] = (value & 0xffffffff)
         else:
-            s.rf[inst.rd] = s.mem.read(s.rf[inst.rn], size)
+            s.rf[inst.rd] = s.mem.read(s.rf[inst.rn], size, from_core=s.coreid)
     s.rf[inst.rn] = trim_32(new_rn)
     s.pc += 4
 
 
-#-----------------------------------------------------------------------
-# ldstrdisp16 and ldstrdisp32 - load or store with displacement.
-#-----------------------------------------------------------------------
 def make_ldstrdisp_executor(is16bit):
     def ldstrdisp(s, inst):
         """
@@ -52,24 +47,21 @@ def make_ldstrdisp_executor(is16bit):
         address = (s.rf[inst.rn] - offset if inst.sub else s.rf[inst.rn] + offset)
         if inst.s:  # STORE
             if size == 8:  # 64 bit store.
-                s.mem.write(address,     4, s.rf[inst.rd])
-                s.mem.write(address + 4, 4, s.rf[inst.rd + 1])
+                s.mem.write(address,     4, s.rf[inst.rd], from_core=s.coreid)
+                s.mem.write(address + 4, 4, s.rf[inst.rd + 1], from_core=s.coreid)
             else:
-                s.mem.write(address, size, s.rf[inst.rd])
+                s.mem.write(address, size, s.rf[inst.rd], from_core=s.coreid)
         else:       # LOAD
             if size == 8:  # 64 bit load.
-                value = s.mem.read(address, size)
+                value = s.mem.read(address, size, from_core=s.coreid)
                 s.rf[inst.rd + 1] = (value >> 32) & 0xffffffff
                 s.rf[inst.rd] = (value & 0xffffffff)
             else:
-                s.rf[inst.rd] = s.mem.read(address, size)
+                s.rf[inst.rd] = s.mem.read(address, size, from_core=s.coreid)
         s.pc += 2 if is16bit else 4
     return ldstrdisp
 
 
-#-----------------------------------------------------------------------
-# ldstrin16 and ldstrin32 - load or store with index.
-#-----------------------------------------------------------------------
 def make_ldstrind_executor(is16bit):
     def ldstrind(s, inst):
         """
@@ -88,24 +80,21 @@ def make_ldstrind_executor(is16bit):
         size = {0:1, 1:2, 2:4, 3:8}[inst.size]  # Size in bytes.
         if inst.s:  # STORE
             if size == 8:  # 64 bit store.
-                s.mem.write(address,     4, s.rf[inst.rd])
-                s.mem.write(address + 4, 4, s.rf[inst.rd + 1])
+                s.mem.write(address,     4, s.rf[inst.rd], from_core=s.coreid)
+                s.mem.write(address + 4, 4, s.rf[inst.rd + 1], from_core=s.coreid)
             else:
-                s.mem.write(address, size, s.rf[inst.rd])
+                s.mem.write(address, size, s.rf[inst.rd], from_core=s.coreid)
         else:       # LOAD
             if size == 8:  # 64 bit load.
-                value = s.mem.read(address, size)
+                value = s.mem.read(address, size, from_core=s.coreid)
                 s.rf[inst.rd + 1] = (value >> 32) & 0xffffffff
                 s.rf[inst.rd] = (value & 0xffffffff)
             else:
-                s.rf[inst.rd] = s.mem.read(address, size)
+                s.rf[inst.rd] = s.mem.read(address, size, from_core=s.coreid)
         s.pc += 2 if is16bit else 4
     return ldstrind
 
 
-#-----------------------------------------------------------------------
-# ldstrpm16 and ldstrpm32 - load or store post-modify.
-#-----------------------------------------------------------------------
 def make_ldstrpm_executor(is16bit):
     def ldstrpm(s, inst):
         """
@@ -126,26 +115,23 @@ def make_ldstrpm_executor(is16bit):
         size = {0:1, 1:2, 2:4, 3:8}[inst.size]  # Size in bytes.
         if inst.s:  # STORE
             if size == 8:  # 64 bit store.
-                s.mem.write(address,     4, s.rf[inst.rd])
-                s.mem.write(address + 4, 4, s.rf[inst.rd + 1])
+                s.mem.write(address,     4, s.rf[inst.rd], from_core=s.coreid)
+                s.mem.write(address + 4, 4, s.rf[inst.rd + 1], from_core=s.coreid)
             else:
-                s.mem.write(address, size, s.rf[inst.rd])
+                s.mem.write(address, size, s.rf[inst.rd], from_core=s.coreid)
         else:       # LOAD
             if size == 8:  # 64 bit load.
-                value = s.mem.read(address, size)
+                value = s.mem.read(address, size, from_core=s.coreid)
                 s.rf[inst.rd + 1] = (value >> 32) & 0xffffffff
                 s.rf[inst.rd] = (value & 0xffffffff)
             else:
-                s.rf[inst.rd] = s.mem.read(address, size)
+                s.rf[inst.rd] = s.mem.read(address, size, from_core=s.coreid)
         postmodify = address - index if inst.sub20 else address + index
         s.rf[inst.rn] = trim_32(postmodify)
         s.pc += 2 if is16bit else 4
     return ldstrpm
 
 
-#-----------------------------------------------------------------------
-# testset32
-#-----------------------------------------------------------------------
 def testset32(s, inst):
     """From the Epiphany Architecture Reference Manual (c) Adapteva Inc:
 
@@ -178,10 +164,10 @@ within the on-chip local memory and must be greater than 0x00100000 (2^20).
 """ % str(hex(address))
         raise ValueError(fail_msg)
     size = {0:1, 1:2, 2:4, 3:8}[inst.size]  # Size in bytes.
-    value = s.mem.read(address, size)
+    value = s.mem.read(address, size, from_core=s.coreid)
     if value:
         s.rf[inst.rd] = value
     else:
-        s.mem.write(address, size, s.rf[inst.rd])
+        s.mem.write(address, size, s.rf[inst.rd], from_core=s.coreid)
         s.rf[inst.rd] = 0
     s.pc += 4

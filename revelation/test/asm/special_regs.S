@@ -14,7 +14,7 @@ main:
     mov r10, #11
     mov r11, #12
     movts CONFIG, r0  ; copies contents of r0 to CONFIG register
-    movts STATUS, r1
+    movts STATUS, r2
     ; movts pc, r2
     movts LC, r3
     movts LS, r4

@@ -9,11 +9,11 @@ def test_sim_bkpt16():
                    ]
     revelation = MockRevelation()
     revelation.init_state(instructions)
-    assert revelation.state.running
+    assert revelation.states[0].running
     revelation.run()
     expected_state = StateChecker(pc=(2 + RESET_ADDR))
-    expected_state.check(revelation.state)
-    assert not revelation.state.running
+    expected_state.check(revelation.states[0])
+    assert not revelation.states[0].running
 
 
 def test_sim_nop16():
@@ -22,11 +22,11 @@ def test_sim_nop16():
                     ]
     revelation = MockRevelation()
     revelation.init_state(instructions)
-    assert revelation.state.running
+    assert revelation.states[0].running
     revelation.run()
     expected_state = StateChecker(pc=(4 + RESET_ADDR))
-    expected_state.check(revelation.state)
-    assert not revelation.state.running
+    expected_state.check(revelation.states[0])
+    assert not revelation.states[0].running
 
 
 def test_single_inst_add32():
@@ -34,11 +34,11 @@ def test_single_inst_add32():
                     (opcode_factory.bkpt16(), 16)]
     revelation = MockRevelation()
     revelation.init_state(instructions, rf0=0b01010101010)
-    assert revelation.state.running
+    assert revelation.states[0].running
     revelation.run()
     expected_state = StateChecker(AZ=0, pc=(6 + RESET_ADDR), rf1=(0b01010101010 * 2))
-    expected_state.check(revelation.state)
-    assert not revelation.state.running
+    expected_state.check(revelation.states[0])
+    assert not revelation.states[0].running
 
 
 def test_single_inst_sub32():
@@ -47,12 +47,12 @@ def test_single_inst_sub32():
                     (opcode_factory.bkpt16(), 16)]
     revelation = MockRevelation()
     revelation.init_state(instructions, rf0=5)
-    assert revelation.state.running
+    assert revelation.states[0].running
     revelation.run()
     expected_state = StateChecker(AZ=0, AN=1, AC=0,
                                   pc=(6 + RESET_ADDR), rf1=trim_32(5 - 0b01010101010))
-    expected_state.check(revelation.state)
-    assert not revelation.state.running
+    expected_state.check(revelation.states[0])
+    assert not revelation.states[0].running
 
 
 def test_add32_sub32():
@@ -65,12 +65,12 @@ def test_add32_sub32():
                     ]
     revelation = MockRevelation()
     revelation.init_state(instructions, rf0=0)
-    assert revelation.state.running
+    assert revelation.states[0].running
     revelation.run()
     expected_state = StateChecker(AZ=0, AN=1, AC=0, pc=(10 + RESET_ADDR),
                                   rf1=trim_32(0 - 0b01010101010))
-    expected_state.check(revelation.state)
-    assert not revelation.state.running
+    expected_state.check(revelation.states[0])
+    assert not revelation.states[0].running
 
 
 def test_bcond32():
@@ -81,16 +81,17 @@ def test_bcond32():
                     ]
     revelation = MockRevelation()
     revelation.init_state(instructions, rf0=5)
-    assert revelation.state.running
+    assert revelation.states[0].running
     revelation.run()
     expected_state = StateChecker(pc=(14 + RESET_ADDR), rf1=0)
-    expected_state.check(revelation.state)
-    assert not revelation.state.running
+    expected_state.check(revelation.states[0])
+    assert not revelation.states[0].running
+    revelation = MockRevelation()
     revelation.init_state(instructions, rf0=8)
     revelation.run()
     expected_state = StateChecker(pc=(14 + RESET_ADDR), rf1=(8 + 0b01010101010))
-    expected_state.check(revelation.state)
-    assert not revelation.state.running
+    expected_state.check(revelation.states[0])
+    assert not revelation.states[0].running
 
 
 def test_add32_nop16_sub32():
@@ -102,37 +103,23 @@ def test_add32_nop16_sub32():
                     ]
     revelation = MockRevelation()
     revelation.init_state(instructions, rf0=0)
-    assert revelation.state.running
+    assert revelation.states[0].running
     revelation.run()
     expected_state = StateChecker(pc=(12 + RESET_ADDR), AC=0, AN=1, AZ=0,
                                   rf1=trim_32(0 - 0b01010101010))
-    expected_state.check(revelation.state)
-    assert not revelation.state.running
-
-
-def test_sim_idle16():
-    instructions = [ (opcode_factory.idle16(), 16),
-                     (opcode_factory.bkpt16(), 16),
-                   ]
-    revelation = MockRevelation()
-    revelation.init_state(instructions)
-    assert revelation.state.running
-    revelation.run()
-    expected_state = StateChecker(pc=(4 + RESET_ADDR))
-    expected_state.check(revelation.state)
-    assert not revelation.state.running
+    expected_state.check(revelation.states[0])
+    assert not revelation.states[0].running
 
 
 def test_sim_all_16bit():
     instructions = [ (opcode_factory.gie16(), 16),
                      (opcode_factory.gid16(), 16),
-                     (opcode_factory.idle16(), 16),
                      (opcode_factory.bkpt16(), 16),
                    ]
     revelation = MockRevelation()
     revelation.init_state(instructions)
-    assert revelation.state.running
+    assert revelation.states[0].running
     revelation.run()
-    expected_state = StateChecker(pc=(8 + RESET_ADDR))
-    expected_state.check(revelation.state)
-    assert not revelation.state.running
+    expected_state = StateChecker(pc=(6 + RESET_ADDR))
+    expected_state.check(revelation.states[0])
+    assert not revelation.states[0].running

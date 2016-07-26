@@ -1,8 +1,3 @@
-#=======================================================================
-# machine.py
-#=======================================================================
-from pydgin.machine import Machine
-
 from revelation.isa import reg_map
 from revelation.storage import MemoryMappedRegisterFile
 
@@ -12,22 +7,20 @@ except ImportError:
     intmask = lambda x : x
 
 RESET_ADDR = 0
+PC_ADDRESS = 0xf0408
 
-
-#-----------------------------------------------------------------------
-# State
-#-----------------------------------------------------------------------
-class State(Machine):
+class State(object):
     _virtualizable_ = ['num_insts']
 
-    def __init__(self, memory, debug, coreid=0x808, logger=None,
-                 reset_addr=RESET_ADDR):
-        Machine.__init__(self,
-                         memory,
-                         MemoryMappedRegisterFile(memory, coreid, logger),
-                         debug,
-                         reset_addr=RESET_ADDR)
+    def __init__(self, memory, debug, coreid=0x808, logger=None):
+        self.rf = MemoryMappedRegisterFile(memory, coreid, logger)
         self.coreid = coreid
+        self.mem = memory
+        self.debug = debug
+        self.rf.debug = debug
+        self.mem.debug = debug
+        self.num_insts = 0
+        self.running = True
         self.logger = logger
         # Epiphany III exceptions.
         self.exceptions = { 'UNIMPLEMENTED'  : 0b0100,
@@ -61,9 +54,24 @@ class State(Machine):
         self.ACTIVE = True
         self.KERNEL = True
 
+    def map_address_to_core_local(self, address):
+        return (self.coreid << 20) | address
+
+    @property
+    def pc(self):
+        return self.mem.iread(PC_ADDRESS, 4, from_core=self.coreid)
+
+    @pc.setter
+    def pc(self, value):
+        return self.mem.write(PC_ADDRESS, 4, value, from_core=self.coreid)
+
+    def fetch_pc(self):
+        # Override method from base class. Needed by Pydgin.
+        return self.mem.iread(PC_ADDRESS, 4, from_core=self.coreid)
+
     def get_pending_interrupt(self):
         ipend_highest_bit = -1
-        for index in range(10):
+        for index in xrange(10):
             if (self.rf[reg_map['IPEND']] & (1 << index)):
                 ipend_highest_bit = index
                 break
@@ -71,7 +79,7 @@ class State(Machine):
 
     def get_latched_interrupt(self):
         ilat_highest_bit= -1
-        for index in range(10):
+        for index in xrange(10):
             if ((self.rf[reg_map['ILAT']] & (1 << index)) and
                   not (self.rf[reg_map['IMASK']] & (1 << index))):
                 ilat_highest_bit = index
@@ -86,6 +94,13 @@ class State(Machine):
             self.rf[reg_map[register]] |= (1 << n)
         else:
             self.rf[reg_map[register]] &= ~(1 << n)
+
+    def debug_flags(self):
+        if self.debug.enabled('flags') and self.logger:
+            self.logger.log(' AN=%s AZ=%s AC=%s AV=%s AVS=%s BN=%s BZ=%s '
+                            'BIS=%s BUS=%s BV=%s BVS=%s' %
+                   (self.AN, self.AZ, self.AC, self.AV, self.AVS,
+                    self.BN, self.BZ, self.BIS, self.BUS, self.BV, self.BVS))
 
     # STATUS bits.
 
@@ -314,30 +329,11 @@ class State(Machine):
         self._set_nth_bit_of_register('CONFIG', 25, value)
 
     @property
-    def TIMEWRAP(self):
+    def TIMERWRAP(self):
+        """IGNORED: Only available in Epiphany-IV."""
         return self._get_nth_bit_of_register('CONFIG', 26)
 
-    @TIMEWRAP.setter
-    def TIMEWRAP(self, value):
+    @TIMERWRAP.setter
+    def TIMERWRAP(self, value):
+        """IGNORED: Only available in Epiphany-IV."""
         self._set_nth_bit_of_register('CONFIG', 26, value)
-
-    # PC
-
-    @property
-    def pc(self):
-        return self.rf[reg_map['pc']]
-
-    @pc.setter
-    def pc(self, value):
-        self.rf[reg_map['pc']] = value
-
-    def fetch_pc(self):
-        # Override method from base class. Needed by Pydgin.
-        return self.rf[reg_map['pc']]
-
-    def debug_flags(self):
-        if self.debug.enabled('flags') and self.logger:
-            self.logger.log(' AN=%s AZ=%s AC=%s AV=%s AVS=%s BN=%s BZ=%s '
-                            'BIS=%s BUS=%s BV=%s BVS=%s' %
-                   (self.AN, self.AZ, self.AC, self.AV, self.AVS,
-                    self.BN, self.BZ, self.BIS, self.BUS, self.BV, self.BVS))

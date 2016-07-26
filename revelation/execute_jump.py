@@ -1,10 +1,6 @@
 import revelation.isa
 from revelation.utils import trim_32
 
-#-----------------------------------------------------------------------
-# jr32 and jr16 - jump.
-# jalr32 and jalr16 - register and link jump.
-#-----------------------------------------------------------------------
 def make_jr_executor(is16bit, save_lr):
     def execute_jr(s, inst):
         """

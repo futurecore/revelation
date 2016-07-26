@@ -44,14 +44,21 @@ elf_dir = os.path.join(os.path.dirname(os.path.abspath('__file__')),
                                 'user_isr:\tend\n'
                                 'user_isr:\tafter float overflow\n'
                                 'user_isr:\tend\n'),
+     ('interrupt_ctimer0.elf',  'CTIMER0 has expired.\n'),
+     ('interrupt_ctimer1.elf',  'CTIMER1 has expired.\n'),
      ('interrupt_user.elf',     'User interrupt 1.\nUser interrupt 2.\n'
                                 'User interrupt 3.\nUser interrupt 4.\n'
                                 'Another user interrupt.\n'),
      ('printf_arg.elf',         '99999\n'),
+     ('print_large_float.elf',  'd     = 1.84467440737095516e+19\n'
+                                'd - 1 = 1.84467440737095516e+19\n'),
      ('read_file.elf',          'Hello, world!\n'),
      ('selfmod.elf',            'Hello\nWorld\n'),
      ('selfmod2.elf',           'Hello\nWorld\n'),
      ('setilat.elf',            'User interrupt set by ILATST.\n'),
+     ('testset.elf',            'Before testset:\na: 0\tb: 1\n'
+                                'After testset:\na: 10\tb: 1\n'
+                                'r35: 0\tr36: 1\n'),
  ])
 def test_compiled_c_with_output(elf_file, expected, capfd):
     """Test an ELF file that has been compiled from a C function.
@@ -60,15 +67,17 @@ def test_compiled_c_with_output(elf_file, expected, capfd):
     elf_filename = os.path.join(elf_dir, elf_file)
     revelation = Revelation()
     with open(elf_filename, 'rb') as elf:
-        revelation.init_state(elf, elf_filename, '', [], False, is_test=True)
+        revelation.init_state(elf, elf_filename, False, is_test=True)
         revelation.max_insts = 100000
         revelation.run()
-        assert not revelation.state.running
+        assert not revelation.states[0].running
         out, err = capfd.readouterr()
         assert err == ''
-        expected_full = ('NOTE: Using sparse storage\n'
-                         'sparse memory size 400 addr mask 3ff '
-                         'block mask fffffc00\n') + expected + 'DONE!'
+        expected_full = (('NOTE: Using sparse storage\n'
+                          'sparse memory size 400 addr mask 3ff '
+                          'block mask fffffc00\n'
+                          'Loading program %s on to core 0x808\n' % elf_filename)
+                          + expected)
         assert out.startswith(expected_full)
 
 
@@ -84,11 +93,11 @@ def test_compiled_c_with_return(elf_file, expected):
     elf_filename = os.path.join(elf_dir, elf_file)
     revelation = Revelation()
     with open(elf_filename, 'rb') as elf:
-        revelation.init_state(elf, elf_filename, '', [], False, is_test=True)
+        revelation.init_state(elf, elf_filename, False, is_test=True)
         revelation.max_insts = 10000
         revelation.run()
-        expected.check(revelation.state)
-        assert not revelation.state.running
+        expected.check(revelation.states[0])
+        assert not revelation.states[0].running
 
 
 @pytest.mark.parametrize('elf_file,expected', [('nothing.elf',   250),
@@ -101,11 +110,11 @@ def test_compiled_c(elf_file, expected, capsys):
     elf_filename = os.path.join(elf_dir, elf_file)
     revelation = Revelation()
     with open(elf_filename, 'rb') as elf:
-        revelation.init_state(elf, elf_filename, '', [], False, is_test=True)
+        revelation.init_state(elf, elf_filename, False, is_test=True)
         revelation.max_insts = 10000
         revelation.run()
         out, err = capsys.readouterr()
-        expected_text = 'Instructions Executed = ' + str(expected)
+        expected_text = 'Total ticks simulated = ' + str(expected)
         assert expected_text in out
         assert err == ''
-        assert not revelation.state.running
+        assert not revelation.states[0].running

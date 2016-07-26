@@ -1,18 +1,13 @@
 from revelation.utils import trim_32
 import revelation.isa
 
-#-----------------------------------------------------------------------
-# nop16
-#-----------------------------------------------------------------------
+
 def execute_nop16(s, inst):
     """The instruction does nothing, but holds an instruction slot.
     """
     s.pc += 2
 
 
-#-----------------------------------------------------------------------
-# idle16
-#-----------------------------------------------------------------------
 def execute_idle16(s, inst):
     """
         STATUS[0]=0
@@ -21,12 +16,8 @@ def execute_idle16(s, inst):
         }
     """
     s.ACTIVE = False
-    s.pc += 2
 
 
-#-----------------------------------------------------------------------
-# bkpt16 and mbkpt16
-#-----------------------------------------------------------------------
 def execute_bkpt16(s, inst):
     """The BKPT instruction causes the processor to halt and wait for external
     inputs. The instruction is only be used by the debugging tools such as
@@ -44,9 +35,6 @@ def execute_mbkpt16(s, inst):
     raise NotImplementedError('Multicore not implemented.')
 
 
-#-----------------------------------------------------------------------
-# gie16 and gid16
-#-----------------------------------------------------------------------
 def execute_gie16(s, inst):
     """Enables all interrupts in ILAT register, dependent on the per bit
     settings in the IMASK register.
@@ -74,18 +62,12 @@ def execute_gid16(s, inst):
     s.pc += 2
 
 
-#-----------------------------------------------------------------------
-# sync16
-#-----------------------------------------------------------------------
 def execute_sync16(s, inst):
     """Sets the ILAT[0] of all cores within a work group to 1.
     """
     raise NotImplementedError('Interrupts not implemented.')
 
 
-#-----------------------------------------------------------------------
-# rti16
-#-----------------------------------------------------------------------
 def execute_rti16(s, inst):
     """
     IPEND[_i_] = 0; where _i_ is the current interrupt level being serviced
@@ -112,9 +94,6 @@ def execute_rti16(s, inst):
     s.pc = s.rf[revelation.isa.reg_map['IRET']]
 
 
-#-----------------------------------------------------------------------
-# swi16
-#-----------------------------------------------------------------------
 def execute_swi16(s, inst):
     # http://blog.alexrp.com/revelation-notes/
     # The architecture has an undocumented SWI instruction which raises a software
@@ -125,9 +104,6 @@ def execute_swi16(s, inst):
     s.pc += 2
 
 
-#-----------------------------------------------------------------------
-# trap16
-#-----------------------------------------------------------------------
 def execute_trap16(s, inst):
     """The TRAP instruction causes the processor to halt and wait for external
     inputs. The immediate field within the instruction opcode is not processed
@@ -135,6 +111,12 @@ def execute_trap16(s, inst):
     operating system to find out the reason for the TRAP instruction.
     """
     import pydgin.syscalls
+    undocumented_syscall_funcs = {
+        0:  pydgin.syscalls.syscall_write,
+        1:  pydgin.syscalls.syscall_read,
+        2:  pydgin.syscalls.syscall_open,
+        6:  pydgin.syscalls.syscall_close,
+    }
     syscall_funcs = {
         2:  pydgin.syscalls.syscall_open,
         3:  pydgin.syscalls.syscall_close,
@@ -149,57 +131,35 @@ def execute_trap16(s, inst):
     }
     # Undocumented traps: 0, 1, 2, 6. These are listed as "Reserved" in
     # the reference manual, but have been reported to appear in real programs.
-    if inst.t5 == 0 or inst.t5 == 1 or inst.t5 == 2 or inst.t5 == 6:
-        if inst.t5 == 0:  # Write.
-            syscall_handler = syscall_funcs[5]
-        elif inst.t5 == 1:  # Read.
-            syscall_handler = syscall_funcs[4]
-        elif inst.t5 == 2:  # Open.
-            syscall_handler = syscall_funcs[2]
-        else:  # Close.
-            syscall_handler = syscall_funcs[3]
+    if inst.t5 in undocumented_syscall_funcs:
+        syscall_handler = undocumented_syscall_funcs[inst.t5]
         retval, errno = syscall_handler(s, s.rf[0], s.rf[1], s.rf[2])
         s.rf[0] = trim_32(retval)
         s.rf[3] = errno
     elif inst.t5 == 3:  # Exit.
         syscall_handler = pydgin.syscalls.syscall_exit
         exit_code = s.rf[0]
-        if s.debug.enabled('trace'):  # pragma: no cover
+        if s.debug.enabled('syscalls'):  # pragma: no cover
             s.logger.log(' syscall_exit(status=%x)' % exit_code)
         retval, errno = syscall_handler(s, exit_code, s.rf[1], s.rf[2])
     elif inst.t5 == 4:
-        if s.debug.enabled('trace'):
+        s.rf[0] = 1
+        if s.debug.enabled('syscalls'):
             s.logger.log(' TRAP: Assertion SUCCEEDED.')
     elif inst.t5 == 5:
-        if s.debug.enabled('trace'):
+        s.rf[0] = 0
+        if s.debug.enabled('syscalls'):
             s.logger.log(' TRAP: Assertion FAILED.')
     elif inst.t5 == 7: # Initiate system call.
         syscall = s.rf[3]
         syscall_handler = syscall_funcs[syscall]
         arg0, arg1, arg2 = s.rf[0], s.rf[1], s.rf[2]
-        if s.debug.enabled('trace'):
-            if syscall == 2:  # pragma: no cover
-                s.logger.log(' syscall_open(filename=%x, flags=%x, mode=%x)' % \
-                             (arg0, arg1, arg2))
-            elif syscall == 3:  # pragma: no cover
-                s.logger.log(' syscall_close(fd=%x)' % arg0)
-            elif syscall == 4:  # pragma: no cover
-                s.logger.log(' syscall_read(fd=%x, buf=%x, count=%x)' % \
-                             (arg0, arg1, arg2))
-            elif syscall == 5:  # pragma: no cover
-                s.logger.log(' syscall_write(fd=%x, buf=%x, count=%x)' % \
-                             (arg0, arg1, arg2))
-            elif syscall == 6:  # pragma: no cover
-                s.logger.log(' syscall_lseek(fd=%x, pos=%x, how=%x)' % \
-                             (arg0, arg1, arg2))
-            elif syscall == 7:  # pragma: no cover
-                s.logger.log(' syscall_unlink(path=%x)' % arg0)
-            elif syscall == 10:  # pragma: no cover
-                s.logger.log(' syscall_fstat(fd=%x, buf=%x)' % (arg0, arg1))
-            elif syscall == 15:  # pragma: no cover
-                s.logger.log('syscall_stat(path=%x, buf=%x)' % (arg0, arg1))
-            elif syscall == 21:  # pragma: no cover
-                s.logger.log('syscall_link(src=%x, link=%x)' % (arg0, arg1))
+        if s.debug.enabled('syscalls'):  # pragma: no cover
+            _debug_syscalls(syscall, arg0, arg1, arg2, s.logger)
+        # Map any buffers to core-local addresses, where necessary.
+        if syscall in (4, 5, 10, 15):
+            if (arg1 >> 20) == 0x0:
+                arg1 = s.map_address_to_core_local(arg1)
         retval, errno = syscall_handler(s, arg0, arg1, arg2)
         # Undocumented:
         s.rf[0] = trim_32(retval)
@@ -210,9 +170,31 @@ def execute_trap16(s, inst):
     s.pc += 2
 
 
-#-----------------------------------------------------------------------
-# wand16
-#-----------------------------------------------------------------------
+def _debug_syscalls(syscall, arg0, arg1, arg2, logger):
+    if syscall == 2:  # pragma: no cover
+        logger.log(' syscall_open(filename=%x, flags=%x, mode=%x)' % \
+                     (arg0, arg1, arg2))
+    elif syscall == 3:  # pragma: no cover
+        logger.log(' syscall_close(fd=%x)' % arg0)
+    elif syscall == 4:  # pragma: no cover
+        logger.log(' syscall_read(fd=%x, buf=%x, count=%x)' % \
+                     (arg0, arg1, arg2))
+    elif syscall == 5:  # pragma: no cover
+        logger.log(' syscall_write(fd=%x, buf=%x, count=%x)' % \
+                     (arg0, arg1, arg2))
+    elif syscall == 6:  # pragma: no cover
+        logger.log(' syscall_lseek(fd=%x, pos=%x, how=%x)' % \
+                     (arg0, arg1, arg2))
+    elif syscall == 7:  # pragma: no cover
+        logger.log(' syscall_unlink(path=%x)' % arg0)
+    elif syscall == 10:  # pragma: no cover
+        logger.log(' syscall_fstat(fd=%x, buf=%x)' % (arg0, arg1))
+    elif syscall == 15:  # pragma: no cover
+        logger.log('syscall_stat(path=%x, buf=%x)' % (arg0, arg1))
+    elif syscall == 21:  # pragma: no cover
+        logger.log('syscall_link(src=%x, link=%x)' % (arg0, arg1))
+
+
 def execute_wand16(s, inst):
     """
     STATUS[3] = 1
@@ -220,9 +202,6 @@ def execute_wand16(s, inst):
     raise NotImplementedError('Multicore not implemented.')
 
 
-#-----------------------------------------------------------------------
-# unimpl
-#-----------------------------------------------------------------------
 def execute_unimpl(s, inst):
     """Not implemented exception.
     STATUS[16-19] = 0100  [Epiphany III]

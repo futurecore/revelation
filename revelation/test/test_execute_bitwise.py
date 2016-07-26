@@ -168,6 +168,23 @@ def test_execute_arith_shift_right_imm(rn, imm, is16bit):
     expected_state.check(state)
 
 
+@pytest.mark.parametrize('rn,imm,is16bit,expected',
+                         [(0x49438a1d, 8, False, 0x49438a),
+                          (0xffff8000, 0x10, False, 0xffffffff)])
+def test_execute_arith_shift_right_imm_from_elf(rn, imm, is16bit, expected):
+    rd = 2
+    state = new_state(rf0=trim_32(rn))
+    instr = (opcode_factory.asr16_immediate(rd=rd, rn=0, imm=imm) if is16bit
+             else opcode_factory.asr32_immediate(rd=rd, rn=0, imm=imm))
+    name, executefn = decode(instr)
+    executefn(state, Instruction(instr, None))
+    expected_state = StateChecker(AZ=False,
+                                  AV=0, AC=0,
+                                  pc=((2 if is16bit else 4) + RESET_ADDR),
+                                  rf2=expected)
+    expected_state.check(state)
+
+
 @pytest.mark.parametrize('factory,is16bit',
                          [(opcode_factory.lsl16, True),
                           (opcode_factory.lsl32, False)

@@ -19,13 +19,14 @@ class MockRevelation(Revelation):
         """Load the program into a memory object.
         This function should ONLY be called by unit tests.
         """
-        mem = new_memory(self.debug)
+        self.memory = new_memory(self.debug)
         written_so_far = 0
         for i, (data, width) in enumerate(instructions):
             num_bytes = width / 8
-            mem.write(RESET_ADDR + written_so_far, num_bytes, data)
+            self.memory.write(RESET_ADDR + written_so_far, num_bytes, data)
             written_so_far += num_bytes
-        self.state = new_state(mem=mem, debug=self.debug, **args)
+        self.states.append(new_state(mem=self.memory, debug=self.debug, **args))
+        self.hardware_loops.append(False)
         self.max_insts = len(instructions)
 
 init_sim(MockRevelation())

@@ -14,8 +14,9 @@ LDLIBS=-le-lib
 LIBDIR=${ESDK}/tools/host/lib
 INCDIR=${ESDK}/tools/host/include
 
-fpu_rounding_mode.elf: EXTRA_CFLAGS := -mfp-mode=truncate
-print_large_float.elf: EXTRA_CFLAGS := -mfp-mode=round-nearest
+elib_message_pass.elf:   EXTRA_CFLAGS := -DROWS=1  -DCOLS=2  -DFIRST_CORE=0x808
+manual_message_pass.elf: EXTRA_CFLAGS := -DROWS=1  -DCOLS=2  -DFIRST_CORE=0x808
+wake_on_interrupt.elf:   EXTRA_CFLAGS := -DROWS=1  -DCOLS=2  -DFIRST_CORE=0x808
 
 .PHONY: all clean
 

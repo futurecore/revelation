@@ -13,9 +13,7 @@ try:
 except ImportError:
     we_are_translated = lambda : False
 
-#=======================================================================
-# Register Definitions
-#=======================================================================
+
 reg_map = {
     'r0'   :  0,   'r1'   :  1,   'r2'   :  2,   'r3'   :  3,
     'r4'   :  4,   'r5'   :  5,   'r6'   :  6,   'r7'   :  7,
@@ -89,18 +87,11 @@ reg_map = {
 }
 
 
-#=======================================================================
-# Instruction Encodings
-#=======================================================================
 encodings = [
-    #---------------------------------------------------------------------
     # Branch on condition
-    #---------------------------------------------------------------------
     ['bcond32',     'xxxxxxxx_xxxxxxxx_xxxxxxxx_xxxx1000'],
     ['bcond16',     'xxxxxxxx_xxxxxxxx_xxxxxxxx_xxxx0000'],
-    #--------------------------------------------------------------------
     # Loads and stores
-    #---------------------------------------------------------------------
     ['ldstrpmd32',  'xxxxxx1x_xxxxxxxx_xxxxxxxx_xxxx1100'],  # LD or STR combined.
     ['ldstrdisp16', 'xxxxxxxx_xxxxxxxx_xxxxxxxx_xxxx0100'],  # LD or STR combined.
     ['ldstrdisp32', 'xxxxxx0x_xxxxxxxx_xxxxxxxx_xxxx1100'],  # LD or STR combined.
@@ -109,9 +100,7 @@ encodings = [
     ['ldstrpm16',   'xxxxxxxx_xxxxxxxx_xxxxxxxx_xxxx0101'],  # LD or STR combined.
     ['ldstrpm32',   'xxxxxxxx_x00xxxxx_xxxxxxxx_xxxx1101'],  # LD or STR combined.
     ['testset32',   'xxxxxxxx_x01xxxxx_xxxxxxxx_xxx01001'],
-    #---------------------------------------------------------------------
     # Arithmetic
-    #---------------------------------------------------------------------
     ['add32',       'xxxxxxxx_xxxx1010_xxxxxxxx_x0011111'],
     ['add32',       'xxxxxxxx_xxxxxxxx_xxxxxxxx_x0011011'],  # with immediate.
     ['sub32',       'xxxxxxxx_xxxx1010_xxxxxxxx_x0111111'],
@@ -120,9 +109,7 @@ encodings = [
     ['add16',       'xxxxxxxx_xxxxxxxx_xxxxxxxx_x0010011'],  # with immediate.
     ['sub16',       'xxxxxxxx_xxxxxxxx_xxxxxxxx_x0111010'],
     ['sub16',       'xxxxxxxx_xxxxxxxx_xxxxxxxx_x0110011'],  # with immediate.
-    #---------------------------------------------------------------------
     # Bitwise arithmetic
-    #---------------------------------------------------------------------
     ['and32',       'xxxxxxxx_xxxx1010_xxxxxxxx_x1011111'],  # AND32
     ['and16',       'xxxxxxxx_xxxxxxxx_xxxxxxxx_x1011010'],  # AND16
     ['orr32',       'xxxxxxxx_xxxx1010_xxxxxxxx_x1111111'],  # ORR32
@@ -143,9 +130,7 @@ encodings = [
     ['lslimm16',    'xxxxxxxx_xxxxxxxx_xxxxxxxx_xxx10110'],  # LSLIMM16
     ['asrimm16',    'xxxxxxxx_xxxxxxxx_xxxxxxxx_xxx01110'],  # ASRIMM16
     ['bitrimm16',   'xxxxxxxx_xxxxxxxx_xxxxxxxx_xxx11110'],  # BITRIMM16
-    #---------------------------------------------------------------------
     # Floating point and signed integer arithmetic.
-    #---------------------------------------------------------------------
     ['fadd16',      'xxxxxxxx_xxxxxxxx_xxxxxxxx_x0000111'],
     ['fsub16',      'xxxxxxxx_xxxxxxxx_xxxxxxxx_x0010111'],
     ['fmul16',      'xxxxxxxx_xxxxxxxx_xxxxxxxx_x0100111'],
@@ -162,9 +147,7 @@ encodings = [
     ['float32',     'xxxxxxxx_xxxx0111_xxxxxx00_01011111'],
     ['fix32',       'xxxxxxxx_xxxx0111_xxxxxx00_01101111'],
     ['fabs32',      'xxxxxxxx_xxxx0111_xxxxxx00_01111111'],
-    #---------------------------------------------------------------------
     # Moves.
-    #---------------------------------------------------------------------
     ['movcond32',   'xxxxxxxx_xxxx0010_xxxxxx00_xxxx1111'],
     ['movcond16',   'xxxxxxxx_xxxxxxxx_xxxxxx00_xxxx0010'],
     ['movimm32',    'xxx0xxxx_xxxxxxxx_xxxxxxxx_xxx01011'],
@@ -174,16 +157,12 @@ encodings = [
     ['movts32',     'xxxxxxxx_xxxx0010_xxxxxx01_00001111'],
     ['movfs16',     'xxxxxxxx_xxxxxxxx_xxxxxx01_00010010'],
     ['movfs32',     'xxxxxxxx_xxxx0010_xxxxxx01_00011111'],
-    #---------------------------------------------------------------------
     # Jumps.
-    #---------------------------------------------------------------------
     ['jr32',        'xxxxxxxx_xxxx0010_xxxxxx01_01001111'],
     ['jr16',        'xxxxxxxx_xxxxxxxx_xxxxxx01_01000010'],
     ['jalr32',      'xxxxxxxx_xxxx0010_xxxxxx01_01011111'],
     ['jalr16',      'xxxxxxxx_xxxxxxxx_xxxxxx01_01010010'],
-    #---------------------------------------------------------------------
     # Interrupts, multicore and control.
-    #---------------------------------------------------------------------
     ['nop16',       'xxxxxxxx_xxxxxxxx_xxxxxx01_10100010'],
     ['idle16',      'xxxxxxxx_xxxxxxxx_xxxxxx01_10110010'],
     ['bkpt16',      'xxxxxxxx_xxxxxxxx_xxxxxx01_11000010'],
@@ -199,15 +178,11 @@ encodings = [
 ]
 
 
-#-----------------------------------------------------------------------
 # Branch instructions
-#-----------------------------------------------------------------------
 execute_bcond32 = execute_branch.make_bcond_executor(False)
 execute_bcond16 = execute_branch.make_bcond_executor(True)
 
-#-----------------------------------------------------------------------
 # Load / store instructions
-#-----------------------------------------------------------------------
 execute_ldstrpmd32  = execute_load_store.execute_ldstrpmd32
 execute_ldstrdisp16 = execute_load_store.make_ldstrdisp_executor(True)
 execute_ldstrdisp32 = execute_load_store.make_ldstrdisp_executor(False)
@@ -217,42 +192,33 @@ execute_ldstrpm16   = execute_load_store.make_ldstrpm_executor(True)
 execute_ldstrpm32   = execute_load_store.make_ldstrpm_executor(False)
 execute_testset32   = execute_load_store.testset32
 
-#-----------------------------------------------------------------------
 # Bitwise instructions
-#-----------------------------------------------------------------------
-# Addition and subtraction.
 execute_sub32     = execute_bitwise.make_addsub_executor(False, 'sub')
 execute_sub16     = execute_bitwise.make_addsub_executor(True, 'sub')
 execute_add32     = execute_bitwise.make_addsub_executor(False, 'add')
 execute_add16     = execute_bitwise.make_addsub_executor(True, 'add')
-# 16 bit instructions without immediate.
 execute_and16     = execute_bitwise.make_bit_executor("and", True,  False)
 execute_orr16     = execute_bitwise.make_bit_executor("orr", True,  False)
 execute_eor16     = execute_bitwise.make_bit_executor("eor", True,  False)
 execute_asr16     = execute_bitwise.make_bit_executor("asr", True,  False)
 execute_lsr16     = execute_bitwise.make_bit_executor("lsr", True,  False)
 execute_lsl16     = execute_bitwise.make_bit_executor("lsl", True,  False)
-# 32 bit instructions without immediate.
 execute_and32     = execute_bitwise.make_bit_executor("and", False, False)
 execute_orr32     = execute_bitwise.make_bit_executor("orr", False, False)
 execute_eor32     = execute_bitwise.make_bit_executor("eor", False, False)
 execute_asr32     = execute_bitwise.make_bit_executor("asr", False, False)
 execute_lsr32     = execute_bitwise.make_bit_executor("lsr", False, False)
 execute_lsl32     = execute_bitwise.make_bit_executor("lsl", False, False)
-# 16 bit instructions with immediate.
 execute_lsrimm16  = execute_bitwise.make_bit_executor("lsr",  True, True)
 execute_lslimm16  = execute_bitwise.make_bit_executor("lsl",  True, True)
 execute_asrimm16  = execute_bitwise.make_bit_executor("asr",  True, True)
 execute_bitrimm16 = execute_bitwise.make_bit_executor("bitr", True, True)
-# 32 bit instructions with immediate.
 execute_lsrimm32  = execute_bitwise.make_bit_executor("lsr",  False, True)
 execute_lslimm32  = execute_bitwise.make_bit_executor("lsl",  False, True)
 execute_asrimm32  = execute_bitwise.make_bit_executor("asr",  False, True)
 execute_bitrimm32 = execute_bitwise.make_bit_executor("bitr", False, True)
 
-#---------------------------------------------------------------------
 # Floating point and integer arithmetic.
-#---------------------------------------------------------------------
 execute_fadd16  = execute_farith.make_farith_executor('add', True)
 execute_fsub16  = execute_farith.make_farith_executor('sub', True)
 execute_fmul16  = execute_farith.make_farith_executor('mul', True)
@@ -270,9 +236,7 @@ execute_float32 = execute_farith.make_farith_executor('float', False)
 execute_fix32   = execute_farith.make_farith_executor('fix', False)
 execute_fabs32  = execute_farith.make_farith_executor('abs', False)
 
-#-----------------------------------------------------------------------
 # Move instructions
-#-----------------------------------------------------------------------
 execute_movcond32 = execute_mov.make_movcond_executor(False)
 execute_movcond16 = execute_mov.make_movcond_executor(True)
 execute_movtimm32 = execute_mov.make_movimm_executor(False, True)
@@ -283,17 +247,13 @@ execute_movts16   = execute_mov.make_mov_executor(True,  rd_is_special=True)
 execute_movfs32   = execute_mov.make_mov_executor(False, rn_is_special=True)
 execute_movfs16   = execute_mov.make_mov_executor(True,  rn_is_special=True)
 
-#-----------------------------------------------------------------------
 # Jump instructions
-#-----------------------------------------------------------------------
 execute_jr32   = execute_jump.make_jr_executor(False, save_lr=False)
 execute_jr16   = execute_jump.make_jr_executor(True,  save_lr=False)
 execute_jalr32 = execute_jump.make_jr_executor(False, save_lr=True)
 execute_jalr16 = execute_jump.make_jr_executor(True,  save_lr=True)
 
-#-----------------------------------------------------------------------
 # Interrupt and multicore instructions
-#-----------------------------------------------------------------------
 execute_nop16   = execute_interrupts.execute_nop16
 execute_idle16  = execute_interrupts.execute_idle16
 execute_bkpt16  = execute_interrupts.execute_bkpt16
@@ -307,7 +267,5 @@ execute_wand16  = execute_interrupts.execute_wand16
 execute_trap16  = execute_interrupts.execute_trap16
 execute_unimpl  = execute_interrupts.execute_unimpl
 
-#=======================================================================
 # Create Decoder
-#=======================================================================
 decode = create_risc_decoder(encodings, globals(), debug=True)
