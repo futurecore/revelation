@@ -4,18 +4,6 @@ import pydgin.utils
 
 import math
 
-try:
-    from rpython.rlib.rarithmetic import r_uint, intmask
-    from rpython.rlib.objectmodel import specialize
-except ImportError:
-    r_uint = lambda x : x
-    intmask = lambda x : x
-    class Specialize(object):
-        def argtype(self, fun, *args):
-            return lambda fun : fun
-    specialize = Specialize()
-
-
 def get_mmr_address(rn, m0m1):
     """Return address of an memory-mapped register and its size in bits.
     """
@@ -31,8 +19,8 @@ def get_mmr_address(rn, m0m1):
 def signed(value):
     if value & 0x8000000:
         twos_complement = ~value + 1
-        return -intmask(trim_32(twos_complement))
-    return intmask(value)
+        return -pydgin.utils.intmask(trim_32(twos_complement))
+    return pydgin.utils.intmask(value)
 
 
 def reg_or_simm(state, inst, is16bit):
@@ -74,7 +62,7 @@ def sext_24(value):
     return value
 
 
-@specialize.argtype(0)
+@pydgin.utils.specialize.argtype(0)
 def trim_32(value):
     return value & 0xffffffff
 
