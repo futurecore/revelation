@@ -31,6 +31,11 @@ EXAMPLES:
 """
 
 
+class DoNotInterpretError(Exception):
+    def __init__(self):
+        pass
+
+
 def cli_parser(argv, simulator, debug_enabled):
     filename_index = 0
     debug_flags = []
@@ -52,7 +57,7 @@ def cli_parser(argv, simulator, debug_enabled):
             if token == '--help' or token == '-h':
                 print (USAGE_TEXT % (simulator.arch_name, argv[0], argv[0],
                                      argv[0], argv[0], argv[0]))
-                raise SystemExit
+                raise DoNotInterpretError
             elif token == '--time' or token == '-t':
                 simulator.collect_times = True
             elif token == '--debug' or token == '-d':
@@ -65,7 +70,7 @@ def cli_parser(argv, simulator, debug_enabled):
                 prev_token = token
             elif token[:1] == '-':
                 print 'Unknown argument %s' % token
-                raise SystemExit
+                raise SyntaxError
             else:
                 filename_index = index + 1
                 break
@@ -79,7 +84,7 @@ def cli_parser(argv, simulator, debug_enabled):
                     simulator.user_environment = True
                 else:
                     print ('--env can be OPERATING or USER.')
-                    raise SystemExit
+                    raise ValueError
             elif prev_token == '--ext-base' or prev_token == '-b':
                 simulator.ext_base =int(token, 16)
             elif prev_token == '--cols' or prev_token == '-c':
@@ -99,5 +104,5 @@ def cli_parser(argv, simulator, debug_enabled):
             prev_token = ''
     if filename_index == 0:
         print 'You must supply a file name'
-        raise SystemExit
+        raise SyntaxError
     return argv[filename_index], jit, debug_flags
