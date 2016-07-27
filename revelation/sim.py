@@ -32,6 +32,7 @@ class Revelation(Sim):
                                        reds = ['tick_counter',
                                                'halted_cores',
                                                'idle_cores',
+                                               'old_pcs',
                                                'memory',
                                                'sim',
                                                'state',
@@ -178,7 +179,7 @@ class Revelation(Sim):
         memory = hint(self.memory, promote=True)  # Cores share the same memory.
         tick_counter = 0  # Number of instructions executed by all cores.
         halted_cores, idle_cores = [], []
-        old_pc = 0
+        old_pcs = [0] * len(self.states)
         start_time, end_time = time.time(), .0
 
         while True:
@@ -187,13 +188,14 @@ class Revelation(Sim):
                                            tick_counter=tick_counter,
                                            halted_cores=halted_cores,
                                            idle_cores=idle_cores,
+                                           old_pcs=old_pcs,
                                            memory=memory,
                                            sim=self,
                                            state=self.states[self.core],
                                            start_time=start_time)
             # Fetch PC, decode instruction and execute.
             pc = hint(self.states[self.core].fetch_pc(), promote=True)
-            old_pc = pc
+            old_pcs[self.core] = pc
             inst_bits = memory.iread(pc, 4, from_core=self.states[self.core].coreid)
             try:
                 instruction, exec_fun = self.decode(inst_bits)
@@ -228,12 +230,13 @@ class Revelation(Sim):
                     elif (self.core in idle_cores and self.fetch_latch() > 0):
                         idle_cores.remove(self.core)
                         self._service_interrupts()
-            if old_pc < self.states[self.core].fetch_pc():  # TODO: old_pc per core?
+            if self.states[self.core].fetch_pc() < old_pcs[self.core]:
                 self.jitdriver.can_enter_jit(pc=self.states[self.core].fetch_pc(),
                                              core=self.core,
                                              tick_counter=tick_counter,
                                              halted_cores=halted_cores,
                                              idle_cores=idle_cores,
+                                             old_pcs=old_pcs,
                                              memory=memory,
                                              sim=self,
                                              state=self.states[self.core],
