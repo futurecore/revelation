@@ -13,8 +13,14 @@ from revelation.storage import MemoryFactory
 
 import time
 
+EXIT_SUCCESS = 0
+EXIT_GENERAL_ERROR = 1
+EXIT_SYNTAX_ERROR = 2
+EXIT_FILE_ERROR = 126
+EXIT_CTRL_C = 130
 LOG_FILENAME = 'r_trace.out'
 MEMORY_SIZE = 2**32  # Global on-chip address space.
+
 
 def new_memory(logger):
     return MemoryFactory(size=MEMORY_SIZE, logger=logger)
@@ -32,6 +38,7 @@ class Revelation(Sim):
                                        reds = ['tick_counter',
                                                'halted_cores',
                                                'idle_cores',
+                                               'old_pcs',
                                                'memory',
                                                'sim',
                                                'state',
@@ -86,9 +93,9 @@ class Revelation(Sim):
             try:
                 fname, jit, flags = cli_parser(argv, self, Debug.global_enabled)
             except DoNotInterpretError:  # CLI option such as --help or -h.
-                return 0
+                return EXIT_SUCCESS
             except (SyntaxError, ValueError):
-                return 1
+                return EXIT_SYNTAX_ERROR
             if jit:  # pragma: no cover
                 set_user_param(self.jitdriver, jit)
             self.debug = Debug(flags, 0)
@@ -96,13 +103,16 @@ class Revelation(Sim):
                 elf_file = open(fname, 'rb')
             except IOError:
                 print 'Could not open file %s' % fname
-                return 1
+                return EXIT_FILE_ERROR
             self.init_state(elf_file, fname, False)
             for state in self.states:  # FIXME: Interleaved log.
                 self.debug.set_state(state)
             elf_file.close()
-            self.run()
-            return 0
+            try:
+                exit_code = self.run()
+            except KeyboardInterrupt:
+                return EXIT_CTRL_C
+            return exit_code
         return entry_point
 
     def decode(self, bits):
@@ -178,7 +188,7 @@ class Revelation(Sim):
         memory = hint(self.memory, promote=True)  # Cores share the same memory.
         tick_counter = 0  # Number of instructions executed by all cores.
         halted_cores, idle_cores = [], []
-        old_pc = 0
+        old_pcs = [0] * len(self.states)
         start_time, end_time = time.time(), .0
 
         while True:
@@ -187,13 +197,14 @@ class Revelation(Sim):
                                            tick_counter=tick_counter,
                                            halted_cores=halted_cores,
                                            idle_cores=idle_cores,
+                                           old_pcs=old_pcs,
                                            memory=memory,
                                            sim=self,
                                            state=self.states[self.core],
                                            start_time=start_time)
             # Fetch PC, decode instruction and execute.
             pc = hint(self.states[self.core].fetch_pc(), promote=True)
-            old_pc = pc
+            old_pcs[self.core] = pc
             inst_bits = memory.iread(pc, 4, from_core=self.states[self.core].coreid)
             try:
                 instruction, exec_fun = self.decode(inst_bits)
@@ -203,7 +214,8 @@ class Revelation(Sim):
             except FatalError as error:
                 print 'Exception in execution (pc: 0x%s), aborting!' % pad_hex(pc)
                 print 'Exception message: %s' % error.msg
-                break   # pragma: no cover
+                # Ensure that entry_point() returns correct exit code.
+                return EXIT_GENERAL_ERROR   # pragma: no cover
             # Update instruction counters.
             tick_counter += 1
             self.states[self.core].num_insts += 1
@@ -228,12 +240,13 @@ class Revelation(Sim):
                     elif (self.core in idle_cores and self.fetch_latch() > 0):
                         idle_cores.remove(self.core)
                         self._service_interrupts()
-            if old_pc < self.states[self.core].fetch_pc():  # TODO: old_pc per core?
+            if self.states[self.core].fetch_pc() < old_pcs[self.core]:
                 self.jitdriver.can_enter_jit(pc=self.states[self.core].fetch_pc(),
                                              core=self.core,
                                              tick_counter=tick_counter,
                                              halted_cores=halted_cores,
                                              idle_cores=idle_cores,
+                                             old_pcs=old_pcs,
                                              memory=memory,
                                              sim=self,
                                              state=self.states[self.core],
@@ -250,6 +263,7 @@ class Revelation(Sim):
             print 'Total execution time: %fs' % (end_time - start_time)
         if self.logger:
             self.logger.close()
+        return EXIT_SUCCESS
 
     def init_state(self, elf_file, filename, testbin, is_test=False):
         """Revelation has custom logging infrastructure that differs from the
