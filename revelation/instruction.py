@@ -1,7 +1,7 @@
 class Instruction(object):
-    def __init__(self, bits, str):
+    def __init__(self, bits, name):
         self.bits = bits
-        self.str  = str
+        self.name  = name
 
     @property
     def rd(self):
