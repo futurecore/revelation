@@ -3,7 +3,7 @@ from pydgin.jit import elidable, hint, JitDriver, set_param, set_user_param
 from pydgin.misc import FatalError
 from pydgin.sim import Sim, init_sim
 
-from revelation.argument_parser import cli_parser
+from revelation.argument_parser import cli_parser, DoNotInterpretError
 from revelation.elf_loader import load_program
 from revelation.instruction import Instruction
 from revelation.isa import decode, reg_map
@@ -83,7 +83,12 @@ class Revelation(Sim):
         def entry_point(argv):
             if self.jit_enabled:
                 set_param(self.jitdriver, 'trace_limit', self.default_trace_limit)
-            fname, jit, flags = cli_parser(argv, self, Debug.global_enabled)
+            try:
+                fname, jit, flags = cli_parser(argv, self, Debug.global_enabled)
+            except DoNotInterpretError:  # CLI option such as --help or -h.
+                return 0
+            except (SyntaxError, ValueError):
+                return 1
             if jit:  # pragma: no cover
                 set_user_param(self.jitdriver, jit)
             self.debug = Debug(flags, 0)
@@ -91,7 +96,7 @@ class Revelation(Sim):
                 elf_file = open(fname, 'rb')
             except IOError:
                 print 'Could not open file %s' % fname
-                raise SystemExit
+                return 1
             self.init_state(elf_file, fname, False)
             for state in self.states:  # FIXME: Interleaved log.
                 self.debug.set_state(state)

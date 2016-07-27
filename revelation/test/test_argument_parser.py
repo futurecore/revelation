@@ -1,4 +1,4 @@
-from revelation.argument_parser import USAGE_TEXT
+from revelation.argument_parser import USAGE_TEXT, DoNotInterpretError
 from revelation.sim import Revelation
 
 import os.path
@@ -89,8 +89,7 @@ def test_argv_flags_with_no_args(argv, capfd):
 def test_argv_with_errors(argv, expected, capfd):
     revelation = Revelation()
     entry_point = revelation.get_entry_point()
-    with pytest.raises(SystemExit):
-        entry_point(argv)
+    entry_point(argv)
     out, err = capfd.readouterr()
     assert err == ''
     assert out == expected
@@ -102,8 +101,7 @@ def test_argv_help(argv, capfd):
     expected = (USAGE_TEXT % ('revelation', 'sim.py', 'sim.py', 'sim.py',
                               'sim.py', 'sim.py') + '\n')
     entry_point = revelation.get_entry_point()
-    with pytest.raises(SystemExit):
-        entry_point(argv)
+    entry_point(argv)
     out, err = capfd.readouterr()
     assert err == ''
     assert out == expected
