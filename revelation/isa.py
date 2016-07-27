@@ -8,11 +8,6 @@ import revelation.execute_mov        as execute_mov
 
 from pydgin.misc import create_risc_decoder
 
-try:
-    from rpython.rlib.objectmodel import we_are_translated
-except ImportError:
-    we_are_translated = lambda : False
-
 
 reg_map = {
     'r0'   :  0,   'r1'   :  1,   'r2'   :  2,   'r3'   :  3,

@@ -1,13 +1,10 @@
 from revelation.isa import reg_map
 from revelation.storage import MemoryMappedRegisterFile
 
-try:
-    from rpython.rlib.rarithmetic import intmask
-except ImportError:
-    intmask = lambda x : x
 
 RESET_ADDR = 0
 PC_ADDRESS = 0xf0408
+
 
 class State(object):
     _virtualizable_ = ['num_insts']
