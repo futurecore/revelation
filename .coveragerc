@@ -12,6 +12,9 @@ exclude_lines =
     # Don't complain about unimplemented code:
     raise NotImplementedError
 
+    # Don't complain about Ctrl+c
+    except KeyboardInterrupt
+
     # Don't complain if tests take a path which is only used in a test harness:
     def init_state
     def iread

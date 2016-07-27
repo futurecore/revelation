@@ -13,8 +13,14 @@ from revelation.storage import MemoryFactory
 
 import time
 
+EXIT_SUCCESS = 0
+EXIT_GENERAL_ERROR = 1
+EXIT_SYNTAX_ERROR = 2
+EXIT_FILE_ERROR = 126
+EXIT_CTRL_C = 130
 LOG_FILENAME = 'r_trace.out'
 MEMORY_SIZE = 2**32  # Global on-chip address space.
+
 
 def new_memory(logger):
     return MemoryFactory(size=MEMORY_SIZE, logger=logger)
@@ -87,9 +93,9 @@ class Revelation(Sim):
             try:
                 fname, jit, flags = cli_parser(argv, self, Debug.global_enabled)
             except DoNotInterpretError:  # CLI option such as --help or -h.
-                return 0
+                return EXIT_SUCCESS
             except (SyntaxError, ValueError):
-                return 1
+                return EXIT_SYNTAX_ERROR
             if jit:  # pragma: no cover
                 set_user_param(self.jitdriver, jit)
             self.debug = Debug(flags, 0)
@@ -97,13 +103,16 @@ class Revelation(Sim):
                 elf_file = open(fname, 'rb')
             except IOError:
                 print 'Could not open file %s' % fname
-                return 1
+                return EXIT_FILE_ERROR
             self.init_state(elf_file, fname, False)
             for state in self.states:  # FIXME: Interleaved log.
                 self.debug.set_state(state)
             elf_file.close()
-            self.run()
-            return 0
+            try:
+                exit_code = self.run()
+            except KeyboardInterrupt:
+                return EXIT_CTRL_C
+            return exit_code
         return entry_point
 
     def decode(self, bits):
@@ -205,7 +214,8 @@ class Revelation(Sim):
             except FatalError as error:
                 print 'Exception in execution (pc: 0x%s), aborting!' % pad_hex(pc)
                 print 'Exception message: %s' % error.msg
-                break   # pragma: no cover
+                # Ensure that entry_point() returns correct exit code.
+                return EXIT_GENERAL_ERROR   # pragma: no cover
             # Update instruction counters.
             tick_counter += 1
             self.states[self.core].num_insts += 1
@@ -253,6 +263,7 @@ class Revelation(Sim):
             print 'Total execution time: %fs' % (end_time - start_time)
         if self.logger:
             self.logger.close()
+        return EXIT_SUCCESS
 
     def init_state(self, elf_file, filename, testbin, is_test=False):
         """Revelation has custom logging infrastructure that differs from the
