@@ -58,6 +58,8 @@ def cli_parser(argv, simulator, debug_enabled):
                 print (USAGE_TEXT % (simulator.arch_name, argv[0], argv[0],
                                      argv[0], argv[0], argv[0]))
                 raise DoNotInterpretError
+            elif token == '--profile' or token == '-p':  # Undocumented.
+                simulator.profile = True
             elif token == '--time' or token == '-t':
                 simulator.collect_times = True
             elif token == '--debug' or token == '-d':

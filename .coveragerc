@@ -12,6 +12,9 @@ exclude_lines =
     # Don't complain about unimplemented code:
     raise NotImplementedError
 
+    # Do not report on undocumented profiling code.
+    if self.profile
+
     # Don't complain about Ctrl+c
     except KeyboardInterrupt
 
