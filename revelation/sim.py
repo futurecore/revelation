@@ -9,7 +9,7 @@ from revelation.instruction import Instruction
 from revelation.isa import decode, reg_map
 from revelation.logger import Logger
 from revelation.machine import State
-from revelation.storage import MemoryFactory
+from revelation.storage import Memory
 
 import time
 
@@ -19,11 +19,10 @@ EXIT_SYNTAX_ERROR = 2
 EXIT_FILE_ERROR = 126
 EXIT_CTRL_C = 130
 LOG_FILENAME = 'r_trace.out'
-MEMORY_SIZE = 2**32  # Global on-chip address space.
 
 
 def new_memory(logger):
-    return MemoryFactory(size=MEMORY_SIZE, logger=logger)
+    return Memory(block_size=2**20, logger=logger)
 
 
 class Revelation(Sim):

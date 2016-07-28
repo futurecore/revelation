@@ -28,10 +28,7 @@ def test_two_cores_with_output(elf_file, expected, capfd):
         assert not revelation.states[1].running
         out, err = capfd.readouterr()
         assert err == ''
-        expected_full = (('NOTE: Using sparse storage\n'
-                          'sparse memory size 400 addr mask 3ff '
-                          'block mask fffffc00\n'
-                          'Loading program %s on to core 0x808\n'
+        expected_full = (('Loading program %s on to core 0x808\n'
                           'Loading program %s on to core 0x809\n'
                            % (elf_filename, elf_filename)) + expected)
         assert out.startswith(expected_full)
