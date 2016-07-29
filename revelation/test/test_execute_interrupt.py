@@ -1,3 +1,5 @@
+from pydgin.misc import FatalError
+
 from revelation.instruction import Instruction
 from revelation.isa import decode
 from revelation.machine import RESET_ADDR
@@ -124,18 +126,16 @@ def test_execute_trap16_assert_failure():
     expected_state.check(state)
 
 
-def test_execute_trap_warning(capsys):
+def test_execute_trap_warning():
     state = new_state()
     instr = opcode_factory.trap16(trap=0b11111)
     name, executefn = decode(instr)
-    executefn(state, Instruction(instr, None))
-    out, err = capsys.readouterr()
-    expected_state = StateChecker(pc=(2 + RESET_ADDR))
-    expected_text = ('WARNING: syscall not implemented: 31')
+    with pytest.raises(FatalError) as exninfo:
+        executefn(state, Instruction(instr, None))
+    expected_state = StateChecker(pc=RESET_ADDR)
+    expected_text = ('Unknown argument to trap instruction: 31')
     expected_state.check(state)
-    assert expected_text in out
-    assert err == ''
-    assert state.running
+    assert expected_text == exninfo.value.msg
 
 
 @pytest.mark.parametrize('name,instr', [('mbkpt16',  opcode_factory.mbkpt16()),
