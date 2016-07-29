@@ -35,7 +35,7 @@ class Revelation(Sim):
         self.arch_name = self.arch_name_human.lower()
         self.jit_enabled = True
         if self.jit_enabled:
-            self.jitdriver = JitDriver(greens = ['pc', 'core'],
+            self.jitdriver = JitDriver(greens = ['pc', 'core', 'coreid', 'opcode'],
                                        reds = ['tick_counter',
                                                'halted_cores',
                                                'idle_cores',
@@ -49,7 +49,7 @@ class Revelation(Sim):
         self.default_trace_limit = 400000
         self.max_insts = 0
         self.logger = None
-        self.core = 0  # Index of current core (moved after each instruction).
+        self.core = 0    # Index of current core (moved after each instruction).
         self.rows = 1
         self.cols = 1
         self.first_core = 0x808
@@ -74,9 +74,9 @@ class Revelation(Sim):
         }
 
     @staticmethod
-    def get_location(pc, core_id):
-        # TODO: add the disassembly of the instruction here as well
-        return "pc: %x core_id: %x" % (pc, core_id)
+    def get_location(pc, core, coreid, opcode):
+        mnemonic, _ = decode(opcode)
+        return 'Core ID: %x PC: %x Instruction: %s' % (coreid, pc, mnemonic)
 
     @elidable
     def next_core(self, core):
@@ -122,13 +122,13 @@ class Revelation(Sim):
         return entry_point
 
     def decode(self, bits):
-        inst_str, exec_fun = decode(bits)
+        mnemonic, exec_fun = decode(bits)
         if self.debug.enabled('trace') and self.logger:
             self.logger.log('%s %s %s %s' %
                (pad('%x' % self.states[self.core].fetch_pc(), 8, ' ', False),
-                pad_hex(bits), pad(inst_str, 12),
+                pad_hex(bits), pad(mnemonic, 12),
                 pad('%d' % self.states[self.core].num_insts, 8)))
-        return Instruction(bits, inst_str), exec_fun
+        return Instruction(bits, mnemonic), exec_fun
 
     def pre_execute(self):
         # Check whether or not we are in a hardware loop, and set registers
@@ -192,6 +192,8 @@ class Revelation(Sim):
         """
         self = hint(self, promote=True)
         memory = hint(self.memory, promote=True)  # Cores share the same memory.
+        coreid = 0     # We save these values so that get_location can print
+        opcode = 0     # a more meaningful trace in the JIT log.
         tick_counter = 0  # Number of instructions executed by all cores.
         halted_cores, idle_cores = [], []
         old_pcs = [0] * len(self.states)
@@ -200,6 +202,8 @@ class Revelation(Sim):
         while True:
             self.jitdriver.jit_merge_point(pc=self.states[self.core].fetch_pc(),
                                            core=self.core,
+                                           coreid=coreid,
+                                           opcode=opcode,
                                            tick_counter=tick_counter,
                                            halted_cores=halted_cores,
                                            idle_cores=idle_cores,
@@ -210,10 +214,11 @@ class Revelation(Sim):
                                            start_time=start_time)
             # Fetch PC, decode instruction and execute.
             pc = hint(self.states[self.core].fetch_pc(), promote=True)
+            coreid = hint(self.states[self.core].coreid, promote=True)
             old_pcs[self.core] = pc
-            inst_bits = memory.iread(pc, 4, from_core=self.states[self.core].coreid)
+            opcode = memory.iread(pc, 4, from_core=self.states[self.core].coreid)
             try:
-                instruction, exec_fun = self.decode(inst_bits)
+                instruction, exec_fun = self.decode(opcode)
                 self.pre_execute()
                 exec_fun(self.states[self.core], instruction)
                 self.post_execute()
@@ -249,6 +254,8 @@ class Revelation(Sim):
             if self.states[self.core].fetch_pc() < old_pcs[self.core]:
                 self.jitdriver.can_enter_jit(pc=self.states[self.core].fetch_pc(),
                                              core=self.core,
+                                             coreid=coreid,
+                                             opcode=opcode,
                                              tick_counter=tick_counter,
                                              halted_cores=halted_cores,
                                              idle_cores=idle_cores,

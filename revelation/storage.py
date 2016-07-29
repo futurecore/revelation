@@ -161,6 +161,8 @@ class Memory(object):
         masked_addr = 0xfffff & start_addr
         if (self.debug.enabled('mem') and self.logger and not quiet and
               not is_register_address(masked_addr)):
+            if start_addr >> 20 == from_core:
+                start_addr = start_addr & 0xfffff
             self.logger.log(' :: WR.MEM[%s] = %s' % \
                               (pad_hex(start_addr), pad_hex(value)))
 
