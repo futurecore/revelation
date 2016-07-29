@@ -13,6 +13,7 @@ Then call this script (order of the CLI arguments matters):
 
 from __future__ import print_function
 
+import sys
 
 _py_flags = ['AN', 'AZ', 'AC', 'AV', 'AVS', 'BN', 'BIS', 'BUS', 'BVS', 'BZ']
 
@@ -24,20 +25,10 @@ _e_flags = {'nbit':'AN',   'zbit':'AZ',   'cbit':'AC',    'vbit':'AV',
 def parse_pydgin_inst(line):
     """Parse a single line of a Pydgin trace.
     Keep the original line for debugging purposes.
-
-    >>> i0 = parse_pydgin_inst('       0 00002ce8 bcond32      0        AN=False')
-    >>> ex0 = {'AN': False, 'line': '       0 00002ce8 bcond32      0        AN=False', 'pc': 0}
-    >>> i0 == ex0
-    True
-
-    >>> i1 = parse_pydgin_inst('      b0 020040fc ldstrpmd32   13       :: RD.RF[0 ] = 000002f8 :: :: WR.MEM[000002f8] = 00000000 :: WR.RF[0 ] = 00000300')
-    >>> ex1 = {'line': '      b0 020040fc ldstrpmd32   13       :: RD.RF[0 ] = 000002f8 :: :: WR.MEM[000002f8] = 00000000 :: WR.RF[0 ] = 00000300', 'mem': [(760, 0)], 'pc': 176, 'reg': [768]}
-    >>> i1 == ex1
-    True
     """
     inst = dict()
     if (line.startswith('NOTE:') or line.startswith('sparse') or
-        line.startswith('DONE!') or line.startswith('Instructions')):
+          line.startswith('DONE!') or line.startswith('Instructions')):
         return None
     tokens = line.split()
     if not tokens:
@@ -85,16 +76,6 @@ def parse_pydgin_inst(line):
 def parse_esim_inst(line):
     """Parse a single line of an e-sim trace.
     Keep the original line for debugging purposes.
-
-    >>> i0 = parse_esim_inst('0x000000                       b.l 0x0000000000000058 - pc <- 0x58    - nbit <- 0x0')
-    >>> ex0 = {'AN': False, 'line': '0x000000                       b.l 0x0000000000000058 - pc <- 0x58    - nbit <- 0x0', 'pc': 0}
-    >>> i0 == ex0
-    True
-
-    >>> i1 = parse_esim_inst('0x0000b0 ---   _epiphany_star  strd r2,[r0],+0x1 - memaddr <- 0x2f8, memory <- 0x0, memaddr <- 0x2fc, memory <- 0x0, registers <- 0x300')
-    >>> ex1 = {'line': '0x0000b0 ---   _epiphany_star  strd r2,[r0],+0x1 - memaddr <- 0x2f8, memory <- 0x0, memaddr <- 0x2fc, memory <- 0x0, registers <- 0x300', 'mem': [(760, 0), (764, 0)], 'pc': 176, 'reg': [768]}
-    >>> i1 == ex1
-    True
     """
     inst = dict()
     tokens = line.split()
@@ -160,7 +141,7 @@ def diff_files(trace0, trace1):
     if len(py_trace) == 0:
         print('Revelation trace is empty')
         return
-    for num, (py_inst, e_inst) in enumerate(zip(py_trace, e_trace)):
+    for _, (py_inst, e_inst) in enumerate(zip(py_trace, e_trace)):
         diff = compare_instructions(py_inst, e_inst)
         if diff is not None:
             print('Semantics of instruction at {0} differ:'.format(hex(e_inst['pc'])))
@@ -179,19 +160,6 @@ def compare_instructions(py_inst, e_inst):
     at each block of 4 bytes. For example, where the Pydgin trace would say:
     "WR.MEM[000002f8] = 00000000", the e-sim would write out:
     "memaddr <- 0x2f8, memory <- 0x0, memaddr <- 0x2fc, memory <- 0x0,"
-
-    >>> e_inst0 = {'pc': 0, 'line': '0x000000                       b.l 0x0000000000000058 - pc <- 0x58    - nbit <- 0x0', 'AN': False}
-    >>> e_inst1 = {'mem': [(760, 0), (764, 0)], 'pc': 176, 'line': '0x0000b0 ---   _epiphany_star  strd r2,[r0],+0x1 - memaddr <- 0x2f8, memory <- 0x0, memaddr <- 0x2fc, memory <- 0x0, registers <- 0x300', 'reg': [768]}
-    >>> py_inst0 = {'pc': 0, 'line': '       0 00002ce8 bcond32      0        AN=False', 'AN': False}
-    >>> py_inst1 = {'mem': [(760, 0), (764, 0)], 'pc': 176, 'line': '      b0 020040fc ldstrpmd32   13       :: RD.RF[0 ] = 000002f8 :: :: WR.MEM[000002f8] = 00000000 :: WR.RF[0 ] = 00000300', 'reg': [768]}
-    >>> compare_instructions(py_inst0, e_inst0) is None
-    True
-    >>> compare_instructions(py_inst1, e_inst1) is None
-    True
-    >>> compare_instructions(py_inst0, e_inst1)
-    'Program counters differ. Revelation: 0x0, e-sim: 0xb0'
-    >>> compare_instructions(py_inst1, e_inst0)
-    'Program counters differ. Revelation: 0xb0, e-sim: 0x0'
     """
     if py_inst['pc'] != e_inst['pc']:
         return ('Program counters differ. ' +
@@ -225,8 +193,8 @@ def compare_instructions(py_inst, e_inst):
     for flag in _py_flags:
         # e-sim only prints flags if they have been updated.
         if (flag in py_inst and
-            flag in e_inst and
-            not (py_inst[flag] == e_inst[flag])):
+              flag in e_inst and
+              not (py_inst[flag] == e_inst[flag])):
             return ('Flags differ. Revelation: {0}<-{1} ' +
                     'e-sim: {2}<-{3}').format(flag, str(py_inst[flag]),
                                               flag, str(e_inst[flag]))
@@ -241,7 +209,6 @@ def print_usage():
 
 
 if __name__ == '__main__':
-    import sys
     if sys.argv[1] == '-h' or sys.argv[1] == '--help':
         print_usage()
         sys.exit(0)

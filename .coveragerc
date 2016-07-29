@@ -1,9 +1,17 @@
 [run]
-omit = revelation/test/*
-data_file = ./.coverage
-source = ./revelation/
+source =
+    revelation/*.py
+omit =
+    revelation/test/*
+    scripts/*
+    scripts/test/*
+data_file =
+    ./.coverage
+
 
 [report]
+show_missing = 1
+
 # Regexes for lines to exclude from consideration
 exclude_lines =
     # Have to re-enable the standard pragma

@@ -7,7 +7,10 @@ To use this script, first produce a trace from the e-sim tool:
 Then call this script (order of the CLI arguments matters):
     $ python get_instructions_used.py e_trace.out py_trace.out
 """
+
 from __future__ import print_function
+
+import sys
 
 _e_flags = {'nbit':'AN',   'zbit':'AZ',   'cbit':'AC',    'vbit':'AV',
             'vsbit':'AVS',  'bnbit':'BN', 'bisbit':'BIS', 'busbit':'BUS',
@@ -17,16 +20,6 @@ _e_flags = {'nbit':'AN',   'zbit':'AZ',   'cbit':'AC',    'vbit':'AV',
 def parse_esim_inst(line):
     """Parse a single line of an e-sim trace.
     Keep the original line for debugging purposes.
-
-    >>> i0 = parse_esim_inst('0x000000                       b.l 0x0000000000000058 - pc <- 0x58    - nbit <- 0x0')
-    >>> ex0 = {'pc': 0, 'AN': False, 'instruction': 'b.l', 'line': '0x000000                       b.l 0x0000000000000058 - pc <- 0x58    - nbit <- 0x0'}
-    >>> i0 == ex0
-    True
-
-    >>> i1 = parse_esim_inst('0x0000b0 ---   _epiphany_star  strd r2,[r0],+0x1 - memaddr <- 0x2f8, memory <- 0x0, memaddr <- 0x2fc, memory <- 0x0, registers <- 0x300')
-    >>> ex1 = {'instruction': 'strd', 'line': '0x0000b0 ---   _epiphany_star  strd r2,[r0],+0x1 - memaddr <- 0x2f8, memory <- 0x0, memaddr <- 0x2fc, memory <- 0x0, registers <- 0x300', 'mem': [(760, 0), (764, 0)], 'pc': 176, 'reg': [768]}
-    >>> i1 == ex1
-    True
     """
     inst = dict()
     tokens = line.split()
@@ -96,7 +89,6 @@ def print_usage():
 
 
 if __name__ == '__main__':
-    import sys
     if sys.argv[1] == '-h' or sys.argv[1] == '--help':
         print_usage()
         sys.exit(0)

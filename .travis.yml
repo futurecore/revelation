@@ -16,10 +16,7 @@ install:
 - cd $TRAVIS_BUILD_DIR
 - export PYTHONPATH=${PYTHONPATH}:${HOME}/pydgin/
 script:
-- py.test -n 4 -rxs --color=yes --cov-config .coveragerc --cov-report term-missing
-  --cov=revelation revelation/test/
-- python -m doctest scripts/diff_trace.py
-- python -m doctest scripts/get_instructions_used.py
+- py.test -n 4 -rxs --color=yes --cov-config .coveragerc --cov=revelation revelation/test/ scripts/test/
 - cd docs
 - make html
 - make linkcheck
