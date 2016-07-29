@@ -1,4 +1,4 @@
-from revelation.argument_parser import USAGE_TEXT, DoNotInterpretError
+from revelation.argument_parser import USAGE_TEXT
 from revelation.sim import Revelation
 
 import os.path
@@ -67,16 +67,19 @@ def test_argv_debug_flags(capfd):
         assert flag in revelation.debug.enabled_flags
 
 
-@pytest.mark.parametrize('argv', [('sim.py', '--time', ELF_FILE),
-                                  ('sim.py', '-t',     ELF_FILE)])
-def test_argv_flags_with_no_args(argv, capfd):
+@pytest.mark.parametrize('argv,attribute',
+[(('sim.py', '--time', ELF_FILE), 'collect_times'),
+ (('sim.py', '-t',     ELF_FILE), 'collect_times'),
+ (('sim.py', '--profile', ELF_FILE), 'profile'),
+ (('sim.py', '-p',     ELF_FILE), 'profile'),])
+def test_argv_flags_with_no_args(argv, attribute, capfd):
     revelation = Revelation()
     entry_point = revelation.get_entry_point()
     retval = entry_point(argv)
     assert retval == 0  # Exit success.
     _, err = capfd.readouterr()
     assert err == ''
-    assert revelation.collect_times
+    assert getattr(revelation, attribute)
 
 
 @pytest.mark.parametrize('argv,expected',

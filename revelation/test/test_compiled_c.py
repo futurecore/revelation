@@ -73,10 +73,7 @@ def test_compiled_c_with_output(elf_file, expected, capfd):
         assert not revelation.states[0].running
         out, err = capfd.readouterr()
         assert err == ''
-        expected_full = (('NOTE: Using sparse storage\n'
-                          'sparse memory size 400 addr mask 3ff '
-                          'block mask fffffc00\n'
-                          'Loading program %s on to core 0x808\n' % elf_filename)
+        expected_full = (('Loading program %s on to core 0x808\n' % elf_filename)
                           + expected)
         assert out.startswith(expected_full)
 

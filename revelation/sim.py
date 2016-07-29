@@ -9,7 +9,7 @@ from revelation.instruction import Instruction
 from revelation.isa import decode, reg_map
 from revelation.logger import Logger
 from revelation.machine import State
-from revelation.storage import MemoryFactory
+from revelation.storage import Memory
 
 import time
 
@@ -19,17 +19,18 @@ EXIT_SYNTAX_ERROR = 2
 EXIT_FILE_ERROR = 126
 EXIT_CTRL_C = 130
 LOG_FILENAME = 'r_trace.out'
-MEMORY_SIZE = 2**32  # Global on-chip address space.
 
 
 def new_memory(logger):
-    return MemoryFactory(size=MEMORY_SIZE, logger=logger)
+    return Memory(block_size=2**20, logger=logger)
 
 
 class Revelation(Sim):
 
     def __init__(self):
         # DO NOT call Sim.__init__() -- Revelation JIT differs from Pydgin.
+        self.profile = False
+        self.timer = .0
         self.arch_name_human = 'Revelation'
         self.arch_name = self.arch_name_human.lower()
         self.jit_enabled = True
@@ -88,6 +89,7 @@ class Revelation(Sim):
 
     def get_entry_point(self):
         def entry_point(argv):
+            self.timer = time.time()
             if self.jit_enabled:
                 set_param(self.jitdriver, 'trace_limit', self.default_trace_limit)
             try:
@@ -104,6 +106,10 @@ class Revelation(Sim):
             except IOError:
                 print 'Could not open file %s' % fname
                 return EXIT_FILE_ERROR
+            if self.profile:
+                timer = time.time()
+                print 'CLI parser took: %fs' % (timer - self.timer)
+                self.timer = timer
             self.init_state(elf_file, fname, False)
             for state in self.states:  # FIXME: Interleaved log.
                 self.debug.set_state(state)
@@ -280,7 +286,15 @@ class Revelation(Sim):
         if self.debug.enabled_flags:
             print 'Trace will be written to: %s.' % LOG_FILENAME
             self.logger = Logger(LOG_FILENAME)
+        if self.profile:
+            timer = time.time()
+            print 'Debugging set up took: %fs' % (timer - self.timer)
+            self.timer = timer
         self.memory = new_memory(self.logger)
+        if self.profile:
+            timer = time.time()
+            print 'Memory creation took: %fs' % (timer - self.timer)
+            self.timer = timer
         for ncore in xrange(self.rows * self.cols):
             coreid = self.first_core + ncore
             print 'Loading program %s on to core %s' % (filename, hex(coreid))
@@ -290,6 +304,10 @@ class Revelation(Sim):
             self.hardware_loops.append(False)
             self.states.append(State(self.memory, self.debug,
                                      logger=self.logger, coreid=coreid))
+        if self.profile:
+            timer = time.time()
+            print 'ELF file loader took: %fs' % (timer - self.timer)
+            self.timer = timer
 
 
 init_sim(Revelation())

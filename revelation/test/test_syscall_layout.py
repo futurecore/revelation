@@ -67,9 +67,6 @@ def test_open_close_syscall_layout(capfd):
         assert err == ''
         expected = ('open() successful.\nRead: 14 bytes.\nHello, world!\n'
                     'Read: 0 bytes.\nclose() successful.\n')
-        expected_full = (('NOTE: Using sparse storage\n'
-                          'sparse memory size 400 addr mask 3ff '
-                          'block mask fffffc00\n'
-                          'Loading program %s on to core 0x808\n' % elf_filename)
+        expected_full = (('Loading program %s on to core 0x808\n' % elf_filename)
                           + expected)
         assert out.startswith(expected_full)
