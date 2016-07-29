@@ -3,6 +3,7 @@ bin/
 revelation/test/syscall_layout/*.native
 e_trace.out
 r_trace.out
+jit.log
 .cache/
 pydgin-revelation-jit
 pydgin-revelation-nojit
