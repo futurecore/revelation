@@ -25,6 +25,12 @@ def new_memory(logger):
     return Memory(block_size=2**20, logger=logger)
 
 
+def get_printable_location(pc, core, coreid, opcode):
+    hex_pc = pad_hex(pc)
+    mnemonic, _ = decode(opcode)
+    return 'Core ID: 0x%x PC: %s Instruction: %s' % (coreid, hex_pc, mnemonic)
+
+
 class Revelation(Sim):
 
     def __init__(self):
@@ -35,17 +41,12 @@ class Revelation(Sim):
         self.arch_name = self.arch_name_human.lower()
         self.jit_enabled = True
         if self.jit_enabled:
-            self.jitdriver = JitDriver(greens = ['pc', 'core', 'coreid', 'opcode'],
-                                       reds = ['tick_counter',
-                                               'halted_cores',
-                                               'idle_cores',
-                                               'old_pcs',
-                                               'memory',
-                                               'sim',
-                                               'state',
-                                               'start_time'],
-                                       virtualizables = ['state'],
-                                       get_printable_location=self.get_location)
+            self.jitdriver = JitDriver(
+                greens = ['pc', 'core', 'coreid', 'opcode'],
+                reds = ['tick_counter', 'halted_cores', 'idle_cores',
+                        'old_pcs', 'memory', 'sim', 'state', 'start_time'],
+                virtualizables = ['state'],
+                get_printable_location=get_printable_location)
         self.default_trace_limit = 400000
         self.max_insts = 0
         self.logger = None
@@ -72,11 +73,6 @@ class Revelation(Sim):
             8 : 0x20, # Wired AND-signal interrupt.
             9 : 0x24, # Software-generate user interrupt.
         }
-
-    @staticmethod
-    def get_location(pc, core, coreid, opcode):
-        mnemonic, _ = decode(opcode)
-        return 'Core ID: %x PC: %x Instruction: %s' % (coreid, pc, mnemonic)
 
     @elidable
     def next_core(self, core):

@@ -24,7 +24,7 @@ exclude_lines =
 
     # Don't complain about code that only executes when translated.
     .*we_are_translated.*
-    def get_location
+    def get_printable_location
     _RevelationByteMemory
 
     # Don't complain about every single status bit.
