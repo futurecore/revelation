@@ -4,6 +4,28 @@ import pydgin.utils
 
 import math
 
+
+def zfill(string, width):
+    """zfill(x, width) -> string
+    Pad a numeric string x with zeros on the left, to fill a field
+    of the specified width.  The string x is never truncated.
+    """
+    size = len(string)
+    if size >= width: return string
+    sign = ''
+    if string[0] in ('-', '+'):
+        sign, string = string[0], string[1:]
+    return sign + '0' * (width - size) + string
+
+
+def get_coreid_from_coords(row, col):
+    return (row << 6) | col
+
+
+def get_coords_from_coreid(coreid):
+    return (coreid >> 6), (coreid & 0x3f)
+
+
 def get_mmr_address(rn, m0m1):
     """Return address of an memory-mapped register and its size in bits.
     """

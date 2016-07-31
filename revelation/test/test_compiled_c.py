@@ -73,7 +73,7 @@ def test_compiled_c_with_output(elf_file, expected, capfd):
         assert not revelation.states[0].running
         out, err = capfd.readouterr()
         assert err == ''
-        expected_full = (('Loading program %s on to core 0x808\n' % elf_filename)
+        expected_full = (('Loading program %s on to core 0x808 (32, 08)\n' % elf_filename)
                           + expected)
         assert out.startswith(expected_full)
 

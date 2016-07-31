@@ -1,15 +1,14 @@
-from revelation.utils import (get_exponent,
-                            get_mantissa,
-                            bits2float,
-                            float2bits,
-                            is_nan,
-                            is_inf,
-                            is_zero,
-                            sext_3,
-                            sext_11,
-                            sext_24)
+from revelation.utils import (get_exponent, get_mantissa, bits2float,
+    float2bits, is_nan, is_inf, is_zero, sext_3, sext_11, sext_24, zfill)
 
 import math
+
+
+def test_zfill():
+    assert '000001' == zfill('1', 6)
+    assert '+00001' == zfill('+1', 6)
+    assert '-00001' == zfill('-1', 6)
+
 
 def test_sign_extend_3bit():
     assert sext_3(0b011) == 0b011
