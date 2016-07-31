@@ -121,7 +121,8 @@ class Revelation(Sim):
 
     def decode(self, bits):
         mnemonic, exec_fun = decode(bits)
-        if self.debug.enabled('trace') and self.logger:
+        if (self.debug.enabled('trace') and self.logger and
+              self.states[self.core].is_first_core):
             self.logger.log('%s %s %s %s' %
                (pad('%x' % self.states[self.core].fetch_pc(), 8, ' ', False),
                 pad_hex(bits), pad(mnemonic, 12),
@@ -143,7 +144,8 @@ class Revelation(Sim):
             self.hardware_loops[self.core] = True
 
     def post_execute(self):
-        if self.debug.enabled('trace') and self.logger:
+        if (self.debug.enabled('trace') and self.logger and
+              self.states[self.core].is_first_core):
             self.logger.log('\n')
         # If we are in a hardware loop, and the loop counter is > 0,
         # jump back to the start of the loop.
@@ -317,6 +319,7 @@ class Revelation(Sim):
                                          logger=self.logger, coreid=coreid))
         load_program(elf, self.memory, coreids, ext_base=self.ext_base,
                      ext_size=self.ext_size)
+        self.states[0].set_first_core(True)
         if self.profile:
             timer = time.time()
             print 'ELF file loader took: %fs' % (timer - self.timer)

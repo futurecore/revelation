@@ -77,6 +77,7 @@ class Memory(object):
         self.block_size = block_size
         self.debug = Debug()
         self.logger = logger
+        self.first_core = 0x808
         self.addr_mask  = block_size - 1
         self.block_mask = 0xffffffff ^ self.addr_mask
         self.block_dict = {}
@@ -124,7 +125,16 @@ class Memory(object):
         block_addr = self.block_mask & start_addr
         block_addr = hint(block_addr, promote=True)
         block_mem = self.get_block_mem(block_addr)
-        return block_mem.read(start_addr & self.addr_mask, num_bytes)
+        masked_addr = 0xfffff & start_addr
+        value = block_mem.read(start_addr & self.addr_mask, num_bytes)
+        if (self.debug.enabled('mem') and self.logger and
+              not is_register_address(masked_addr) and
+              (start_addr >> 20) == self.first_core):
+            if start_addr >> 20 == from_core:
+                start_addr = start_addr & 0xfffff
+            self.logger.log(' :: RD.MEM[%s] = %s' % \
+                              (pad_hex(start_addr), pad_hex(value)))
+        return value
 
     def write(self, start_addr, num_bytes, value, from_core=0x808, quiet=False):
         if is_local_address(start_addr):
@@ -160,7 +170,8 @@ class Memory(object):
         block_mem.write(start_addr & self.addr_mask, num_bytes, value)
         masked_addr = 0xfffff & start_addr
         if (self.debug.enabled('mem') and self.logger and not quiet and
-              not is_register_address(masked_addr)):
+              not is_register_address(masked_addr) and
+              (start_addr >> 20) == self.first_core):
             if start_addr >> 20 == from_core:
                 start_addr = start_addr & 0xfffff
             self.logger.log(' :: WR.MEM[%s] = %s' % \
@@ -178,6 +189,7 @@ class MemoryMappedRegisterFile(object):
         self.logger = logger
         self.memory = memory
         self.coreid = coreid
+        self.is_first_core = False
         self.memory.write(0xf0704, 4, coreid & 0xfff, from_core=coreid)
         self.num_regs = len(_register_map)
         self.debug_nchars = 8
@@ -186,7 +198,8 @@ class MemoryMappedRegisterFile(object):
         address, bitsize, _ = _register_map[index]
         mask = (1 << bitsize) - 1
         value = self.memory.iread(address, 4, from_core=self.coreid) & mask
-        if self.debug.enabled('rf') and self.logger and index < 64:
+        if (self.debug.enabled('rf') and self.logger and index < 64 and
+              self.is_first_core):
             self.logger.log(' :: RD.RF[%s] = %s' % (pad('%d' % index, 2),
                               pad_hex(value, len=self.debug_nchars)))
         return value
@@ -199,7 +212,8 @@ class MemoryMappedRegisterFile(object):
         mask = (1 << bitsize) - 1
         self.memory.write(address, 4, value & mask, from_core=self.coreid,
                           quiet=True)
-        if self.debug.enabled('rf') and self.logger and index < 64:
+        if (self.debug.enabled('rf') and self.logger and index < 64 and
+              self.is_first_core):
             self.logger.log(' :: WR.RF[%s] = %s' % ((pad('%d' % index, 2),
                               pad_hex(value, len=self.debug_nchars))))
 
