@@ -1,3 +1,5 @@
+from pydgin.misc import FatalError
+
 from revelation.condition_codes import condition_passed
 from revelation.test.machine import new_state
 
@@ -47,5 +49,5 @@ def test_condition_passed():
     assert condition_passed(state, 0b1101)
     assert condition_passed(state, 0b1110)
     assert condition_passed(state, 0b1111)
-    with pytest.raises(ValueError):
+    with pytest.raises(FatalError):
         condition_passed(state, 0b11111)

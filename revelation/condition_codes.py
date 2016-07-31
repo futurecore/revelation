@@ -1,8 +1,4 @@
-try:
-    from rpython.rlib.objectmodel import we_are_translated
-except ImportError:
-    we_are_translated = lambda : False
-
+from pydgin.misc import FatalError
 
 def condition_passed(s, cond):
     conditions = { 0b0000: s.AZ,                          # BEQ
@@ -22,11 +18,7 @@ def condition_passed(s, cond):
                    0b1110: True,  # B (unconditional branch)
                    0b1111: True,  # BL (branch and link)
     }
-    if cond in conditions:
+    try:
         return conditions[cond]
-    else:
-        if we_are_translated():
-            raise ValueError
-        else:
-            raise ValueError('Invalid condition, should be unreachable: ' +
-                             str(bin(cond)))
+    except KeyError:
+        raise FatalError('Unknown condition code: %x' % cond)

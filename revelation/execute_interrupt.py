@@ -1,3 +1,5 @@
+from pydgin.misc import FatalError
+
 from revelation.utils import trim_32
 import revelation.isa
 
@@ -165,8 +167,7 @@ def execute_trap16(s, inst):
         s.rf[0] = trim_32(retval)
         s.rf[3] = errno
     else:
-        print('WARNING: syscall not implemented: %d. Should be unreachable' %
-              inst.t5)
+        raise FatalError('Unknown argument to trap instruction: %d' % inst.t5)
     s.pc += 2
 
 

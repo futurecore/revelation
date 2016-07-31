@@ -1,3 +1,5 @@
+from pydgin.misc import FatalError
+
 from revelation.instruction import Instruction
 from revelation.isa import decode
 from revelation.test.machine import StateChecker, new_state
@@ -264,15 +266,15 @@ def test_testset32_nonzero():
 
 
 def test_testset32_fail():
-    expected_text = """testset32 has failed to write to address %s.
+    expected_text = """testset32 has failed to write to address 0x4.
 The absolute address used for the test and set instruction must be located
 within the on-chip local memory and must be greater than 0x00100000 (2^20).
-""" % str(hex(0x4))
+"""
     state = new_state(rf0=0, rf1=0x2, rf2=0x2)
     size = 0b10  # Word
     state.mem.write(0x00100004, 4, 0xffff)
     instr = opcode_factory.testset32(rd=0, rn=1, rm=2, sub=0, bb=size)
     name, executefn = decode(instr)
-    with pytest.raises(ValueError) as exninfo:
+    with pytest.raises(FatalError) as exninfo:
         executefn(state, Instruction(instr, None))
-    assert expected_text == exninfo.value.message
+    assert expected_text == exninfo.value.msg

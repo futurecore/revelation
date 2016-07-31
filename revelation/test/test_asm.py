@@ -255,19 +255,21 @@ def test_testset32():
         expected.check(revelation.states[0], memory=[(0x100004, 4, 0xffff)])
 
 
-def test_testset32_fail():
+def test_testset32_fail(capfd):
     """Check that the testset32 instruction fails if the memory address it
     is given is too low..
     """
     elf_filename = os.path.join(elf_dir, 'testset_fail.elf')
-    expected_text = """testset32 has failed to write to address %s.
+    expected_text = """Exception in execution (pc: 0x00000358), aborting!
+Exception message: testset32 has failed to write to address %s.
 The absolute address used for the test and set instruction must be located
 within the on-chip local memory and must be greater than 0x00100000 (2^20).
 """ % str(hex(0x4))
-    with pytest.raises(ValueError) as expected_exn:
-        revelation = Revelation()
-        with open(elf_filename, 'rb') as elf:
-            revelation.init_state(elf, elf_filename, False, is_test=True)
-            revelation.max_insts = 100000
-            revelation.run()
-    assert expected_text == expected_exn.value.message
+    revelation = Revelation()
+    with open(elf_filename, 'rb') as elf:
+        revelation.init_state(elf, elf_filename, False, is_test=True)
+        revelation.max_insts = 100000
+        revelation.run()
+    out, err = capfd.readouterr()
+    assert err == ''
+    assert expected_text in out

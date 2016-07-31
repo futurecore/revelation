@@ -1,3 +1,5 @@
+from pydgin.misc import FatalError
+
 from revelation.utils import trim_32
 
 
@@ -162,7 +164,7 @@ def testset32(s, inst):
 The absolute address used for the test and set instruction must be located
 within the on-chip local memory and must be greater than 0x00100000 (2^20).
 """ % str(hex(address))
-        raise ValueError(fail_msg)
+        raise FatalError(fail_msg)
     size = {0:1, 1:2, 2:4, 3:8}[inst.size]  # Size in bytes.
     value = s.mem.read(address, size, from_core=s.coreid)
     if value:
