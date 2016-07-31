@@ -1,4 +1,5 @@
 from pydgin.debug import Debug, pad, pad_hex
+from pydgin.elf import elf_reader
 from pydgin.jit import elidable, hint, JitDriver, set_param, set_user_param
 from pydgin.misc import FatalError
 from pydgin.sim import Sim, init_sim
@@ -10,6 +11,7 @@ from revelation.isa import decode, reg_map
 from revelation.logger import Logger
 from revelation.machine import State
 from revelation.storage import Memory
+from revelation.utils import get_coords_from_coreid, get_coreid_from_coords, zfill
 
 import time
 
@@ -265,9 +267,10 @@ class Revelation(Sim):
             end_time = time.time()
         print 'Done! Total ticks simulated = %d' % tick_counter
         for state in self.states:
-            print ('Core %s (%d, %d): STATUS=%s, Instructions executed=%d' %
-                   (hex(state.coreid), state.coreid >> 6, state.coreid & 0x7f,
-                    hex(state.rf[reg_map['STATUS']]), state.num_insts))
+            row, col = get_coords_from_coreid(state.coreid)
+            print ('Core %s (%s, %s): STATUS=0x%s, Instructions executed=%d' %
+                   (hex(state.coreid), zfill(str(row), 2), zfill(str(col), 2),
+                    pad_hex(state.rf[reg_map['STATUS']]), state.num_insts))
         if self.collect_times:
             print 'Total execution time: %fs' % (end_time - start_time)
         if self.logger:
@@ -298,15 +301,20 @@ class Revelation(Sim):
             timer = time.time()
             print 'Memory creation took: %fs' % (timer - self.timer)
             self.timer = timer
-        for ncore in xrange(self.rows * self.cols):
-            coreid = self.first_core + ncore
-            print 'Loading program %s on to core %s' % (filename, hex(coreid))
-            elf_file.seek(0)  # Start loading from beginning of ELF.
-            load_program(elf_file, self.memory, coreid=coreid,
-                         ext_base=self.ext_base, ext_size=self.ext_size)
-            self.hardware_loops.append(False)
-            self.states.append(State(self.memory, self.debug,
-                                     logger=self.logger, coreid=coreid))
+        f_row= (self.first_core >> 6) & 0x3f
+        f_col = self.first_core & 0x3f
+        for row in xrange(self.rows):
+            for col in xrange(self.cols):
+                coreid = get_coreid_from_coords(f_row + row, f_col + col)
+                print ('Loading program %s on to core %s (%s, %s)' %
+                       (filename, hex(coreid), zfill(str(f_row + row), 2),
+                        zfill(str(f_col + col), 2)))
+                elf_file.seek(0)
+                load_program(elf_file, self.memory, coreid=coreid,
+                             ext_base=self.ext_base, ext_size=self.ext_size)
+                self.hardware_loops.append(False)
+                self.states.append(State(self.memory, self.debug,
+                                         logger=self.logger, coreid=coreid))
         if self.profile:
             timer = time.time()
             print 'ELF file loader took: %fs' % (timer - self.timer)
