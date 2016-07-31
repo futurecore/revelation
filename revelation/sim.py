@@ -289,7 +289,7 @@ class Revelation(Sim):
         if is_test:
             self.debug = Debug()
             Debug.global_enabled = True
-        if self.debug.enabled_flags:
+        if self.debug.enabled_flags and Debug.global_enabled:
             print 'Trace will be written to: %s.' % LOG_FILENAME
             self.logger = Logger(LOG_FILENAME)
         if self.profile:
@@ -301,7 +301,7 @@ class Revelation(Sim):
             timer = time.time()
             print 'Memory creation took: %fs' % (timer - self.timer)
             self.timer = timer
-        f_row= (self.first_core >> 6) & 0x3f
+        f_row = (self.first_core >> 6) & 0x3f
         f_col = self.first_core & 0x3f
         elf = elf_reader(elf_file, is_64bit=False)
         coreids = []
