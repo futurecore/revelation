@@ -303,18 +303,20 @@ class Revelation(Sim):
             self.timer = timer
         f_row= (self.first_core >> 6) & 0x3f
         f_col = self.first_core & 0x3f
+        elf = elf_reader(elf_file, is_64bit=False)
+        coreids = []
         for row in xrange(self.rows):
             for col in xrange(self.cols):
                 coreid = get_coreid_from_coords(f_row + row, f_col + col)
+                coreids.append(coreid)
                 print ('Loading program %s on to core %s (%s, %s)' %
                        (filename, hex(coreid), zfill(str(f_row + row), 2),
                         zfill(str(f_col + col), 2)))
-                elf_file.seek(0)
-                load_program(elf_file, self.memory, coreid=coreid,
-                             ext_base=self.ext_base, ext_size=self.ext_size)
                 self.hardware_loops.append(False)
                 self.states.append(State(self.memory, self.debug,
                                          logger=self.logger, coreid=coreid))
+        load_program(elf, self.memory, coreids, ext_base=self.ext_base,
+                     ext_size=self.ext_size)
         if self.profile:
             timer = time.time()
             print 'ELF file loader took: %fs' % (timer - self.timer)
