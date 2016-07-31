@@ -18,6 +18,7 @@ class State(object):
         self.mem.debug = debug
         self.num_insts = 0
         self.running = True
+        self.is_first_core = False  # Is this the top-left (NW) core?
         self.logger = logger
         # Epiphany III exceptions.
         self.exceptions = { 'UNIMPLEMENTED'  : 0b0100,
@@ -53,6 +54,11 @@ class State(object):
 
     def map_address_to_core_local(self, address):
         return (self.coreid << 20) | address
+
+    def set_first_core(self, value):
+        self.is_first_core = value
+        self.mem.first_core = self.coreid
+        self.rf.is_first_core = value
 
     @property
     def pc(self):
@@ -93,7 +99,7 @@ class State(object):
             self.rf[reg_map[register]] &= ~(1 << n)
 
     def debug_flags(self):
-        if self.debug.enabled('flags') and self.logger:
+        if self.debug.enabled('flags') and self.is_first_core and self.logger:
             self.logger.log(' AN=%s AZ=%s AC=%s AV=%s AVS=%s BN=%s BZ=%s '
                             'BIS=%s BUS=%s BV=%s BVS=%s' %
                    (self.AN, self.AZ, self.AC, self.AV, self.AVS,

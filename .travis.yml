@@ -21,13 +21,15 @@ script:
   --cov=revelation revelation/test/
 - python -m doctest scripts/diff_trace.py
 - python -m doctest scripts/get_instructions_used.py
-- mkdir bin
 - test "$TRANSLATE" == "true" && PYTHONPATH=${HOME}/pydgin/:${HOME}/pypy:. ${HOME}/pypy/rpython/bin/rpython
   --no-pdb --opt=jit revelation/sim.py || true
-- mv pydgin-revelation-jit bin/ 2>/dev/null
+- test "$TRANSLATE" == "true" && PYTHONPATH=${HOME}/pydgin/:${HOME}/pypy:. ${HOME}/pypy/rpython/bin/rpython
+  --no-pdb --opt=jit revelation/sim.py --debug || true
 - test "$TRANSLATE" == "true" && PYTHONPATH=${HOME}/pydgin/:${HOME}/pypy:. ${HOME}/pypy/rpython/bin/rpython
   --no-pdb -O2 revelation/sim.py || true
-- mv pydgin-revelation-nojit bin/ 2>/dev/null
+- mkdir bin
+- mv pydgin-revelation-* bin/
+- echo "Translated Revelation binaries:" bin/*
 after_success:
 - coveralls
 - ./scripts/deploy.sh
