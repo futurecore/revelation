@@ -2,7 +2,7 @@
 
 set -ev
 
-if [ "${TRAVIS_PULL_REQUEST}" = "false" ] && [ "${TRAVIS_BRANCH}" = "master" ] && [ `ls ${TRAVIS_BUILD_DIR}/bin/* 2>/dev/null | wc -l` = "2" ]; then
+if [ "${TRAVIS_PULL_REQUEST}" = "false" ] && [ "${TRAVIS_BRANCH}" = "master" ] && [ `ls ${TRAVIS_BUILD_DIR}/bin/* 2>/dev/null | wc -l` = "3" ]; then
     echo -e "Deploying to revelation-bins.\n"
 
     # Configure git.
