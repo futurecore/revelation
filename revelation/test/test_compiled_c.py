@@ -16,6 +16,11 @@ elf_dir = os.path.join(os.path.dirname(os.path.abspath('__file__')),
      ('div_by_zero.elf',        'Exception_isr 214023\nEnd.\n'),
      ('get_core_coords.elf',    'Core id: 808 row=32 col=8\n'),
      ('fib_print.elf',          '10946\n'),
+     ('float_corner_cases.elf', 'Signed integer value = -1, ffffffff\n'
+                                'Float value = 4.29496729600000000e+09\n'
+                                'Convert float to signed integer: 2147483647,'
+                                ' 7fffffff\nConvert signed integer to float ='
+                                ' -1.00000000000000000e+00\n'),
      ('hello.elf',              'Hello, world!\n'),
      ('interrupt_fire_all.elf', 'Interrupt E_SW_EXCEPTION ... handler fired.\n'
                                 'Interrupt E_MEM_FAULT    ... handler fired.\n'
