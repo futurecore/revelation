@@ -1,4 +1,4 @@
-from revelation.storage import get_address_of_register_by_name
+from revelation.registers import get_address_of_register_by_name
 
 def make_zero_operand_factory(opcode):
     def factory():

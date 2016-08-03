@@ -1,7 +1,7 @@
-from pydgin.misc import FatalError
-
 from revelation.condition_codes import condition_passed
 from revelation.test.machine import new_state
+
+from pydgin.misc import FatalError
 
 import pytest
 

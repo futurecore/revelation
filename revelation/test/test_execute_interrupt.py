@@ -1,9 +1,9 @@
-from pydgin.misc import FatalError
-
 from revelation.instruction import Instruction
 from revelation.isa import decode
 from revelation.machine import RESET_ADDR
 from revelation.test.machine import StateChecker, new_state
+
+from pydgin.misc import FatalError, NotImplementedInstError
 
 import opcode_factory
 import pytest
@@ -46,13 +46,11 @@ def test_execute_idle16():
 
 
 def test_execute_bkpt16():
-    state = new_state(rfDEBUGSTATUS=0)
-    instr = opcode_factory.bkpt16()
-    name, executefn = decode(instr)
-    executefn(state, Instruction(instr, None))
-    expected_state = StateChecker(rfDEBUGSTATUS=1)
-    expected_state.check(state)
-    assert not state.running
+    with pytest.raises(NotImplementedInstError):
+        state = new_state()
+        instr = opcode_factory.bkpt16()
+        name, executefn = decode(instr)
+        executefn(state, Instruction(instr, None))
 
 
 def test_execute_rti16_no_interrupt():
@@ -143,7 +141,7 @@ def test_execute_trap_warning():
                                         ('wand16',   opcode_factory.wand16()),
                                        ])
 def test_execute_multicore_instructions(name, instr):
-    with pytest.raises(NotImplementedError):
+    with pytest.raises(NotImplementedInstError):
         state = new_state()
         name, executefn = decode(instr)
         executefn(state, Instruction(instr, None))

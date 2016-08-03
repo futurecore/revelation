@@ -1,7 +1,7 @@
-from pydgin.misc import FatalError
-
+from revelation.registers import reg_map
 from revelation.utils import trim_32
-import revelation.isa
+
+from pydgin.misc import FatalError, NotImplementedInstError
 
 
 def execute_nop16(s, inst):
@@ -26,15 +26,13 @@ def execute_bkpt16(s, inst):
     GDB and should not be user software. The instruction is included here
     only for the purpose of reference.
     """
-    s.rf[revelation.isa.reg_map['DEBUGSTATUS']] |= 1
-    s.pc += 2
-    s.running = False
+    raise NotImplementedInstError('bkpt instruction not implemented.')
 
 
 def execute_mbkpt16(s, inst):
     """Halts all cores within the group (sets DEBUGSTATUS[0] to 1).
     """
-    raise NotImplementedError('Multicore not implemented.')
+    raise NotImplementedInstError('mbkpt instruction not implemented.')
 
 
 def execute_gie16(s, inst):
@@ -47,8 +45,8 @@ def execute_gie16(s, inst):
         s.pc += 2
         return
     for index in range(10):
-        if not (s.rf[revelation.isa.reg_map['IMASK']] & (1 << index)):
-            s.rf[revelation.isa.reg_map['ILAT']] &= ~(1 << index)
+        if not (s.rf[reg_map['IMASK']] & (1 << index)):
+            s.rf[reg_map['ILAT']] &= ~(1 << index)
     s.GID = 0
     s.pc += 2
 
@@ -67,7 +65,7 @@ def execute_gid16(s, inst):
 def execute_sync16(s, inst):
     """Sets the ILAT[0] of all cores within a work group to 1.
     """
-    raise NotImplementedError('Interrupts not implemented.')
+    raise NotImplementedInstError('sync instruction not implemented.')
 
 
 def execute_rti16(s, inst):
@@ -89,11 +87,11 @@ def execute_rti16(s, inst):
     interrupt_level = s.get_pending_interrupt()
     #     Bit N of IPEND is cleared.
     if interrupt_level >= 0:
-        s.rf[revelation.isa.reg_map['IPEND']] &= ~(1 << interrupt_level)
+        s.rf[reg_map['IPEND']] &= ~(1 << interrupt_level)
     #     The GID bit in STATUS is cleared.
     s.GID = 0
     #     PC is set to IRET.
-    s.pc = s.rf[revelation.isa.reg_map['IRET']]
+    s.pc = s.rf[reg_map['IRET']]
 
 
 def execute_swi16(s, inst):
@@ -101,7 +99,7 @@ def execute_swi16(s, inst):
     # The architecture has an undocumented SWI instruction which raises a software
     # exception. It sets bit 1 of ILAT and sets the EXCAUSE bits in STATUS to
     # 0b0001 (for Epiphany III) or 0b1110 (for Epiphany IV).
-    s.rf[revelation.isa.reg_map['ILAT']] |= (1 << 1)
+    s.rf[reg_map['ILAT']] |= (1 << 1)
     s.EXCAUSE = s.exceptions['SWI']
     s.pc += 2
 
@@ -200,7 +198,7 @@ def execute_wand16(s, inst):
     """
     STATUS[3] = 1
     """
-    raise NotImplementedError('Multicore not implemented.')
+    raise NotImplementedInstError('wand instruction not implemented.')
 
 
 def execute_unimpl(s, inst):

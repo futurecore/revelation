@@ -1,17 +1,20 @@
 from pydgin.debug import Debug, pad, pad_hex
 from pydgin.elf import elf_reader
 from pydgin.jit import elidable, hint, JitDriver, set_param, set_user_param
-from pydgin.misc import FatalError
 from pydgin.sim import Sim, init_sim
 
 from revelation.argument_parser import cli_parser, DoNotInterpretError
 from revelation.elf_loader import load_program
 from revelation.instruction import Instruction
-from revelation.isa import decode, reg_map
+from revelation.isa import decode
 from revelation.logger import Logger
 from revelation.machine import State
+from revelation.registers import reg_map
 from revelation.storage import Memory
-from revelation.utils import get_coords_from_coreid, get_coreid_from_coords, zfill
+from revelation.utils import (get_coords_from_coreid, get_coreid_from_coords,
+                              zfill)
+
+from pydgin.misc import FatalError, NotImplementedInstError
 
 import time
 
@@ -45,8 +48,8 @@ class Revelation(Sim):
         if self.jit_enabled:
             self.jitdriver = JitDriver(
                 greens = ['pc', 'core', 'coreid', 'opcode'],
-                reds = ['tick_counter', 'halted_cores', 'idle_cores',
-                        'old_pcs', 'memory', 'sim', 'state', 'start_time'],
+                reds = ['tick_counter', 'old_pc', 'halted_cores', 'idle_cores',
+                        'memory', 'sim', 'state', 'start_time'],
                 virtualizables = ['state'],
                 get_printable_location=get_printable_location)
         self.default_trace_limit = 400000
@@ -109,7 +112,7 @@ class Revelation(Sim):
                 print 'CLI parser took: %fs' % (timer - self.timer)
                 self.timer = timer
             self.init_state(elf_file, fname, False)
-            for state in self.states:  # FIXME: Interleaved log.
+            for state in self.states:
                 self.debug.set_state(state)
             elf_file.close()
             try:
@@ -196,7 +199,7 @@ class Revelation(Sim):
         opcode = 0     # a more meaningful trace in the JIT log.
         tick_counter = 0  # Number of instructions executed by all cores.
         halted_cores, idle_cores = [], []
-        old_pcs = [0] * len(self.states)
+        old_pc = 0
         start_time, end_time = time.time(), .0
 
         while True:
@@ -205,9 +208,9 @@ class Revelation(Sim):
                                            coreid=coreid,
                                            opcode=opcode,
                                            tick_counter=tick_counter,
+                                           old_pc=old_pc,
                                            halted_cores=halted_cores,
                                            idle_cores=idle_cores,
-                                           old_pcs=old_pcs,
                                            memory=memory,
                                            sim=self,
                                            state=self.states[self.core],
@@ -215,15 +218,17 @@ class Revelation(Sim):
             # Fetch PC, decode instruction and execute.
             pc = hint(self.states[self.core].fetch_pc(), promote=True)
             coreid = hint(self.states[self.core].coreid, promote=True)
-            old_pcs[self.core] = pc
+            old_pc = pc
             opcode = memory.iread(pc, 4, from_core=self.states[self.core].coreid)
             try:
                 instruction, exec_fun = self.decode(opcode)
                 self.pre_execute()
                 exec_fun(self.states[self.core], instruction)
                 self.post_execute()
-            except FatalError as error:
-                print 'Exception in execution (pc: 0x%s), aborting!' % pad_hex(pc)
+            except (FatalError, NotImplementedInstError) as error:
+                mnemonic, _ = decode(opcode)
+                print ('Exception in execution of %s (pc: 0x%s), aborting!' %
+                       (mnemonic, pad_hex(pc)))
                 print 'Exception message: %s' % error.msg
                 # Ensure that entry_point() returns correct exit code.
                 return EXIT_GENERAL_ERROR   # pragma: no cover
@@ -251,15 +256,15 @@ class Revelation(Sim):
                     elif (self.core in idle_cores and self.fetch_latch() > 0):
                         idle_cores.remove(self.core)
                         self._service_interrupts()
-            if self.states[self.core].fetch_pc() < old_pcs[self.core]:
+            if self.states[self.core].fetch_pc() < old_pc:
                 self.jitdriver.can_enter_jit(pc=self.states[self.core].fetch_pc(),
                                              core=self.core,
                                              coreid=coreid,
                                              opcode=opcode,
                                              tick_counter=tick_counter,
+                                             old_pc=old_pc,
                                              halted_cores=halted_cores,
                                              idle_cores=idle_cores,
-                                             old_pcs=old_pcs,
                                              memory=memory,
                                              sim=self,
                                              state=self.states[self.core],

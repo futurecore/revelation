@@ -1,8 +1,8 @@
-from pydgin.misc import FatalError
-
 from revelation.instruction import Instruction
 from revelation.isa import decode
 from revelation.test.machine import StateChecker, new_state
+
+from pydgin.misc import FatalError
 
 import opcode_factory
 import pytest
