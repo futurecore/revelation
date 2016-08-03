@@ -1,4 +1,4 @@
-from revelation.isa import reg_map
+from revelation.registers import reg_map
 from opcode_factory import *
 
 import pytest

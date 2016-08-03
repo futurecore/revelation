@@ -1,9 +1,8 @@
-from revelation.isa import reg_map
+from revelation.registers import LOCAL_PC_ADDRESS, reg_map
 from revelation.storage import MemoryMappedRegisterFile
 
 
 RESET_ADDR = 0
-PC_ADDRESS = 0xf0408
 
 
 class State(object):
@@ -62,15 +61,15 @@ class State(object):
 
     @property
     def pc(self):
-        return self.mem.iread(PC_ADDRESS, 4, from_core=self.coreid)
+        return self.mem.iread(LOCAL_PC_ADDRESS, 4, from_core=self.coreid)
 
     @pc.setter
     def pc(self, value):
-        return self.mem.write(PC_ADDRESS, 4, value, from_core=self.coreid)
+        return self.mem.write(LOCAL_PC_ADDRESS, 4, value, from_core=self.coreid)
 
     def fetch_pc(self):
         # Override method from base class. Needed by Pydgin.
-        return self.mem.iread(PC_ADDRESS, 4, from_core=self.coreid)
+        return self.mem.iread(LOCAL_PC_ADDRESS, 4, from_core=self.coreid)
 
     def get_pending_interrupt(self):
         ipend_highest_bit = -1

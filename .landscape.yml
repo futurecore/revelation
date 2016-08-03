@@ -2,4 +2,5 @@ pylint:
   disable:
     - too-many-arguments
     - unused-argument
-
+    - too-many-branches
+    - too-many-boolean-expressions

@@ -1,7 +1,7 @@
 from pydgin.debug import Debug
 from revelation.machine import State
 from revelation.sim import new_memory
-from revelation.isa import reg_map
+from revelation.registers import reg_map
 from revelation.utils import bits2float
 
 flags = 'ACTIVE GID KERNEL WAND AN AZ AC AV AVS BN BV BIS BVS BUS BZ EXCAUSE pc'.split()

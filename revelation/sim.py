@@ -7,9 +7,10 @@ from pydgin.sim import Sim, init_sim
 from revelation.argument_parser import cli_parser, DoNotInterpretError
 from revelation.elf_loader import load_program
 from revelation.instruction import Instruction
-from revelation.isa import decode, reg_map
+from revelation.isa import decode
 from revelation.logger import Logger
 from revelation.machine import State
+from revelation.registers import reg_map
 from revelation.storage import Memory
 from revelation.utils import get_coords_from_coreid, get_coreid_from_coords, zfill
 

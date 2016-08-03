@@ -1,7 +1,7 @@
-from revelation.utils import bits2float, float2bits, get_exponent_as_decimal, is_nan, trim_32
+from revelation.utils import (bits2float, float2bits, get_exponent_as_decimal,
+                              is_nan, trim_32)
+from revelation.registers import reg_map
 from pydgin.utils import signed
-
-import revelation.isa
 
 
 def make_float_executor(is16bit):
@@ -38,9 +38,9 @@ def make_float_executor(is16bit):
         s.BVS = s.BVS | s.BV
         # No exceptions for float instruction.
         if s.CTIMER0CONFIG == s.timer_config['FPU VALID'] and not s.BIS:
-            s.rf[revelation.isa.reg_map['CTIMER0']] -= 1
+            s.rf[reg_map['CTIMER0']] -= 1
         if s.CTIMER1CONFIG == s.timer_config['FPU VALID'] and not s.BIS:
-            s.rf[revelation.isa.reg_map['CTIMER1']] -= 1
+            s.rf[reg_map['CTIMER1']] -= 1
         s.debug_flags()
         s.pc += 2 if is16bit else 4
     return exec_float
@@ -88,9 +88,9 @@ def make_fix_executor(is16bit):
         s.BVS = s.BVS | s.BV
         # FIXME: Find out whether fix generates interrupts.
         if s.CTIMER0CONFIG == s.timer_config['FPU VALID'] and not s.BIS:
-            s.rf[revelation.isa.reg_map['CTIMER0']] -= 1
+            s.rf[reg_map['CTIMER0']] -= 1
         if s.CTIMER1CONFIG == s.timer_config['FPU VALID'] and not s.BIS:
-            s.rf[revelation.isa.reg_map['CTIMER1']] -= 1
+            s.rf[reg_map['CTIMER1']] -= 1
         s.debug_flags()
         s.pc += 2 if is16bit else 4
     return exec_fix
@@ -126,9 +126,9 @@ def make_fabs_executor(is16bit):
         s.BVS = s.BVS | s.BV
         # Deal with fpu interrupts.
         if s.CTIMER0CONFIG == s.timer_config['FPU VALID'] and not s.BIS:
-            s.rf[revelation.isa.reg_map['CTIMER0']] -= 1  # pragma: no cover
+            s.rf[reg_map['CTIMER0']] -= 1  # pragma: no cover
         if s.CTIMER1CONFIG == s.timer_config['FPU VALID'] and not s.BIS:
-            s.rf[revelation.isa.reg_map['CTIMER1']] -= 1  # pragma: no cover
+            s.rf[reg_map['CTIMER1']] -= 1  # pragma: no cover
         s.debug_flags()
         s.pc += 2 if is16bit else 4
     return exec_fabs
@@ -182,12 +182,12 @@ def make_farith_executor(name, is16bit):
             s.BVS = s.BVS | s.BV
             # Deal with fpu interrupts.
             if (s.IEN and s.BIS) or (s.OEN and s.BV) or (s.UEN and s.BUS):
-                s.rf[revelation.isa.reg_map['ILAT']] |= (1 << 1)
+                s.rf[reg_map['ILAT']] |= (1 << 1)
                 s.EXCAUSE = s.exceptions['FPU EXCEPTION']
             if s.CTIMER0CONFIG == s.timer_config['FPU VALID'] and not s.BIS:
-                s.rf[revelation.isa.reg_map['CTIMER0']] -= 1
+                s.rf[reg_map['CTIMER0']] -= 1
             if s.CTIMER1CONFIG == s.timer_config['FPU VALID'] and not s.BIS:
-                s.rf[revelation.isa.reg_map['CTIMER1']] -= 1
+                s.rf[reg_map['CTIMER1']] -= 1
         elif s.ARITHMODE == s.FPU_MODES['SIGNED INTEGER']:
             rd = signed(s.rf[inst.rd])
             rn = signed(s.rf[inst.rn])
@@ -210,9 +210,9 @@ def make_farith_executor(name, is16bit):
             # if (RD[30:0] == 0) { BZ=1 } else { BZ=0 }
             s.BZ = True if result == 0 else False
             if s.CTIMER0CONFIG == s.timer_config['IALU VALID']:
-                s.rf[revelation.isa.reg_map['CTIMER0']] -= 1
+                s.rf[reg_map['CTIMER0']] -= 1
             if s.CTIMER1CONFIG == s.timer_config['IALU VALID']:
-                s.rf[revelation.isa.reg_map['CTIMER1']] -= 1
+                s.rf[reg_map['CTIMER1']] -= 1
         s.debug_flags()
         s.pc += 2 if is16bit else 4
     return farith

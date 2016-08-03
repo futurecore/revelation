@@ -1,4 +1,4 @@
-import revelation.isa
+from revelation.registers import reg_map
 from revelation.utils import trim_32
 
 def make_jr_executor(is16bit, save_lr):
@@ -10,6 +10,6 @@ def make_jr_executor(is16bit, save_lr):
         if is16bit:
             inst.bits &= 0xffff
         if save_lr:
-            s.rf[revelation.isa.reg_map['LR']] = trim_32(s.pc + (2 if is16bit else 4))
+            s.rf[reg_map['LR']] = trim_32(s.pc + (2 if is16bit else 4))
         s.pc = s.rf[inst.rn]
     return execute_jr

@@ -1,4 +1,4 @@
-from revelation.storage import get_register_size_by_address
+from revelation.registers import get_register_size_by_address
 
 import pydgin.utils
 
