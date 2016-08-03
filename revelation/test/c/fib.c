@@ -5,9 +5,6 @@ int main() {
         temp = a;
         a = b;
         b += temp;
-        if (i == 19) {
-            __asm__("bkpt");
-        }
     }
     return 0;
 }

@@ -4,8 +4,8 @@ from revelation.test.machine import StateChecker
 
 import opcode_factory
 
-def test_sim_bkpt16():
-    instructions = [(opcode_factory.bkpt16(), 16),  # BKPT16
+def test_sim_trap16_3():
+    instructions = [(opcode_factory.trap16(3), 16),
                    ]
     revelation = MockRevelation()
     revelation.init_state(instructions)
@@ -17,8 +17,8 @@ def test_sim_bkpt16():
 
 
 def test_sim_nop16():
-    instructions = [(opcode_factory.nop16(),  16),  # NOP16
-                    (opcode_factory.bkpt16(), 16),  # BKPT16
+    instructions = [(opcode_factory.nop16(),  16),
+                    (opcode_factory.trap16(3), 16),
                     ]
     revelation = MockRevelation()
     revelation.init_state(instructions)
@@ -31,7 +31,7 @@ def test_sim_nop16():
 
 def test_single_inst_add32():
     instructions = [(opcode_factory.add32_immediate(rd=1, rn=0, imm=0b01010101010), 32),
-                    (opcode_factory.bkpt16(), 16)]
+                    (opcode_factory.trap16(3), 16)]
     revelation = MockRevelation()
     revelation.init_state(instructions, rf0=0b01010101010)
     assert revelation.states[0].running
@@ -44,7 +44,7 @@ def test_single_inst_add32():
 def test_single_inst_sub32():
     from pydgin.utils import trim_32
     instructions = [(opcode_factory.sub32_immediate(rd=1, rn=0, imm=0b01010101010), 32),
-                    (opcode_factory.bkpt16(), 16)]
+                    (opcode_factory.trap16(3), 16)]
     revelation = MockRevelation()
     revelation.init_state(instructions, rf0=5)
     assert revelation.states[0].running
@@ -61,7 +61,7 @@ def test_add32_sub32():
     # TODO: Add new instruction to move the result of instruction 1
     # TODO: to rf[0] before instruction 2 is executed.
                     (opcode_factory.sub32_immediate(rd=1, rn=0, imm=0b01010101010), 32),
-                    (opcode_factory.bkpt16(), 16),
+                    (opcode_factory.trap16(3), 16),
                     ]
     revelation = MockRevelation()
     revelation.init_state(instructions, rf0=0)
@@ -77,7 +77,7 @@ def test_bcond32():
     instructions = [(opcode_factory.sub32_immediate(rd=1, rn=0, imm=0b00000000101), 32),
                     (opcode_factory.bcond32(condition=0b0000, imm=0b000000000000000000000100), 32),
                     (opcode_factory.add32_immediate(rd=1, rn=0, imm=0b01010101010), 32),
-                    (opcode_factory.bkpt16(), 16),
+                    (opcode_factory.trap16(3), 16),
                     ]
     revelation = MockRevelation()
     revelation.init_state(instructions, rf0=5)
@@ -99,7 +99,7 @@ def test_add32_nop16_sub32():
     instructions = [(opcode_factory.add32_immediate(rd=1, rn=0, imm=0b01010101010), 32),
                     (opcode_factory.nop16(), 16),
                     (opcode_factory.sub32_immediate(rd=1, rn=0, imm=0b01010101010), 32),
-                    (opcode_factory.bkpt16(), 16),
+                    (opcode_factory.trap16(3), 16),
                     ]
     revelation = MockRevelation()
     revelation.init_state(instructions, rf0=0)
@@ -114,7 +114,7 @@ def test_add32_nop16_sub32():
 def test_sim_all_16bit():
     instructions = [ (opcode_factory.gie16(), 16),
                      (opcode_factory.gid16(), 16),
-                     (opcode_factory.bkpt16(), 16),
+                     (opcode_factory.trap16(3), 16),
                    ]
     revelation = MockRevelation()
     revelation.init_state(instructions)

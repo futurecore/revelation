@@ -1,7 +1,7 @@
-from pydgin.misc import FatalError
-
 from revelation.registers import reg_map
 from revelation.utils import trim_32
+
+from pydgin.misc import FatalError, NotImplementedInstError
 
 
 def execute_nop16(s, inst):
@@ -26,15 +26,13 @@ def execute_bkpt16(s, inst):
     GDB and should not be user software. The instruction is included here
     only for the purpose of reference.
     """
-    s.rf[reg_map['DEBUGSTATUS']] |= 1
-    s.pc += 2
-    s.running = False
+    raise NotImplementedInstError('bkpt instruction not implemented.')
 
 
 def execute_mbkpt16(s, inst):
     """Halts all cores within the group (sets DEBUGSTATUS[0] to 1).
     """
-    raise NotImplementedError('Multicore not implemented.')
+    raise NotImplementedInstError('mbkpt instruction not implemented.')
 
 
 def execute_gie16(s, inst):
@@ -67,7 +65,7 @@ def execute_gid16(s, inst):
 def execute_sync16(s, inst):
     """Sets the ILAT[0] of all cores within a work group to 1.
     """
-    raise NotImplementedError('Interrupts not implemented.')
+    raise NotImplementedInstError('sync instruction not implemented.')
 
 
 def execute_rti16(s, inst):
@@ -200,7 +198,7 @@ def execute_wand16(s, inst):
     """
     STATUS[3] = 1
     """
-    raise NotImplementedError('Multicore not implemented.')
+    raise NotImplementedInstError('wand instruction not implemented.')
 
 
 def execute_unimpl(s, inst):

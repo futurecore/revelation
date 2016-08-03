@@ -103,7 +103,7 @@ def test_compiled_c_with_return(elf_file, expected):
 
 
 @pytest.mark.parametrize('elf_file,expected', [('nothing.elf',   250),
-                                               ('fib.elf',       461),
+                                               ('fib.elf',       544),
                                               ])
 def test_compiled_c(elf_file, expected, capsys):
     """Test an ELF file that has been compiled from a C function.

@@ -1,7 +1,6 @@
 from pydgin.debug import Debug, pad, pad_hex
 from pydgin.elf import elf_reader
 from pydgin.jit import elidable, hint, JitDriver, set_param, set_user_param
-from pydgin.misc import FatalError
 from pydgin.sim import Sim, init_sim
 
 from revelation.argument_parser import cli_parser, DoNotInterpretError
@@ -12,7 +11,10 @@ from revelation.logger import Logger
 from revelation.machine import State
 from revelation.registers import reg_map
 from revelation.storage import Memory
-from revelation.utils import get_coords_from_coreid, get_coreid_from_coords, zfill
+from revelation.utils import (get_coords_from_coreid, get_coreid_from_coords,
+                              zfill)
+
+from pydgin.misc import FatalError, NotImplementedInstError
 
 import time
 
@@ -223,8 +225,10 @@ class Revelation(Sim):
                 self.pre_execute()
                 exec_fun(self.states[self.core], instruction)
                 self.post_execute()
-            except FatalError as error:
-                print 'Exception in execution (pc: 0x%s), aborting!' % pad_hex(pc)
+            except (FatalError, NotImplementedInstError) as error:
+                mnemonic, _ = decode(opcode)
+                print ('Exception in execution of %s (pc: 0x%s), aborting!' %
+                       (mnemonic, pad_hex(pc)))
                 print 'Exception message: %s' % error.msg
                 # Ensure that entry_point() returns correct exit code.
                 return EXIT_GENERAL_ERROR   # pragma: no cover

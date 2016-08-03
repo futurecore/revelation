@@ -1,6 +1,6 @@
-from pydgin.misc import FatalError
-
 from revelation.utils import trim_32
+
+from pydgin.misc import FatalError
 
 
 def execute_ldstrpmd32(s, inst):

@@ -260,7 +260,7 @@ def test_testset32_fail(capfd):
     is given is too low..
     """
     elf_filename = os.path.join(elf_dir, 'testset_fail.elf')
-    expected_text = """Exception in execution (pc: 0x00000358), aborting!
+    expected_text = """Exception in execution of testset32 (pc: 0x00000358), aborting!
 Exception message: testset32 has failed to write to address %s.
 The absolute address used for the test and set instruction must be located
 within the on-chip local memory and must be greater than 0x00100000 (2^20).
