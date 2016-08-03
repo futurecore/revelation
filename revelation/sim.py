@@ -48,8 +48,8 @@ class Revelation(Sim):
         if self.jit_enabled:
             self.jitdriver = JitDriver(
                 greens = ['pc', 'core', 'coreid', 'opcode'],
-                reds = ['tick_counter', 'halted_cores', 'idle_cores',
-                        'old_pcs', 'memory', 'sim', 'state', 'start_time'],
+                reds = ['tick_counter', 'old_pc', 'halted_cores', 'idle_cores',
+                        'memory', 'sim', 'state', 'start_time'],
                 virtualizables = ['state'],
                 get_printable_location=get_printable_location)
         self.default_trace_limit = 400000
@@ -199,7 +199,7 @@ class Revelation(Sim):
         opcode = 0     # a more meaningful trace in the JIT log.
         tick_counter = 0  # Number of instructions executed by all cores.
         halted_cores, idle_cores = [], []
-        old_pcs = [0] * len(self.states)
+        old_pc = 0
         start_time, end_time = time.time(), .0
 
         while True:
@@ -208,9 +208,9 @@ class Revelation(Sim):
                                            coreid=coreid,
                                            opcode=opcode,
                                            tick_counter=tick_counter,
+                                           old_pc=old_pc,
                                            halted_cores=halted_cores,
                                            idle_cores=idle_cores,
-                                           old_pcs=old_pcs,
                                            memory=memory,
                                            sim=self,
                                            state=self.states[self.core],
@@ -218,7 +218,7 @@ class Revelation(Sim):
             # Fetch PC, decode instruction and execute.
             pc = hint(self.states[self.core].fetch_pc(), promote=True)
             coreid = hint(self.states[self.core].coreid, promote=True)
-            old_pcs[self.core] = pc
+            old_pc = pc
             opcode = memory.iread(pc, 4, from_core=self.states[self.core].coreid)
             try:
                 instruction, exec_fun = self.decode(opcode)
@@ -256,15 +256,15 @@ class Revelation(Sim):
                     elif (self.core in idle_cores and self.fetch_latch() > 0):
                         idle_cores.remove(self.core)
                         self._service_interrupts()
-            if self.states[self.core].fetch_pc() < old_pcs[self.core]:
+            if self.states[self.core].fetch_pc() < old_pc:
                 self.jitdriver.can_enter_jit(pc=self.states[self.core].fetch_pc(),
                                              core=self.core,
                                              coreid=coreid,
                                              opcode=opcode,
                                              tick_counter=tick_counter,
+                                             old_pc=old_pc,
                                              halted_cores=halted_cores,
                                              idle_cores=idle_cores,
-                                             old_pcs=old_pcs,
                                              memory=memory,
                                              sim=self,
                                              state=self.states[self.core],
