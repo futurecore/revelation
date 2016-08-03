@@ -112,7 +112,7 @@ class Revelation(Sim):
                 print 'CLI parser took: %fs' % (timer - self.timer)
                 self.timer = timer
             self.init_state(elf_file, fname, False)
-            for state in self.states:  # FIXME: Interleaved log.
+            for state in self.states:
                 self.debug.set_state(state)
             elf_file.close()
             try:
