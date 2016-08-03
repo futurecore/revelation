@@ -1,4 +1,5 @@
 #include <e-lib.h>
+#include <math.h>
 #include <stdio.h>
 
 void timer_handler();
@@ -9,7 +10,7 @@ void __attribute__((interrupt)) timer_handler() {
 
 int main() {
     float a = 1., b = 2., c = 0.;
-    int i = 0;
+    int i = 0, d = 0;
 
     /* Attach and set-up timer interrupt. */
     e_irq_attach(E_TIMER1_INT, timer_handler);
@@ -21,7 +22,8 @@ int main() {
     e_ctimer_start(E_CTIMER_1, E_CTIMER_FPU_INST);
 
     for (i = 0; i < 15; i++) {
-        c = a + b;
+        c = fabs(a + b + (float)d);
+        d = (int)c;
     }
     /* Interrupt should be triggered here. */
 
