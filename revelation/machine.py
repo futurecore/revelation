@@ -6,7 +6,6 @@ RESET_ADDR = 0
 
 
 class State(object):
-    _virtualizable_ = ['num_insts']
 
     def __init__(self, memory, debug, coreid=0x808, logger=None):
         self.rf = MemoryMappedRegisterFile(memory, coreid, logger)

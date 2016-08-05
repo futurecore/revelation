@@ -27,7 +27,7 @@ EXAMPLES:
     $ %s -r 1 -c 2 -f 0x808 program.elf
     $ %s -r 1 -c 2 --max-insts 20000 program.elf
     $ %s --time program.elf
-    $ %s --debug trace,rf.mem,flags program.elf
+    $ %s --debug trace,rf,mem,flags program.elf
 """
 
 

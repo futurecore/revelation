@@ -48,9 +48,8 @@ class Revelation(Sim):
         if self.jit_enabled:
             self.jitdriver = JitDriver(
                 greens = ['pc', 'core', 'coreid', 'opcode'],
-                reds = ['tick_counter', 'old_pc', 'halted_cores', 'idle_cores',
+                reds = ['tick_counter', 'halted_cores', 'idle_cores',
                         'memory', 'sim', 'state', 'start_time'],
-                virtualizables = ['state'],
                 get_printable_location=get_printable_location)
         self.default_trace_limit = 400000
         self.max_insts = 0
@@ -59,12 +58,13 @@ class Revelation(Sim):
         self.rows = 1
         self.cols = 1
         self.first_core = 0x808
-        self.ext_base = 0x8e000000
+        self.ext_base = 0x8e000000  # Base address of 'external' memory.
         self.ext_size = 32  # MB.
         self.switch_interval = 1       # TODO: currently ignored.
         self.user_environment = False  # TODO: currently ignored.
         self.collect_times = False
-        self.states = []
+        self.profile = False  # Collect timing data BEFORE main loop.
+        self.states = []  # Cores (revelation.machine.State objects).
         self.hardware_loops = []
         self.ivt = {  # Interrupt vector table.
             0 : 0x0,  # Sync hardware signal.
@@ -123,14 +123,14 @@ class Revelation(Sim):
         return entry_point
 
     def decode(self, bits):
-        mnemonic, exec_fun = decode(bits)
+        mnemonic, function = decode(bits)
         if (self.debug.enabled('trace') and self.logger and
               self.states[self.core].is_first_core):
             self.logger.log('%s %s %s %s' %
                (pad('%x' % self.states[self.core].fetch_pc(), 8, ' ', False),
                 pad_hex(bits), pad(mnemonic, 12),
                 pad('%d' % self.states[self.core].num_insts, 8)))
-        return Instruction(bits, mnemonic), exec_fun
+        return Instruction(bits, mnemonic), function
 
     def pre_execute(self):
         # Check whether or not we are in a hardware loop, and set registers
@@ -208,7 +208,6 @@ class Revelation(Sim):
                                            coreid=coreid,
                                            opcode=opcode,
                                            tick_counter=tick_counter,
-                                           old_pc=old_pc,
                                            halted_cores=halted_cores,
                                            idle_cores=idle_cores,
                                            memory=memory,
@@ -221,9 +220,9 @@ class Revelation(Sim):
             old_pc = pc
             opcode = memory.iread(pc, 4, from_core=self.states[self.core].coreid)
             try:
-                instruction, exec_fun = self.decode(opcode)
+                instruction, function = self.decode(opcode)
                 self.pre_execute()
-                exec_fun(self.states[self.core], instruction)
+                function(self.states[self.core], instruction)
                 self.post_execute()
             except (FatalError, NotImplementedInstError) as error:
                 mnemonic, _ = decode(opcode)
@@ -262,7 +261,6 @@ class Revelation(Sim):
                                              coreid=coreid,
                                              opcode=opcode,
                                              tick_counter=tick_counter,
-                                             old_pc=old_pc,
                                              halted_cores=halted_cores,
                                              idle_cores=idle_cores,
                                              memory=memory,

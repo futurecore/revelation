@@ -1,6 +1,5 @@
 from pydgin.debug import Debug, pad, pad_hex
 from pydgin.jit import elidable, unroll_safe, hint
-from pydgin.utils import specialize
 
 from revelation.registers import reg_memory_map
 
@@ -121,12 +120,13 @@ class Memory(object):
         return value
 
     def write(self, start_addr, num_bytes, value, from_core=0x808, quiet=False):
+        """Deal with register writes that are aliases to other locations. Better
+        not to put these in the instruction semantics, as the aliased
+        registers may be written to by a variety of instructions, and accessed
+        as either registers or memory locations.
+        """
         if is_local_address(start_addr):
             start_addr |= (from_core << 20)
-        # Deal with register writes that are aliases to other locations. Better
-        # not to put these in the instruction semantics, as the aliased
-        # registers may be written to by a variety of instructions, and accessed
-        # as either registers or memory locations.
         coreid_mask = start_addr & 0xfff00000
         if start_addr & 0xfffff == 0xf042c:  # ILATST
             ilat = self.read(coreid_mask | 0xf0428, 4) & 0x3ff
@@ -173,8 +173,10 @@ class MemoryMappedRegisterFile(object):
         self.logger = logger
         self.memory = memory
         self.coreid = coreid
+        self.coreid_mask = coreid << 20
         self.is_first_core = False
-        self.memory.write(0xf0704, 4, coreid & 0xfff, from_core=coreid)
+        self.memory.write(self.coreid_mask | 0xf0704, 4, coreid & 0xfff,
+                          from_core=coreid, quiet=True)
         self.num_regs = len(reg_memory_map)
         self.debug_nchars = 8
 
@@ -188,14 +190,13 @@ class MemoryMappedRegisterFile(object):
                               pad_hex(value, len=self.debug_nchars)))
         return value
 
-    @specialize.argtype(2)
     def __setitem__(self, index, value):
         if index == 0x65:  # COREID register. Read only. Other Read/Write only
             return         # registers need to be accessed by instructions.
         address, bitsize, _ = reg_memory_map[index]  # Lower 20 bits of address.
         mask = (1 << bitsize) - 1
-        self.memory.write(address, 4, value & mask, from_core=self.coreid,
-                          quiet=True)
+        self.memory.write(self.coreid_mask | address, 4, value & mask,
+                                 from_core=self.coreid, quiet=True)
         if (self.debug.enabled('rf') and self.logger and index < 64 and
               self.is_first_core):
             self.logger.log(' :: WR.RF[%s] = %s' % ((pad('%d' % index, 2),
