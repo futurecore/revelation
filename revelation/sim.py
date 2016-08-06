@@ -11,8 +11,8 @@ from revelation.logger import Logger
 from revelation.machine import State
 from revelation.registers import reg_map
 from revelation.storage import Memory
-from revelation.utils import (get_coords_from_coreid, get_coreid_from_coords,
-                              zfill)
+from revelation.utils import format_thousands, get_coords_from_coreid
+from revelation.utils import  get_coreid_from_coords, zfill
 
 from pydgin.misc import FatalError, NotImplementedInstError
 
@@ -270,14 +270,18 @@ class Revelation(Sim):
         # End of fetch-decode-execute-service interrupts loop.
         if self.collect_times:
             end_time = time.time()
-        print 'Done! Total ticks simulated = %d' % tick_counter
+        print 'Total ticks simulated = %s.' % format_thousands(tick_counter)
         for state in self.states:
             row, col = get_coords_from_coreid(state.coreid)
-            print ('Core %s (%s, %s): STATUS=0x%s, Instructions executed=%d' %
+            print ('Core %s (%s, %s) STATUS: 0x%s, Instructions executed: %s' %
                    (hex(state.coreid), zfill(str(row), 2), zfill(str(col), 2),
-                    pad_hex(state.rf[reg_map['STATUS']]), state.num_insts))
+                    pad_hex(state.rf[reg_map['STATUS']]),
+                    format_thousands(state.num_insts)))
         if self.collect_times:
-            print 'Total execution time: %fs' % (end_time - start_time)
+            execution_time = end_time - start_time
+            speed = format_thousands(int(tick_counter / execution_time))
+            print 'Total execution time: %fs.' % (execution_time)
+            print 'Simulator speed:      %s instructions / second.' % speed
         if self.logger:
             self.logger.close()
         return EXIT_SUCCESS
