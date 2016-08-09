@@ -97,7 +97,6 @@ def sext_24(value):
     return value
 
 
-@pydgin.utils.specialize.argtype(0)
 def trim_32(value):
     return value & 0xffffffff
 
