@@ -26,7 +26,6 @@ def test_argv_defaults(capfd):
     assert revelation.switch_interval == 1
     assert not revelation.collect_times
     assert revelation.logger == None
-    assert revelation.core == 0
 
 
 @pytest.mark.parametrize('argv,expected',

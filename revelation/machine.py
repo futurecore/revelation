@@ -17,6 +17,7 @@ class State(object):
         self.num_insts = 0
         self.running = True
         self.is_first_core = False  # Is this the top-left (NW) core?
+        self.is_in_hardware_loop = False
         self.logger = logger
         # Epiphany III exceptions.
         self.exceptions = { 'UNIMPLEMENTED'  : 0b0100,
