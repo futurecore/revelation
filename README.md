@@ -13,30 +13,22 @@ Details of the Epiphany design and ISA can be found in the [Architecture Referen
 [![Adapteva Parallella](https://www.parallella.org/wp-content/uploads/2014/11/parallella-board-22-609x400.jpg)](https://www.parallella.org/wp-content/uploads/2014/11/parallella-board-22-609x400.jpg)
 
 
-## License
-Revelation is offered under the terms of the Open Source Initiative BSD 3-Clause License.
-More information about this license can be found here:
-
-* http://choosealicense.com/licenses/bsd-3-clause
-* http://opensource.org/licenses/BSD-3-Clause
-
-Some test programs within this repository were previously published by other authors, and come with their own license agreements.
-
-
 ## Using the simulator
 
-In order to use Revelation, you need to obtain a binary build of the simulator.
+In order to use Revelation, you need to obtain a native binary build of the simulator.
 Intel / GNU-Linux builds are available from the [revelation-bins repository](https://github.com/futurecore/revelation-bins).
-You should normally use the JITed version of the simulator, `pydgin-revelation-jit`.
-For other platforms, you will need to compile Revelation yourself (instructions below).
+You should normally use the JITed version of the simulator, `pydgin-revelation-jit` or `pydgin-revelation-jit-debug`.
+The `--debug` options is enabled in the `pydgin-revelation-jit-debug` build.
+For other platforms, you will need to translate Revelation yourself (instructions below).
 
 To run the simulator, pass it an Epiphany ELF file on the command line:
 
 ```bash
 $ ./pydgin-revelation-jit revelation/test/c/hello.elf
+Loading program revelation/test/c/hello.elf on to core 0x808 (32, 08)
 Hello, world!
-DONE! Status = 0
-Instructions Executed = 1951
+Total ticks simulated = 1,951.
+Core 0x808 (32, 08) STATUS: 0x00000005, Instructions executed: 1,951
 $
 ```
 
@@ -49,12 +41,12 @@ You can configure this at the command line:
 
 ```bash
 $ ./pydgin-revelation-jit -r 1 -c 2 -f 0x808 revelation/test/multicore/manual_message_pass.elf
-Loading program revelation/test/multicore/manual_message_pass.elf on to core 0x808
-Loading program revelation/test/multicore/manual_message_pass.elf on to core 0x809
+Loading program revelation/test/multicore/manual_message_pass.elf on to core 0x808 (32, 08)
+Loading program revelation/test/multicore/manual_message_pass.elf on to core 0x809 (32, 09)
 Received message.
-Done! Total ticks simulated = 14193
-Core 0x808 (32, 8): STATUS=0x5, Instructions executed=7894
-Core 0x809 (32, 9): STATUS=0x55, Instructions executed=6299
+Total ticks simulated = 14,193.
+Core 0x808 (32, 08) STATUS: 0x00000005, Instructions executed: 7,894
+Core 0x809 (32, 09) STATUS: 0x00000055, Instructions executed: 6,299
 ```
 
 The `-f` switch selects the first core, and must always be written in hex.
@@ -92,36 +84,55 @@ EXAMPLES:
     $ ./pydgin-revelation-jit -r 1 -c 2 -f 0x808 program.elf
     $ ./pydgin-revelation-jit -r 1 -c 2 --max-insts 20000 program.elf
     $ ./pydgin-revelation-jit --time program.elf
-    $ ./pydgin-revelation-jit --debug trace,rf.mem,flags program.elf
+    $ ./pydgin-revelation-jit --debug trace,rf,mem,flags program.elf
 ```
-## Compiling the simulator
 
-To compile the simulator to a native executable, you need to first clone (or download) a recent version of the [PyPy toolchain](https://bitbucket.org/pypy/pypy).
+
+## Translating the simulator
+
+'Translating' is the process of converting the RPython code here into C, and then compiling that to a native executable.
+To translate the simulator, you need to first clone (or download) a recent version of the [PyPy toolchain](https://bitbucket.org/pypy/pypy).
 The `rpython` directory from PyPy needs to be included in your `PYTHONPATH` environment variable.
+You will also need a copy of [the Pydgin framework](https://github.com/cornell-brg/pydgin), which should also be on your `PYTHONPATH`.
 
 To compile Revelation *without* a JIT:
 
-    $ PYTHONPATH=. .../pypy/rpython/bin/rpython -O2 revelation/sim.py
+    $ PATH_TO_PYPY/rpython/bin/rpython -O2 revelation/sim.py
 
 To compile the simulator *with* a JIT:
 
-    $ PYTHONPATH=. ../../pypy/rpython/bin/rpython -Ojit revelation/sim.py
+    $ PATH_TO_PYPY/rpython/bin/rpython -Ojit revelation/sim.py
+
+If you want your compiled Revelation simulator to be able to write out a trace of the instructions it simulates (i.e. you want to use the `--debug` option), then pass `--debug` to `sim.py`:
+
+    $ PATH_TO_PYPY/rpython/bin/rpython -Ojit revelation/sim.py --debug
 
 
 ## Contributing
 
-To work with the code here you need a copy of the Pydgin RPython modules.
-You can obtain a copy from the [Pydgin project page](https://github.com/cornell-brg/pydgin).
+Please report any problems you have with Revelation on the [Issues page](https://github.com/futurecore/revelation/issues).
 
+To contribute to Revelation itself, please raise a Pull Request, and if it is relevant to your changes please include unit tests.
+Translating Revelation will be relatively slow, so it is easiest to run and test the simulator un-translated, until your changes are stable, e.g.:
+
+```bash
+$ pypy revelation/sim.py revelation/test/c/hello.elf
+Loading program revelation/test/c/hello.elf on to core 0x808 (32, 08)
+Hello, world!
+Done! Total ticks simulated = 1951
+Core 0x808 (32, 08): STATUS=0x00000005, Instructions executed=1951
+```
+
+To work with the code here you need a copy of Pydgin, which you can obtain a copy from the [Pydgin project page](https://github.com/cornell-brg/pydgin).
 Pydgin is a framework for writing functional simulators as [just in time interpreters](https://en.wikipedia.org/wiki/Just-in-time_compilation).
-You can read more about Pydgin in this paper:
+You can read more about it in this paper:
 
 > Derek Lockhart, Berkin Ilbeyi, and Christopher Batten. (2015) Pydgin: Generating Fast Instruction Set Simulators from Simple Architecture Descriptions with Meta-Tracing JIT Compilers. IEEE International Symposium on Performance Analysis of Systems and Software (ISPASS). Available at: http://csl.cornell.edu/~cbatten/pdfs/lockhart-pydgin-ispass2015.pdf
 
 
-## Running unit tests
+### Running unit tests
 
-To run the unit tests here, ensure that the required packages are installed:
+To run the Revelation unit tests, ensure that the required packages are installed:
 
     $ pip install -r requirements.txt
 
@@ -130,3 +141,21 @@ Then run the tests themselves:
     $ py.test --cov-report term-missing --cov revelation revelation/test/
 
 Note that the tests may take some time to run, particularly those that load an ELF file.
+
+
+## License
+
+Revelation is offered under the terms of the Open Source Initiative BSD 3-Clause License.
+More information about this license can be found here:
+
+  * http://choosealicense.com/licenses/bsd-3-clause
+  * http://opensource.org/licenses/BSD-3-Clause
+
+Some test programs within this repository were previously published by other authors, and come with their own license agreements.
+
+
+## Acknowledgements
+
+Early work on Revelation was funded by a [University of Wolverhampton ERAS award](https://www.wlv.ac.uk/research/training-and-mentoring/early-researcher-award-scheme-eras/).
+[Carl Friedrich Bolz](http://cfbolz.de/) helped to write the early Revelation commits.
+Thanks to [the Pydgin project](https://github.com/cornell-brg/pydgin), especially [Berkin Ilbeyi](http://www.csl.cornell.edu/~berkin/) and Derek Lockhart.
