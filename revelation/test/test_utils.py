@@ -1,7 +1,20 @@
-from revelation.utils import (get_exponent, get_mantissa, bits2float,
-    float2bits, is_nan, is_inf, is_zero, sext_3, sext_11, sext_24, zfill)
+from revelation.utils import get_exponent, get_mantissa, bits2float
+from revelation.utils import float2bits, format_thousands, is_nan, is_inf
+from revelation.utils import is_zero, sext_3, sext_11, sext_24, zfill
 
 import math
+
+
+def test_format_number():
+    assert '1' == format_thousands(1)
+    assert '11' == format_thousands(11)
+    assert '111' == format_thousands(111)
+    assert '1,111' == format_thousands(1111)
+    assert '11,111' == format_thousands(11111)
+    assert '1,111,111' == format_thousands(1111111)
+    assert '11,111,111' == format_thousands(11111111)
+    assert '111,111,111' == format_thousands(111111111)
+    assert '1,111,111,111' == format_thousands(1111111111)
 
 
 def test_zfill():

@@ -39,11 +39,7 @@ def execute_gie16(s, inst):
     """Enables all interrupts in ILAT register, dependent on the per bit
     settings in the IMASK register.
         STATUS[1]=0
-    Only available in Kernel mode.
     """
-    if s.ENABLE_USER_MODE and not s.KERNEL: # GIE illegal in user mode.
-        s.pc += 2
-        return
     for index in range(10):
         if not (s.rf[reg_map['IMASK']] & (1 << index)):
             s.rf[reg_map['ILAT']] &= ~(1 << index)
@@ -55,9 +51,6 @@ def execute_gid16(s, inst):
     """Disable all interrupts.
         STATUS[1]=1
     """
-    if s.ENABLE_USER_MODE and not s.KERNEL: # GID illegal in user mode.
-        s.pc += 2
-        return
     s.GID = 1
     s.pc += 2
 
@@ -79,10 +72,6 @@ def execute_rti16(s, inst):
     proceeds as if there were an interrupt to service:
     https://parallella.org/forums/viewtopic.php?f=23&t=818&hilit=interrupt#p5185
     """
-    if s.ENABLE_USER_MODE and not s.KERNEL: # If in user mode, RTI changes mode.
-        s.KERNEL = True
-        s.pc += 2
-        return
     # Let N be the interrupt level.
     interrupt_level = s.get_pending_interrupt()
     #     Bit N of IPEND is cleared.

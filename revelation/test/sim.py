@@ -26,7 +26,8 @@ class MockRevelation(Revelation):
             self.memory.write(RESET_ADDR + written_so_far, num_bytes, data)
             written_so_far += num_bytes
         self.states.append(new_state(mem=self.memory, debug=self.debug, **args))
-        self.hardware_loops.append(False)
+        self.states[0].set_first_core(True)
+        self.num_cores = len(self.states)
         self.max_insts = len(instructions)
 
 init_sim(MockRevelation())

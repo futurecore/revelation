@@ -5,6 +5,19 @@ import pydgin.utils
 import math
 
 
+def format_thousands(number):
+    """Format a number with a comma after every third digit.
+    """
+    chars = []
+    number_s = str(number)
+    size = len(number_s)
+    for index in xrange(size - 1, -1, -1):
+        if (size - index) > 1 and (size - index - 1) % 3 == 0:
+            chars.insert(0, ',')
+        chars.insert(0, number_s[index])
+    return ''.join(chars)
+
+
 def zfill(string, width):
     """zfill(x, width) -> string
     Pad a numeric string x with zeros on the left, to fill a field
@@ -84,7 +97,6 @@ def sext_24(value):
     return value
 
 
-@pydgin.utils.specialize.argtype(0)
 def trim_32(value):
     return value & 0xffffffff
 

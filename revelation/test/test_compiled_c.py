@@ -1,4 +1,4 @@
-from revelation.sim import Revelation
+from revelation.sim import EXIT_SUCCESS, Revelation
 from revelation.test.machine import StateChecker
 
 import os.path
@@ -33,9 +33,6 @@ elf_dir = os.path.join(os.path.dirname(os.path.abspath('__file__')),
      ('interrupt_fpu_exceptions.elf',
                                 'FPU exception fired.\n'),
      ('interrupt_fpu_exceptions_off.elf',
-                                'fpu_handler:\tyou should see this message only'
-                                ' once.\nTest complete.\n'),
-     ('interrupt_kernel_mode.elf',
                                 'fpu_handler:\tyou should see this message only'
                                 ' once.\nTest complete.\n'),
      ('interrupt_nested.elf',   'main:\t\ttrigger user interrupt with swi\n'
@@ -105,7 +102,7 @@ def test_compiled_c_with_return(elf_file, expected):
 @pytest.mark.parametrize('elf_file,expected', [('nothing.elf',   250),
                                                ('fib.elf',       544),
                                               ])
-def test_compiled_c(elf_file, expected, capsys):
+def test_compiled_c(elf_file, expected):
     """Test an ELF file that has been compiled from a C function.
     This test checks that the correct number of instructions have been executed.
     """
@@ -114,9 +111,7 @@ def test_compiled_c(elf_file, expected, capsys):
     with open(elf_filename, 'rb') as elf:
         revelation.init_state(elf, elf_filename, False, is_test=True)
         revelation.max_insts = 10000
-        revelation.run()
-        out, err = capsys.readouterr()
-        expected_text = 'Total ticks simulated = ' + str(expected)
-        assert expected_text in out
-        assert err == ''
+        exit_code, ticks = revelation.run()
+        assert expected == ticks
+        assert EXIT_SUCCESS == exit_code
         assert not revelation.states[0].running
