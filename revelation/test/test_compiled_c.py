@@ -35,9 +35,6 @@ elf_dir = os.path.join(os.path.dirname(os.path.abspath('__file__')),
      ('interrupt_fpu_exceptions_off.elf',
                                 'fpu_handler:\tyou should see this message only'
                                 ' once.\nTest complete.\n'),
-     ('interrupt_kernel_mode.elf',
-                                'fpu_handler:\tyou should see this message only'
-                                ' once.\nTest complete.\n'),
      ('interrupt_nested.elf',   'main:\t\ttrigger user interrupt with swi\n'
                                 'user_isr:\tbegin\n'
                                 'user_isr:\tbefore float overflow\n'

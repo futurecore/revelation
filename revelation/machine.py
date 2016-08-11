@@ -49,7 +49,7 @@ class State(object):
         self.rf[reg_map['pc']] = RESET_ADDR
         self.ARITHMODE = self.FPU_MODES['FLOATING POINT']
         self.ACTIVE = True
-        self.KERNEL = True
+        self.SUPERUSER = True
 
     def map_address_to_core_local(self, address):
         return (self.coreid << 20) | address
@@ -123,11 +123,11 @@ class State(object):
         self._set_nth_bit_of_register('STATUS', 1, value)
 
     @property
-    def KERNEL(self):
+    def SUPERUSER(self):
         return self._get_nth_bit_of_register('STATUS', 2)
 
-    @KERNEL.setter
-    def KERNEL(self, value):
+    @SUPERUSER.setter
+    def SUPERUSER(self, value):
         self._set_nth_bit_of_register('STATUS', 2, value)
 
     @property
