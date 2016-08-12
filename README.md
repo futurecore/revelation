@@ -112,7 +112,7 @@ If you want your compiled Revelation simulator to be able to write out a trace o
 
 Please report any problems you have with Revelation on the [Issues page](https://github.com/futurecore/revelation/issues).
 
-To contribute to Revelation itself, please raise a Pull Request, and if it is relevant to your changes please include unit tests.
+To contribute to Revelation itself, please fork this repository and raise a Pull Request, and if it is relevant to your changes please include unit tests.
 Translating Revelation will be relatively slow, so it is easiest to run and test the simulator un-translated, until your changes are stable, e.g.:
 
 ```bash
@@ -151,7 +151,7 @@ More information about this license can be found here:
   * http://choosealicense.com/licenses/bsd-3-clause
   * http://opensource.org/licenses/BSD-3-Clause
 
-Some test programs within this repository were previously published by other authors, and come with their own license agreements.
+Some test programs and benchmarks within this repository were previously published by other authors, and come with their own license agreements.
 
 
 ## Acknowledgements

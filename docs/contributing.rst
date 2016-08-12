@@ -1,57 +1,105 @@
 Contributing to Revelation
 ==========================
 
-Contributions to Revelation are welcome.
+Contributions to Revelation are welcome, particularly bug reports.
 The project source code is available `on GitHub <https://github.com/futurecore/revelation/>`_ and bugs can be reported via the `issue tracker <https://github.com/futurecore/revelation/issues>`_.
 If you wish to contribute code, or improvements in this documentation, please fork the project on `on GitHub <https://github.com/futurecore/revelation/>`_ and issue a pull request.
 Your pull request will be automatically checked by the `travis continuous integration <https://travis-ci.org/futurecore/revelation>`_ tool before it is merged.
 
 To understand how the Revelation source code is structured, it is a good idea to start by reading about the `Pydgin <https://github.com/cornell-brg/pydgin>`_ framework.
 
-.. seealso:: Derek Lockhart and Berkin Ilbeyi (2015) `Pydgin: Using RPython to Generate Fast Instruction-Set Simulators <http://morepypy.blogspot.co.uk/2015/03/pydgin-using-rpython-to-generate-fast.html>`_ Guest post on the PyPy status blog.
+.. seealso:: Derek Lockhart and Berkin Ilbeyi (2015) `Pydgin: Using RPython to Generate Fast Instruction-Set Simulators <https://morepypy.blogspot.co.uk/2015/03/pydgin-using-rpython-to-generate-fast.html>`_ Guest post on the PyPy status blog.
 
-Any changes to the source code should normally be accompanied by unit tests, and should certainly not reduce the current code coverage below 99%.
+Any changes to the source code should normally be accompanied by unit tests, and should certainly not reduce the current code coverage below 100%.
 
 
-Running the unit tests locally
-------------------------------
+Running Revelation un-translated
+---------------------------------
 
-Revelation comes with a large number of unit tests, which are intended to be run with the `py.test <http://pytest.org/latest/>`_ framework.
+When working with the Revelation source code, it is easiest to run and test the simulator un-translated, until your changes are stable.
+Translating Revelation is relatively slow, however it is easy (albeit slower) to run the simulator without translating it, e.g.:
+
+.. code-block:: bash
+
+    $ pypy revelation/sim.py revelation/test/c/hello.elf  # Use pypy or python2 here
+    Loading program revelation/test/c/hello.elf on to core 0x808 (32, 08)
+    Hello, world!
+    Done! Total ticks simulated = 1951
+    Core 0x808 (32, 08): STATUS=0x00000005, Instructions executed=1951
+
+To work with the code here you need a copy of Pydgin, which you can obtain a copy from the `Pydgin project page <https://github.com/cornell-brg/pydgin>`_.
+Pydgin is a framework for writing functional simulators as `just in time interpreters <https://en.wikipedia.org/wiki/Just-in-time_compilation>`_.
+
+
+Structure of the code
+---------------------
+
+To understand the Revelation source code, it is helpful to read about Pydgin, and have a copy of the `Epiphany Architecture Reference Manual <http://adapteva.com/docs/epiphany_arch_ref.pdf>`_ to hand.
+However, there are a number of mistakes in that document, many of which are `listed on the Parallella discussion forum <https://parallella.org/forums/viewtopic.php?f=8&t=43>`_.
+This `set of notes <http://blog.alexrp.com/epiphany-notes/>`_ from Alex Rønne Petersen is also extremely helpful, as is the `Epiphany GDB code <https://github.com/adapteva/epiphany-gdb>`_.
+
+Revelation is structured as follows:
+
+- `revelation/argument_parser.py <https://github.com/futurecore/revelation/blob/master/revelation/argument_parser.py>`_ simple argument parser (RPtyhon projects do not use `argparse` or similar).
+- `revelation/condition_codes.py <https://github.com/futurecore/revelation/blob/master/revelation/condition_codes.py>`_ condition codes for branch instructions.
+- `revelation/elf_loader.py <https://github.com/futurecore/revelation/blob/master/revelation/elf_loader.py>`_ function to load an ELF file onto an individual Epiphany core.
+- `revelation/execute_bitwise.py <https://github.com/futurecore/revelation/blob/master/revelation/execute_bitwise.py>`_ semantics of bitwise instructions.
+- `revelation/execute_branch.py <https://github.com/futurecore/revelation/blob/master/revelation/execute_branch.py>`_ semantics of branch instructions.
+- `revelation/execute_farith.py <https://github.com/futurecore/revelation/blob/master/revelation/execute_farith.py>`_ FPU model.
+- `revelation/execute_interrupt.py <https://github.com/futurecore/revelation/blob/master/revelation/execute_interrupt.py>`_ semantics of instructions relating to interrupts (``rti``, ``trap``, etc.).
+- `revelation/execute_jump.py <https://github.com/futurecore/revelation/blob/master/revelation/execute_jump.py>`_ semantics of ``jr`` and ``jalr`` instructions.
+- `revelation/execute_load_store.py <https://github.com/futurecore/revelation/blob/master/revelation/execute_load_store.py>`_ semantics of load and store instructions.
+- `revelation/execute_mov.py <https://github.com/futurecore/revelation/blob/master/revelation/execute_mov.py>`_ semantics of move instructions.
+- `revelation/instruction.py <https://github.com/futurecore/revelation/blob/master/revelation/instruction.py>`_ simple model of an instruction, with methods to retrieve operands.
+- `revelation/isa.py <https://github.com/futurecore/revelation/blob/master/revelation/isa.py>`_ instruction encodings.
+- `revelation/logger.py <https://github.com/futurecore/revelation/blob/master/revelation/logger.py>`_ an object for logging ``--debug`` strings to ``r_trace.out``.
+- `revelation/machine.py <https://github.com/futurecore/revelation/blob/master/revelation/machine.py>`_ model of a single Epiphany core, including flags.
+- `revelation/registers.py <https://github.com/futurecore/revelation/blob/master/revelation/registers.py>`_ dictionaries and functions for finding named registers and their sizes.
+- `revelation/sim.py <https://github.com/futurecore/revelation/blob/master/revelation/sim.py>`_ entry point to simulator.
+- `revelation/storage.py <https://github.com/futurecore/revelation/blob/master/revelation/storage.py>`_ RAM model.
+- `revelation/utils.py <https://github.com/futurecore/revelation/blob/master/revelation/utils.py>`_ bit manipulation utilities.
+
+
+Running the unit tests
+----------------------
+
+Revelation comes with a large number of unit tests, which are intended to be run with the `py.test <http://docs.pytest.org/en/latest/>`_ framework.
 To run the provided tests, first ensure that the required packages are installed:
 
 .. code-block:: bash
 
     $ pip install -r requirements.txt
 
-
 Then run the tests themselves:
 
 .. code-block:: bash
 
-    $ py.test -s --cov-report term-missing --cov epiphany epiphany/test/ --no-cov-on-fail -n 4
+    $ py.test --cov-report term-missing --cov revelation revelation/test/
+
+Note that the tests may take some time to run, particularly those that load an ELF file.
 
 
 Structure of the unit tests
 ---------------------------
 
-All unit tests can be found in the ``epiphany.test`` package.
-Most tests are written in pure Python and test the internals of the simulator code, but there are also two directories of C and Assembler code which contain integration tests.
-
+All unit tests can be found in the `revelation.test <https://github.com/futurecore/revelation/tree/master/revelation/test>`_ package.
+Most tests are written in pure Python and test the internals of the simulator code.
 Revelation provides a number of convenience modules which are intended to make it easier to quickly construct unit tests and reduce duplicate code.
 It is recommended that anyone adding new tests make uses of these modules, which are described below.
+
 
 The ``opcode_factory`` module
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Epiphany instructions are 32bit or 16bit binary numbers.
-Writing these by hand is error prone and tedious, and loading an ELF file is not appropriate for small unit tests.
-The `epiphany.test.opcode_factory <https://github.com/futurecore/revelation/blob/master/epiphany/test/opcode_factory.py>`_ module provides a function to create each instruction in the Epiphany ISA.
+Writing these by hand is error prone and tedious, and loading an ELF file is not always appropriate for small unit tests.
+The `revelation.test.opcode_factory <https://github.com/futurecore/revelation/blob/master/revelation/test/opcode_factory.py>`_ module provides a function to create every instruction in the Epiphany ISA.
 Where there are 32bit and 16bit variants of the same instruction, both versions are available.
 For example, the following code creates 32 and 16bit versions of the *logical shift left* instruction:
 
 .. code-block:: python
 
-    >>> import epiphany.test.opcode_factory as opcode_factory
+    >>> import revelation.test.opcode_factory as opcode_factory
     >>> bin(opcode_factory.lsl32(rd=43, rn=42, rm=41))
     '0b10110110100010100110100010101111'
     >>> bin(opcode_factory.lsl16(rd=3, rn=2, rm=1))
@@ -62,9 +110,9 @@ Note that operands to the instruction are passed to the factory function as keyw
 These are named exactly as they are described in the opcode decode table on page 155 of the `Epiphany Architecture Reference Manual <http://adapteva.com/docs/epiphany_arch_ref.pdf>`_.
 In the example above, the LSL instruction takes three operands:
 
-* **rd** a destination register
-* **rn** an operand register
-* **rm** an operand register
+  - **rd** a destination register
+  - **rn** an operand register
+  - **rm** an operand register
 
 
 The ``new_state`` function
@@ -72,7 +120,7 @@ The ``new_state`` function
 
 Unit tests for Revelation usually check whether the simulator halts with the expected state (i.e. flags, registers and RAM).
 It is often useful to be able to start the simulator in a particular state.
-Rather than setting each register or flag individually, Revelation provides the `epiphany.test.machine.new_state <https://github.com/futurecore/revelation/blob/master/epiphany/test/machine.py>`_ function which can accept register and flag values as named parameters.
+Rather than setting each register or flag individually, Revelation provides the `epiphany.test.machine.new_state <https://github.com/futurecore/revelation/blob/master/revelation/test/machine.py>`_ function which can accept register and flag values as named parameters.
 
 For example:
 
@@ -93,7 +141,7 @@ The ``StateChecker`` class
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Similarly, it is inconvenient to write separate assertions to check each flag, register or word in RAM .
-The `epiphany.test.machine <https://github.com/futurecore/revelation/blob/master/epiphany/test/machine.py>`_ module provides a class called ``StateChecker`` which manages this.
+The `epiphany.test.machine <https://github.com/futurecore/revelation/blob/master/revelation/test/machine.py>`_ module provides a class called ``StateChecker`` which manages this.
 A new ``StateChecker`` takes register and flag values as parameters to its constructor, in exactly the same way as the ``new_state`` function described above.
 The ``StateChecker.check`` method takes a state as a parameter, then automatically runs assertions to check that each register or flag of interest is as expected.
 
@@ -101,18 +149,16 @@ For example:
 
 .. code-block:: python
 
-    from epiphany.instruction import Instruction
-    from epiphany.isa import decode
-    from epiphany.machine import RESET_ADDR
-    from epiphany.test.machine import StateChecker, new_state
+    from revelation.instruction import Instruction
+    from revelation.isa import decode
+    from revelation.machine import RESET_ADDR
+    from revelation.test.machine import StateChecker, new_state
 
-    import opcode_factory
+    import revelation.test.opcode_factory as opcode_factory
     import pytest
 
     @pytest.mark.parametrize('is16bit,val', [(True, 0b111), (False, 0b1111)])
     def test_execute_movcond(is16bit, val):
-        """Test that MOV<COND> can move values between registers.
-        """
         state = new_state(AZ=1, rf1=val)
         instr = (opcode_factory.movcond16(condition=0b0000, rd=0, rn=1) if is16bit
                  else opcode_factory.movcond32(condition=0b0000, rd=0, rn=1))
@@ -123,7 +169,7 @@ For example:
         expected_state.check(state)
 
 
-Note that like most unit tests in Revelation, the example above uses `pytest.mark.parametrize <https://pytest.org/latest/parametrize.html>`_ to avoid duplicating code.
+Note that like most unit tests in Revelation, the example above uses `pytest.mark.parametrize <http://docs.pytest.org/en/latest/parametrize.html>`_ to avoid duplicating code.
 
 
 Checking the contents of RAM
@@ -136,127 +182,136 @@ For example:
 
 .. code-block:: python
 
-    @pytest.mark.parametrize('sub,new_rn', [(1, 8 - 4), ... (0, 8 + 4)])
+    @pytest.mark.parametrize('sub,new_rn', [(1, 8 - 4),
+                                            (0, 8 + 4),
+                                            (1, 8 - 4),
+                                            (0, 8 + 4)])
     def test_execute_str_disp_pm(sub, new_rn):
-        state = new_state(rf0=0xFFFFFFFF, rf5=8)
-        # We can set the contents of a word in memory here:
-        # state.mem.write(8, 4, 42) # Start address, number of bytes, value
+        # Store.
+        state = new_state(rf0=0xffffffff, rf5=8)
+        # bb: 00=byte, 01=half-word, 10=word, 11=double-word
         instr = opcode_factory.ldstrpmd32(rd=0, rn=5, sub=sub, imm=1, bb=0b10, s=1)
         name, executefn = decode(instr)
         executefn(state, Instruction(instr, None))
-        expected_state = StateChecker(rf0=0xFFFFFFFF, rf5=new_rn)
-        # Check the contents of the half-word starting at address 8:
-        expected_state.check(state, memory=[(8, 4, 0xFFFFFFFF)])
+        expected_state = StateChecker(rf0=0xffffffff, rf5=new_rn)
+        expected_state.check(state, memory=[(8, 4, 0xffffffff)])
 
 
 The ``MockEpiphany`` class
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 In the examples above, each unit test executed exactly one Epiphany instruction.
-It is possible to execute a list of instructions, using the `epiphany.test.sim.MockEpiphany <https://github.com/futurecore/revelation/blob/master/epiphany/test/sim.py>`_ class.
+It is possible to execute a list of instructions, using the `epiphany.test.sim.MockEpiphany <https://github.com/futurecore/revelation/blob/master/revelation/test/sim.py>`_ class.
 This allows you to write a simple "program" using the opcode factory to construct each instruction, without having to compile an ELF file.
 
-The following example tests that the ``bkpt16`` instruction correctly advances the program counter and halts the simulator:
+The following example tests that the ``trap16(3)`` instruction correctly halts the simulator:
 
 .. code-block:: python
 
-    from epiphany.machine import RESET_ADDR
-    from epiphany.test.sim import MockEpiphany
-    from epiphany.test.machine import StateChecker
+    from revelation.machine import RESET_ADDR
+    from revelation.test.sim import MockRevelation
+    from revelation.test.machine import StateChecker
+    from revelation.test.opcode_factory as opcode_factory
 
-    import opcode_factory
-
-    def test_sim_nop16_bkpt16():
-        instructions = [(opcode_factory.nop16(),  16),
-                        (opcode_factory.bkpt16(), 16),
-                        ]
-        epiphany = MockEpiphany()
-        epiphany.init_state(instructions)
-        assert epiphany.state.running
-        epiphany.run()
-        expected_state = StateChecker(pc=(4 + RESET_ADDR))
-        expected_state.check(epiphany.state)
-        assert not epiphany.state.running
+    def test_sim_trap16_3():
+        instructions = [(opcode_factory.trap16(3), 16)]
+        revelation = MockRevelation()
+        revelation.init_state(instructions)
+        assert revelation.states[0].running
+        exit_code, ticks = revelation.run()
+        expected_state = StateChecker(pc=(2 + RESET_ADDR))
+        expected_state.check(revelation.states[0])
+        assert EXIT_SUCCESS == exit_code
+        assert len(instructions) == ticks
+        assert not revelation.states[0].running
 
 
 Integration tests that run ELF files
 -------------------------------------
 
-Tests that load and execute ELF files are structured differently to the unit tests above.
-Instead of using the mocking framework that Revelation provides, integration tests need to load ELF files into memory and run the simulator as if it had been invoked on the command line.
-Assertions can then use the `epiphany.test.machine.StateMachine <https://github.com/futurecore/revelation/blob/master/epiphany/test/machine.py>`_ class, or can use the `capsys <https://pytest.org/latest/capture.html>`_ fixture provided by `py.test <http://pytest.org/latest/>`_.
+Many tests use compiled ELF files, which should be compiled with the `2016.3.1 version of the eSDK <https://github.com/adapteva/epiphany-sdk>`_ and checked into the repository.
+Makefiles are provided in all relevant directories.
 
-For example, this simple piece of C can be found in the file `epiphany/test/c/nothing.c <https://github.com/futurecore/revelation/blob/master/epiphany/test/c/nothing.c>`_:
+You can find compiled ELF files, and the source that generated them, in the following directories:
+
+- ``revelation/test/asm`` Assembler files compiled to Epiphany ELF format (intended to run on a single-core).
+- ``revelation/test/c`` C files compiled to Epiphany ELF format (intended to run on a single-core).
+- ``revelation/test/multicore`` C files compiled to Epiphany ELF format (intended to run on more than one core).
+- ``revelation/test/syscall-layout`` C files compiled to Epiphany ELF format.
+- ``revelation/test/zigzag`` C files compiled to Epiphany ELF format (intended to run on more than one core).
+
+The `asm` directory contains at least one assembler file for each Epiphany instruction, most test cases are taken from the `Epiphany Architecture Reference Manual <http://adapteva.com/docs/epiphany_arch_ref.pdf>`_.
+The `c` and `multicore` directories contain more complex test cases (e.g. testing interrupts and system calls).
+
+The ``syscall-layout`` and ``zigzag`` directories are different to the others.
+``syscall-layout`` tests write out the format of ``stat`` and ``fstat`` objects, this is intended to help debugging Revelation syscalls on a new platform.
+``zigzag`` contains a complex multicore test case written by Ola Jeppsson, you can find the original in the `esim-test-bins <https://github.com/olajep/esim-test-bins>`_ repository.
+
+Where test cases are written by other authors, they should contain all relevant copyright notices and attributions.
+
+Tests that load and execute ELF files are structured differently to the pure-Python unit tests.
+Instead of using the mocking framework that Revelation provides, integration tests need to load ELF files into memory and run the simulator as if it had been invoked on the command line.
+Assertions can then use the `revelation.test.machine.StateMachine <https://github.com/futurecore/revelation/blob/master/revelation/test/machine.py>`_ class, or can use the `capsys <http://docs.pytest.org/en/latest//capture.html>`_ fixture provided by `py.test <http://docs.pytest.org/en/latest/>`_.
+
+For example, this simple piece of C can be found in the file `epiphany/test/c/hello.c <https://github.com/futurecore/revelation/blob/master/revelation/test/c/hello.c>`_:
 
 .. code-block:: c
 
+    #include <stdlib.h>
+    #include <stdio.h>
     int main() {
-       return 0;
+        printf("Hello, world!\n");
     }
 
 
-The code is compiled with a `Makefile <https://github.com/futurecore/revelation/blob/master/epiphany/test/c/Makefile>`_ which can be found in the same directory as the C code.
+The code is compiled with a `Makefile <https://github.com/futurecore/revelation/blob/master/revelation/test/c/Makefile>`_ which can be found in the same directory as the C code.
 
-Each ELF file which has been compiled from C code has a corresponding Python unit test which can be found in `epiphany/test/test_compiled_c.py <https://github.com/futurecore/revelation/blob/master/epiphany/test/test_compiled_c.py>`_.
+Each ELF file which is in the ``revelation/test/c/`` directory has a corresponding Python unit test which can be found in `revelation/test/test_compiled_c.py <https://github.com/futurecore/revelation/blob/master/revelation/test/test_compiled_c.py>`_.
 These tests are normally parametrized, to avoid duplicate code.
 For example:
 
 .. code-block:: python
 
+    from revelation.sim import EXIT_SUCCESS, Revelation
+    from revelation.test.machine import StateChecker
+
     import os.path
     import pytest
 
-    elf_dir = os.path.join('epiphany', 'test', 'c')
+    elf_dir = os.path.join(os.path.dirname(os.path.abspath('__file__')),
+                           'revelation', 'test', 'c')
 
-    @pytest.mark.parametrize("elf_file,expected", [('nothing.elf',   176),
-                                                   ...
-                                                  ])
-    def test_compiled_c(elf_file, expected, capsys):
+
+    @pytest.mark.parametrize('elf_file,expected',
+        [('hello.elf',              'Hello, world!\n'),
+         ...
+        ])
+    def test_compiled_c_with_output(elf_file, expected, capfd):
         """Test an ELF file that has been compiled from a C function.
-        This test checks that the correct number of instructions have been executed.
+        This test checks text printed to STDOUT.
         """
         elf_filename = os.path.join(elf_dir, elf_file)
-        epiphany = Epiphany()
+        revelation = Revelation()
         with open(elf_filename, 'rb') as elf:
-            epiphany.init_state(elf, elf_filename, '', [], False, is_test=True)
-            epiphany.max_insts = 10000
-            epiphany.run()
-            out, err = capsys.readouterr()
-            expected_text = 'Instructions Executed = ' + str(expected)
-            assert expected_text in out
+            revelation.init_state(elf, elf_filename, False, is_test=True)
+            revelation.max_insts = 100000
+            revelation.run()
+            assert not revelation.states[0].running
+            out, err = capfd.readouterr()
             assert err == ''
-            assert not epiphany.state.running
+            expected_full = (('Loading program %s on to core 0x808 (32, 08)\n' % elf_filename)
+                              + expected)
+            assert out.startswith(expected_full)
 
 
-Similarly, the `epiphany/test/asm/ <https://github.com/futurecore/revelation/blob/master/epiphany/test/asm/>`_ directory contains an assembler file for each opcode in the Epiphany ISA.
-Unit tests for the resulting ELF files can be found in `epiphany/test/test_asm.py <https://github.com/futurecore/revelation/blob/master/epiphany/test/test_asm.py>`_.
+Similarly, the `epiphany/test/asm/ <https://github.com/futurecore/revelation/tree/master/revelation/test/asm/>`_ directory contains an assembler file for each opcode in the Epiphany ISA.
+Unit tests for the resulting ELF files can be found in `epiphany/test/test_asm.py <https://github.com/futurecore/revelation/tree/master/revelation/test/asm>`_.
 
 
 Compiling your own ELF files
 ----------------------------
 
-In order to recompile the ELF files in the Revelation repository, or create new ELFs, you will need to install the `official Epiphany SDK <https://github.com/adapteva/epiphany-sdk>`_ provided by Adapteva.
-If you do not wish to install the Adapteva toolchain on your own machine, we have provided a `Docker image <https://registry.hub.docker.com/u/snim2/parallella-devenv/>`_ which has the Epiphany toolchain pre-installed.
-
-
-Compiling the simulator
------------------------
-
-To compile the simulator to a native executable, you need to first clone (or download) a recent version of the `PyPy toolchain <https://bitbucket.org/pypy/pypy>`_.
-The ``rpython`` directory from PyPy needs to be included in your ``PYTHONPATH`` environment variable.
-
-To compile *without* a JIT:
-
-.. code-block:: bash
-
-    $ PYTHONPATH=. .../pypy/rpython/bin/rpython -Ojit epiphany/sim.py
-
-
-To compile the simulator *with* a JIT:
-
-.. code-block:: bash
-
-    $ PYTHONPATH=. ../../pypy/rpython/bin/rpython -Ojit epiphany/sim.py
+In order to recompile the ELF files in the Revelation repository, or create new ELFs, you will need to install version 2016.3.1 of the `official Epiphany SDK <https://github.com/adapteva/epiphany-sdk>`_ provided by Adapteva.
 
 
 .. toctree::
