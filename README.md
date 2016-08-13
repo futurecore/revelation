@@ -88,6 +88,20 @@ EXAMPLES:
 ```
 
 
+## Revelation features
+
+There are a small number of unimplemented features in Revelation:
+
+  * Breakpoints (both `bkpt` and `mbkpt`)
+  * Multi-core interrupts (`sync` and `wand`)
+  * Floating-point rounding modes (i.e. compiling with `-mfp-mode=int|truncate|round-nearest`)
+  * Direct-memory access
+  * Work-groups and loading more than one binary
+  * The `DEBUGSTATUS` and `DEBUGCMD` registers (you can read and write to these but they don't have any special effects)
+  * The `MESHCONFIG` registers (you can read and write to these but they don't have any special effects)
+  * Event timers other than IALU and FPU valid instructions
+
+
 ## Translating the simulator
 
 'Translating' is the process of converting the RPython code here into C, and then compiling that to a native executable.
