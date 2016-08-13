@@ -141,27 +141,27 @@ To translate *without* a JIT:
 
 .. code-block:: bash
 
-    $ PATH_TO_PYPY/rpython/bin/rpython -O2 epiphany/sim.py
+    $ PATH_TO_PYPY/rpython/bin/rpython -O2 revelation/sim.py
 
 
 To translate the simulator *with* a JIT:
 
 .. code-block:: bash
 
-    $ PATH_TO_PYPY/rpython/bin/rpython -Ojit epiphany/sim.py
+    $ PATH_TO_PYPY/rpython/bin/rpython -Ojit revelation/sim.py
 
 
 To translate the simulator *with* a JIT and debug support, so that you can use the ``--debug`` command-line option:
 
 .. code-block:: bash
 
-    $ PATH_TO_PYPY/rpython/bin/rpython -Ojit epiphany/sim.py --debug
+    $ PATH_TO_PYPY/rpython/bin/rpython -Ojit revelation/sim.py --debug
 
 To translate with RPython debug support (e.g. to run the simulator through GDB whilst debugging):
 
 .. code-block:: bash
 
-    $ PATH_TO_PYPY/rpython/bin/rpython -Ojit --lldebug epiphany/sim.py --debug
+    $ PATH_TO_PYPY/rpython/bin/rpython -Ojit --lldebug revelation/sim.py --debug
 
 
 .. toctree::
