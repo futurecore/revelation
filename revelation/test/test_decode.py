@@ -87,7 +87,7 @@ import pytest
                           ('rti16',       opcode_factory.rti16()),
                           ('wand16',      opcode_factory.wand16()),
                           ('trap16',      opcode_factory.trap16(trap=0b111111)),
-                          ('unimpl',      opcode_factory.unimpl()),
+                          ('unimpl32',      opcode_factory.unimpl32()),
                          ])
 def test_decode(name, instr):
     decoded_name, _ = decode(instr)

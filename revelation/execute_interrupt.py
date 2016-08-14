@@ -192,7 +192,7 @@ def execute_wand16(s, inst):
     raise NotImplementedInstError('wand instruction not implemented.')
 
 
-def execute_unimpl(s, inst):
+def execute_unimpl32(s, inst):
     """Not implemented exception.
     STATUS[16-19] = 0100  [Epiphany III]
     STATUS[16-19] = 1111  [Epiphany IV]

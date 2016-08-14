@@ -15,7 +15,7 @@ sync16  = make_zero_operand_factory(0b0000000111110010)
 rti16   = make_zero_operand_factory(0b0000000111010010)
 swi16   = make_zero_operand_factory(0b0000000111100010)
 wand16  = make_zero_operand_factory(0b0000000110000010)
-unimpl  = make_zero_operand_factory(0b00000000000011110000000000001111)
+unimpl32  = make_zero_operand_factory(0b00000000000011110000000000001111)
 
 
 def trap16(trap=0):

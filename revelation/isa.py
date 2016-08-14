@@ -96,7 +96,7 @@ encodings = [
     ['swi16',       'xxxxxxxx_xxxxxxxx_xxxxxx01_11100010'],
     ['trap16',      'xxxxxxxx_xxxxxxxx_xxxxxx11_11100010'],
     ['wand16',      'xxxxxxxx_xxxxxxxx_xxxxxx01_10000010'],
-    ['unimpl',      'xxxxxxxx_xxxx1111_xxxxxx00_00001111'],
+    ['unimpl32',    'xxxxxxxx_xxxx1111_xxxxxx00_00001111'],
 ]
 
 
@@ -176,18 +176,18 @@ execute_jalr32 = execute_jump.make_jr_executor(False, save_lr=True)
 execute_jalr16 = execute_jump.make_jr_executor(True,  save_lr=True)
 
 # Interrupt and multicore instructions
-execute_nop16   = execute_interrupts.execute_nop16
-execute_idle16  = execute_interrupts.execute_idle16
-execute_bkpt16  = execute_interrupts.execute_bkpt16
-execute_mbkpt16 = execute_interrupts.execute_mbkpt16
-execute_gie16   = execute_interrupts.execute_gie16
-execute_gid16   = execute_interrupts.execute_gid16
-execute_sync16  = execute_interrupts.execute_sync16
-execute_rti16   = execute_interrupts.execute_rti16
-execute_swi16   = execute_interrupts.execute_swi16
-execute_wand16  = execute_interrupts.execute_wand16
-execute_trap16  = execute_interrupts.execute_trap16
-execute_unimpl  = execute_interrupts.execute_unimpl
+execute_nop16    = execute_interrupts.execute_nop16
+execute_idle16   = execute_interrupts.execute_idle16
+execute_bkpt16   = execute_interrupts.execute_bkpt16
+execute_mbkpt16  = execute_interrupts.execute_mbkpt16
+execute_gie16    = execute_interrupts.execute_gie16
+execute_gid16    = execute_interrupts.execute_gid16
+execute_sync16   = execute_interrupts.execute_sync16
+execute_rti16    = execute_interrupts.execute_rti16
+execute_swi16    = execute_interrupts.execute_swi16
+execute_wand16   = execute_interrupts.execute_wand16
+execute_trap16   = execute_interrupts.execute_trap16
+execute_unimpl32 = execute_interrupts.execute_unimpl32
 
 # Create Decoder
 decode = create_risc_decoder(encodings, globals(), debug=True)

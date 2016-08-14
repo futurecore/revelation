@@ -131,9 +131,9 @@ def test_execute_multicore_instructions(name, instr):
         executefn(state, Instruction(instr, None))
 
 
-def test_execute_unimpl():
+def test_execute_unimpl32():
     state = new_state()
-    instr = opcode_factory.unimpl()
+    instr = opcode_factory.unimpl32()
     name, executefn = decode(instr)
     executefn(state, Instruction(instr, None))
     expected_state = StateChecker(EXCAUSE=0b0100)
