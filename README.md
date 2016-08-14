@@ -72,6 +72,7 @@ The following OPTIONS are supported:
     --time, -t               Print approximate timing information
     --jit FLAGS              Set flags to tune the JIT (see
                                  rpython.rlib.jit.PARAMETER_DOCS)
+    --gdb, -g               Wait for input on start (e.g. when running via gdb)
     --debug,-d FLAGS        Enable debug flags in a comma-separated form. The
                             following flags are supported:
                                  trace     pc, decoded instructions

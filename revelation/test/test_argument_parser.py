@@ -16,6 +16,7 @@ def test_argv_defaults(capfd):
     assert retval == 0  # Exit success.
     _, err = capfd.readouterr()
     assert err == ''
+    assert revelation.run_from_gdb == False
     assert revelation.rows == 1
     assert revelation.cols == 1
     assert revelation.first_core == 0x808
@@ -67,10 +68,13 @@ def test_argv_debug_flags(capfd):
 
 
 @pytest.mark.parametrize('argv,attribute',
-[(('sim.py', '--time', ELF_FILE), 'collect_times'),
- (('sim.py', '-t',     ELF_FILE), 'collect_times'),
+[(('sim.py', '--time', ELF_FILE),    'collect_times'),
+ (('sim.py', '-t',     ELF_FILE),    'collect_times'),
  (('sim.py', '--profile', ELF_FILE), 'profile'),
- (('sim.py', '-p',     ELF_FILE), 'profile'),])
+ (('sim.py', '-p',     ELF_FILE),    'profile'),
+ (('sim.py', '--gdb', ELF_FILE),     'run_from_gdb'),
+ (('sim.py', '-g'),                  'run_from_gdb'),
+ ])
 def test_argv_flags_with_no_args(argv, attribute, capfd):
     revelation = Revelation()
     entry_point = revelation.get_entry_point()

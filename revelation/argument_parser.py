@@ -15,6 +15,7 @@ The following OPTIONS are supported:
     --time, -t               Print approximate timing information
     --jit FLAGS              Set flags to tune the JIT (see
                                  rpython.rlib.jit.PARAMETER_DOCS)
+    --gdb, -g               Wait for input on start (e.g. when running via gdb).
     --debug,-d FLAGS        Enable debug flags in a comma-separated form. The
                             following flags are supported:
                                  trace     pc, decoded instructions
@@ -58,6 +59,8 @@ def cli_parser(argv, simulator, debug_enabled):
                 print (USAGE_TEXT % (simulator.arch_name, argv[0], argv[0],
                                      argv[0], argv[0], argv[0]))
                 raise DoNotInterpretError
+            elif token == '--gdb' or token == '-g':
+                simulator.run_from_gdb = True
             elif token == '--profile' or token == '-p':  # Undocumented.
                 simulator.profile = True
             elif token == '--time' or token == '-t':
@@ -104,7 +107,9 @@ def cli_parser(argv, simulator, debug_enabled):
             elif prev_token == '--switch':
                 simulator.switch_interval = int(token)
             prev_token = ''
-    if filename_index == 0:
+    if filename_index == 0 and not simulator.run_from_gdb:
         print 'You must supply a file name'
         raise SyntaxError
+    if simulator.run_from_gdb:
+        return None, jit, debug_flags
     return argv[filename_index], jit, debug_flags
