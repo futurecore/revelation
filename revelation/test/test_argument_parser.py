@@ -1,5 +1,6 @@
 from revelation.argument_parser import USAGE_TEXT
 from revelation.sim import Revelation
+from revelation.test.sim import MockRevelation
 
 import os.path
 import pytest
@@ -72,18 +73,27 @@ def test_argv_debug_flags(capfd):
  (('sim.py', '-t',     ELF_FILE),    'collect_times'),
  (('sim.py', '--profile', ELF_FILE), 'profile'),
  (('sim.py', '-p',     ELF_FILE),    'profile'),
- (('sim.py', '--gdb', ELF_FILE),     'run_from_gdb'),
- (('sim.py', '-g'),                  'run_from_gdb'),
  ])
 def test_argv_flags_with_no_args(argv, attribute, capfd):
     revelation = Revelation()
     entry_point = revelation.get_entry_point()
     retval = entry_point(argv)
-    assert retval == 0  # Exit success.
+    assert 0 == retval  # Exit success.
     _, err = capfd.readouterr()
     assert err == ''
     assert getattr(revelation, attribute)
 
+
+@pytest.mark.parametrize('argv,attribute',
+[(('sim.py', '--gdb', ELF_FILE),     'run_from_gdb'),
+ (('sim.py', '-g'),                  'run_from_gdb'),
+ ])
+def test_run_from_gdb(argv, attribute):
+    revelation = MockRevelation()
+    entry_point = revelation.get_entry_point()
+    retval = entry_point(argv)
+    assert getattr(revelation, attribute)
+    assert 0 == retval
 
 @pytest.mark.parametrize('argv,expected',
 [(('sim.py', '-r', '1', 'dummy.elf'),    'Could not open file dummy.elf\n'),

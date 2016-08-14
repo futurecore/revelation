@@ -5,6 +5,7 @@ from pydgin.sim import Sim, init_sim
 
 from revelation.argument_parser import cli_parser, DoNotInterpretError
 from revelation.elf_loader import load_program
+from revelation.gdb.gdb import RSPServer
 from revelation.instruction import Instruction
 from revelation.isa import decode
 from revelation.logger import Logger
@@ -161,9 +162,13 @@ class Revelation(Sim):
                 print 'CLI parser took: %fs' % (timer - self.timer)
                 self.timer = timer
             if self.run_from_gdb:
-                # FIXME: Unimplemented.
+                # If the user is controlling Revelation from GDB, we bypass
+                # self.init_state() and self.run() and let the RSP server
+                # initialise the simulator and load any necessary ELF files.
+                gdb_server = RSPServer(self)
+                gdb_server.start()
                 exit_code = EXIT_SUCCESS
-                tick_counter = 0
+                tick_counter = -1
             else:
                 try:
                     exit_code, tick_counter = self.run()

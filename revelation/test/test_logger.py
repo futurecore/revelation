@@ -1,4 +1,4 @@
-from revelation.logger import Logger
+from revelation.logger import Logger, StdOutLogger
 import os
 import pytest
 import tempfile
@@ -50,3 +50,11 @@ def test_log_never_appends():
         log_contents = fd.read()
     assert os.path.isfile(filename)
     assert log_contents == 'Hello, World!\nGoodbye tests.\n'
+
+def test_stdout_logger(capfd):
+    logger = StdOutLogger()
+    msg = 'Hello, world!'
+    logger.log(msg)
+    out, err = capfd.readouterr()
+    assert '' == err
+    assert (msg + '\n') == out

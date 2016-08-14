@@ -1,3 +1,6 @@
+import sys
+
+
 class Logger(object):
     """Simple logger which writes to a file.
     Always overwrites, never appends.
@@ -14,3 +17,14 @@ class Logger(object):
 
     def close(self):
         self.stream.close()
+
+
+class StdOutLogger(Logger):
+    """Simple logger which writes to a file.
+    Always overwrites, never appends.
+    """
+    def __init__(self):
+        pass
+
+    def log(self, message):
+        print message
