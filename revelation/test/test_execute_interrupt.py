@@ -46,11 +46,13 @@ def test_execute_idle16():
 
 
 def test_execute_bkpt16():
-    with pytest.raises(NotImplementedInstError):
-        state = new_state()
-        instr = opcode_factory.bkpt16()
-        name, executefn = decode(instr)
-        executefn(state, Instruction(instr, None))
+    state = new_state()
+    instr = opcode_factory.bkpt16()
+    name, executefn = decode(instr)
+    expected_state = StateChecker(pc=(RESET_ADDR + 2), ACTIVE=False,
+                                  rfDEBUGSTATUS=1)
+    executefn(state, Instruction(instr, None))
+    expected_state.check(state)
 
 
 def test_execute_rti16_no_interrupt():

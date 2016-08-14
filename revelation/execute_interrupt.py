@@ -26,7 +26,9 @@ def execute_bkpt16(s, inst):
     GDB and should not be user software. The instruction is included here
     only for the purpose of reference.
     """
-    raise NotImplementedInstError('bkpt instruction not implemented.')
+    s.rf[reg_map['DEBUGSTATUS']] |= 1
+    s.pc += 2
+    s.ACTIVE = False
 
 
 def execute_mbkpt16(s, inst):
