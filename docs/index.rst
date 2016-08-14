@@ -1,5 +1,5 @@
-Welcome to Revelation!
-======================
+Revelation: a JITed simulator for the Adapteva Epiphany
+=======================================================
 
 Revelation is a simulator for the `Adapteva Epiphany <http://www.parallella.org/board/>`_ chip.
 Revelation is based on Pydgin, which is a framework for writing functional simulators as `just in time interpreters <https://en.wikipedia.org/wiki/Just-in-time_compilation>`_.

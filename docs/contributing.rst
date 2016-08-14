@@ -120,13 +120,13 @@ The ``new_state`` function
 
 Unit tests for Revelation usually check whether the simulator halts with the expected state (i.e. flags, registers and RAM).
 It is often useful to be able to start the simulator in a particular state.
-Rather than setting each register or flag individually, Revelation provides the `epiphany.test.machine.new_state <https://github.com/futurecore/revelation/blob/master/revelation/test/machine.py>`_ function which can accept register and flag values as named parameters.
+Rather than setting each register or flag individually, Revelation provides the `revelation.test.machine.new_state <https://github.com/futurecore/revelation/blob/master/revelation/test/machine.py>`_ function which can accept register and flag values as named parameters.
 
 For example:
 
 .. code-block:: python
 
-    >>> from epiphany.test.machine import new_state
+    >>> from revelation.test.machine import new_state
     >>> state = new_state(AZ=1, AN=0, rf0=0xFFFFFFFF, rf1=0xbeef)
     NOTE: Using sparse storage
     sparse memory size 400 addr mask 3ff block mask fffffc00
@@ -141,7 +141,7 @@ The ``StateChecker`` class
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Similarly, it is inconvenient to write separate assertions to check each flag, register or word in RAM .
-The `epiphany.test.machine <https://github.com/futurecore/revelation/blob/master/revelation/test/machine.py>`_ module provides a class called ``StateChecker`` which manages this.
+The `revelation.test.machine <https://github.com/futurecore/revelation/blob/master/revelation/test/machine.py>`_ module provides a class called ``StateChecker`` which manages this.
 A new ``StateChecker`` takes register and flag values as parameters to its constructor, in exactly the same way as the ``new_state`` function described above.
 The ``StateChecker.check`` method takes a state as a parameter, then automatically runs assertions to check that each register or flag of interest is as expected.
 
@@ -201,7 +201,7 @@ The ``MockEpiphany`` class
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 In the examples above, each unit test executed exactly one Epiphany instruction.
-It is possible to execute a list of instructions, using the `epiphany.test.sim.MockEpiphany <https://github.com/futurecore/revelation/blob/master/revelation/test/sim.py>`_ class.
+It is possible to execute a list of instructions, using the `revelation.test.sim.MockEpiphany <https://github.com/futurecore/revelation/blob/master/revelation/test/sim.py>`_ class.
 This allows you to write a simple "program" using the opcode factory to construct each instruction, without having to compile an ELF file.
 
 The following example tests that the ``trap16(3)`` instruction correctly halts the simulator:
@@ -253,7 +253,7 @@ Tests that load and execute ELF files are structured differently to the pure-Pyt
 Instead of using the mocking framework that Revelation provides, integration tests need to load ELF files into memory and run the simulator as if it had been invoked on the command line.
 Assertions can then use the `revelation.test.machine.StateMachine <https://github.com/futurecore/revelation/blob/master/revelation/test/machine.py>`_ class, or can use the `capsys <http://docs.pytest.org/en/latest//capture.html>`_ fixture provided by `py.test <http://docs.pytest.org/en/latest/>`_.
 
-For example, this simple piece of C can be found in the file `epiphany/test/c/hello.c <https://github.com/futurecore/revelation/blob/master/revelation/test/c/hello.c>`_:
+For example, this simple piece of C can be found in the file `revelation/test/c/hello.c <https://github.com/futurecore/revelation/blob/master/revelation/test/c/hello.c>`_:
 
 .. code-block:: c
 
@@ -304,14 +304,176 @@ For example:
             assert out.startswith(expected_full)
 
 
-Similarly, the `epiphany/test/asm/ <https://github.com/futurecore/revelation/tree/master/revelation/test/asm/>`_ directory contains an assembler file for each opcode in the Epiphany ISA.
-Unit tests for the resulting ELF files can be found in `epiphany/test/test_asm.py <https://github.com/futurecore/revelation/tree/master/revelation/test/asm>`_.
+Similarly, the `revelation/test/asm/ <https://github.com/futurecore/revelation/tree/master/revelation/test/asm/>`_ directory contains an assembler file for each opcode in the Epiphany ISA.
+Unit tests for the resulting ELF files can be found in `revelation/test/test_asm.py <https://github.com/futurecore/revelation/tree/master/revelation/test/asm>`_.
 
 
 Compiling your own ELF files
 ----------------------------
 
 In order to recompile the ELF files in the Revelation repository, or create new ELFs, you will need to install version 2016.3.1 of the `official Epiphany SDK <https://github.com/adapteva/epiphany-sdk>`_ provided by Adapteva.
+
+
+Other debugging support
+-----------------------
+
+The `scripts <https://github.com/futurecore/revelation/tree/master/scripts/>`_ directory contains two Python programs to help Revelation developers debug the simulator.
+
+
+``get_instructions_used.py``
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+`get_instructions_used.py <https://github.com/futurecore/revelation/blob/master/scripts/get_instructions_used.py>`_ searches through a trace file dumped by e-sim and prints out an alphabetical list of instructions that were executed.
+This is used for checking whether an Epiphany ELF file contains an instruction that has not yet been implemented in Revelation.
+For example:
+
+.. code-block:: bash
+
+    $ e-sim -r 1 -c 1 --extra-args="--trace=on --trace-memory=on --trace-syscall=on --trace-semantics=on --trace-file e_trace.out" revelaton/test/c/hello.elf
+    ESIM: Initialized successfully
+    ESIM: Waiting for other cores... done.
+    Hello, world!
+    ESIM: Waiting for other cores... done.
+    [INFO] core simulator 0x808 (32, 8) exited with status 0
+
+    $ cat e_trace.out
+    0x000000                       b.l 0x0000000000000100 - pc <- 0x100
+    0x000100                       mov.l r3,0x130    - registers <- 0x130
+    0x000104                       movt r3,0x0       - registers <- 0x130
+    0x000108                       jalr r3           - registers <- 0x10a, pc <- 0x130
+    0x000130 ---   _epiphany_star  mov.l sp,0x7ff0   - registers <- 0x7ff0
+    0x000134 ---   _epiphany_star  movt sp,0x0       - registers <- 0x7ff0
+    0x000138 ---   _epiphany_star  mov.l fp,0x0      - registers <- 0x0
+    0x00013c ---   _epiphany_star  mov.l r0,0x58     - registers <- 0x58
+    0x000140 ---   _epiphany_star  movt r0,0x0       - registers <- 0x58
+    0x000144 ---   _epiphany_star  ldr r0,[r0,0x0]   - memaddr <- 0x58, registers <- 0x0
+    ...
+
+    $ ./scripts/get_instructions_used.py e_trace.out
+    Instructions used by e_trace.out:
+
+    add
+    add.l
+    add.s
+    and
+    asr
+    b.l
+    b.s
+    beq.l
+    beq.s
+    bgt.l
+    ...
+
+
+``diff_trace.py``
+^^^^^^^^^^^^^^^^^
+
+A semantic error in Revelation usually means that e-sim and Revelation produce different traces for the same Epiphany ELF file.
+Traces from simulating compiled C files are usually very long, and trying to spot a semantic error by-eye is difficult and tedious.
+`diff_trace.py <https://github.com/futurecore/revelation/blob/master/scripts/diff_trace.py>`_ will produce a simple "diff" of an e-sim trace file and a Revelation trace file.
+As an aside, this is the reasons why Revelation prints its trace to a file, rather than ``STDOUT`` -- to reduce specious differences in ``fstat`` objects and similar, caused by small differences in file permissions and so on.
+
+This example shows a test case for an feature that is not implemented at the time of writing (floating-point rounding modes):
+
+.. code-block:: bash
+
+    $e-sim -r 1 -c 1 --extra-args="--trace=on --trace-memory=on --trace-syscall=on --trace-semantics=on --trace-file e_trace.out" new_tests/fpu_rounding_mode.elf
+    ESIM: Initialized successfully
+    ESIM: Waiting for other cores... done.
+
+    Round to nearest even rounding:
+    d     = 1.84467440737095516e+19
+    d - 1 = 1.84467440737095516e+19
+
+    Truncate rounding:
+    d     = 1.84467440737095516e+19
+    d - 1 = 1.84467429741979238e+19
+
+    ESIM: Waiting for other cores... done.
+    [INFO] core simulator 0x808 (32, 8) exited with status 0
+
+    $ pypy revelation/sim.py --debug trace,rf,mem,flags,syscalls new_tests/fpu_rounding_mode.elf
+    Trace will be written to: r_trace.out.
+    Loading program new_tests/fpu_rounding_mode.elf on to core 0x808 (32, 08)
+
+    Round to nearest even rounding:
+    d     = 1.84467440737095516e+19
+    d - 1 = 1.84467440737095516e+19
+
+    Truncate rounding:
+    d     = 1.84467440737095516e+19
+    d - 1 = 1.84467440737095516e+19
+
+    syscall_fstat( fd=1, buf=80807f60 ) syscall_write( fd=1, buf=8f000008, count=1 ) syscall_write( fd=1, buf=8f000008, count=20 ) syscall_write( fd=1, buf=8f000008, count=20 ) syscall_write( fd=1, buf=8f000008, count=20 ) syscall_write( fd=1, buf=8f000008, count=1 ) syscall_write( fd=1, buf=8f000008, count=13 ) syscall_write( fd=1, buf=8f000008, count=20 ) syscall_write( fd=1, buf=8f000008, count=20 ) syscall_write( fd=1, buf=8f000008, count=1 ) syscall_close( fd=0 ) syscall_close( fd=1 ) syscall_close( fd=2 ) syscall_exit( status=0 )
+    Total ticks simulated = 46,096.
+    Core 0x808 (32, 08) STATUS: 0x00001005, Instructions executed: 46,096
+
+    $ Semantics of instruction at 0x8e009980 differ:
+      Revelation: 8e009980 6dda1fe2 trap16       497      :: RD.RF[3 ] = 0000000a :: RD.RF[0 ] = 00000001 :: RD.RF[1 ] = 00007f60 :: RD.RF[2 ] = 00000000 syscall_fstat(fd=1, buf=7f60) :: WR.MEM[00007f60] = 0000000e :: WR.MEM[00007f61] = 00000000 :: WR.MEM[00007f62] = 00000019 :: WR.MEM[00007f63] = 00000000 :: WR.MEM[00007f64] = 00000090 :: WR.MEM[00007f65] = 00000021 :: WR.MEM[00007f66] = 00000000 :: WR.MEM[00007f67] = 00000000 :: WR.MEM[00007f68] = 00000001 :: WR.MEM[00007f69] = 00000000 :: WR.MEM[00007f6a] = 000000e8 :: WR.MEM[00007f6b] = 00000003 :: WR.MEM[00007f6c] = 00000005 :: WR.MEM[00007f6d] = 00000000 :: WR.MEM[00007f6e] = 00000000 :: WR.MEM[00007f6f] = 00000000 :: WR.MEM[00007f70] = 00000000 :: WR.MEM[00007f71] = 00000000 :: WR.MEM[00007f72] = 00000000 :: WR.MEM[00007f73] = 00000000 :: WR.MEM[00007f74] = 000000a0 :: WR.MEM[00007f75] = 000000f6 :: WR.MEM[00007f76] = 000000ae :: WR.MEM[00007f77] = 00000057 :: WR.MEM[00007f78] = 00000000 :: WR.MEM[00007f79] = 00000000 :: WR.MEM[00007f7a] = 00000000 :: WR.MEM[00007f7b] = 00000000 :: WR.MEM[00007f7c] = 000000aa :: WR.MEM[00007f7d] = 000000f6 :: WR.MEM[00007f7e] = 000000ae :: WR.MEM[00007f7f] = 00000057 :: WR.MEM[00007f80] = 00000000 :: WR.MEM[00007f81] = 00000000 :: WR.MEM[00007f82] = 00000000 :: WR.MEM[00007f83] = 00000000 :: WR.MEM[00007f84] = 00000078 :: WR.MEM[00007f85] = 00000003 :: WR.MEM[00007f86] = 000000ae :: WR.MEM[00007f87] = 00000057 :: WR.MEM[00007f88] = 00000000 :: WR.MEM[00007f89] = 00000000 :: WR.MEM[00007f8a] = 00000000 :: WR.MEM[00007f8b] = 00000000 :: WR.MEM[00007f8c] = 00000000 :: WR.MEM[00007f8d] = 00000000 :: WR.MEM[00007f8e] = 00000000 :: WR.MEM[00007f8f] = 00000000 :: WR.MEM[00007f90] = 00000000 :: WR.MEM[00007f91] = 00000000 :: WR.MEM[00007f92] = 00000000 :: WR.MEM[00007f93] = 00000000 :: WR.MEM[00007f94] = 00000000 :: WR.MEM[00007f95] = 00000000 :: WR.MEM[00007f96] = 00000000 :: WR.MEM[00007f97] = 00000000 :: WR.MEM[00007f98] = 00000000 :: WR.MEM[00007f99] = 00000000 :: WR.MEM[00007f9a] = 00000000 :: WR.MEM[00007f9b] = 00000000 :: WR.MEM[00007f9c] = 00000000 :: WR.MEM[00007f9d] = 00000000 :: WR.MEM[00007f9e] = 00000000 :: WR.MEM[00007f9f] = 00000000 :: WR.RF[0 ] = 00000000 :: WR.RF[3 ] = 00000000
+      e-sim:      0x8e009980                       trap 0x7         - registers <- 0x0
+    Registers differ. Revelation: rf<-0x0 rf<-0x0 e-sim: rf<-0x0
+
+    Semantics of instruction at 0x8e009980 differ:
+      Revelation: 8e009980 6dda1fe2 trap16       990      :: RD.RF[3 ] = 00000005 :: RD.RF[0 ] = 00000001 :: RD.RF[1 ] = 8f000008 :: RD.RF[2 ] = 00000001 syscall_write(fd=1, buf=8f000008, count=1) :: WR.RF[0 ] = 00000001 :: WR.RF[3 ] = 00000000
+      e-sim:      0x8e009980                       trap 0x7         - registers <- 0x1
+    Registers differ. Revelation: rf<-0x0 rf<-0x1 e-sim: rf<-0x1
+
+    ...
+
+    Semantics of instruction at 0x44e differ:
+      Revelation:      44e 2f8b0417 fsub16       35097    :: RD.RF[0 ] = 3f800000 :: RD.RF[1 ] = 5f800000 :: RD.RF[0 ] = 3f800000 :: WR.RF[0 ] = 5f800000 :: RD.RF[0 ] = 5f800000 :: RD.RF[0 ] = 5f800000 :: RD.RF[1 ] = 5f800000 :: RD.RF[0 ] = 5f800000 AN=False AZ=False AC=False AV=False AVS=True BN=False BZ=False BIS=False BUS=False BV=False BVS=False
+      e-sim:      0x00044e ---   main            fsub r0,r1,r0     - bzbit <- 0x0, bnbit <- 0x0, bvbit <- 0x0, bvsbit <- 0x0, busbit <- 0x0, bisbit <- 0x0, registers <- 0x5f7fffff
+    Registers differ. Revelation: rf<-0x5f800000 e-sim: rf<-0x5f7fffff
+
+    Semantics of instruction at 0x8e00a284 differ:
+      Revelation: 8e00a284 040016dc ldstrdisp32  35103    :: RD.RF[13] = 00007fb0 :: RD.RF[0 ] = 5f800000 :: WR.MEM[00007fc4] = 5f800000
+      e-sim:      0x8e00a284                       str r0,[sp,+0x5] - memaddr <- 0x7fc4, memory <- 0x5f7fffff
+    Memory regions differ. Revelation: 0x7fc4<-0x5f800000 e-sim: 0x7fc4<-0x5f7fffff
+
+    Semantics of instruction at 0x8e00a2fc differ:
+      Revelation: 8e00a2fc 1feb6044 ldstrdisp16  35108    :: RD.RF[0 ] = 00007fc4 :: RD.MEM[00007fc4] = 5f800000 :: WR.RF[3 ] = 5f800000
+      e-sim:      0x8e00a2fc                       ldr r3,[r0,0x0]  - memaddr <- 0x7fc4, registers <- 0x5f7fffff
+    Registers differ. Revelation: rf<-0x5f800000 e-sim: rf<-0x5f7fffff
+
+    ...
+
+Notice that the first "different" instruction relates to a system call.
+In this case, Revelation writes a return code and an error code from every system call.
+e-sim traces only show one of these register writes, so this small difference can be ignored.
+The subsequent differences are all meaningful.
+
+
+``e-sim --verbose``
+^^^^^^^^^^^^^^^^^^^
+
+e-sim has a ``--verbose`` switch that will provide some extra information, such as the number of simulated instructions and any "invalid" instructions or unmapped addresses.
+For example:
+
+.. code-block:: bash
+
+    $ e-sim --verbose -r 1 -c 1 new_tests/fpu_rounding_mode.elf
+    [INFO] Press Ctrl-C at any time to abort.
+    [INFO] Spawning core simulator processes
+    [INFO] All core simulators started
+    ESIM: Initialized successfully
+    epiphany-elf-run new_tests/fpu_rounding_mode.elf
+    ESIM: Waiting for other cores... done.
+
+    Round to nearest even rounding:
+    d     = 1.84467440737095516e+19
+    d - 1 = 1.84467440737095516e+19
+
+    Truncate rounding:
+    d     = 1.84467440737095516e+19
+    d - 1 = 1.84467429741979238e+19
+
+    Simulator Execution Speed
+
+      Total instructions:      46,265
+      Total execution time:    < 1 second
+
+    ESIM: Waiting for other cores... done.
+    [INFO] core simulator 0x808 (32, 8) exited with status 0
 
 
 .. toctree::

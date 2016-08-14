@@ -88,6 +88,20 @@ EXAMPLES:
 ```
 
 
+## Revelation features
+
+There are a small number of unimplemented features in Revelation:
+
+  * Breakpoints (both `bkpt` and `mbkpt`)
+  * Multi-core interrupts (`sync` and `wand`)
+  * Floating-point rounding modes (i.e. compiling with `-mfp-mode=int|truncate|round-nearest`)
+  * Direct-memory access
+  * Work-groups and loading more than one binary
+  * The `DEBUGSTATUS` and `DEBUGCMD` registers (you can read and write to these but they don't have any special effects)
+  * The `MESHCONFIG` registers (you can read and write to these but they don't have any special effects)
+  * Event timers other than IALU and FPU valid instructions
+
+
 ## Translating the simulator
 
 'Translating' is the process of converting the RPython code here into C, and then compiling that to a native executable.
@@ -113,34 +127,16 @@ If you want your compiled Revelation simulator to be able to write out a trace o
 Please report any problems you have with Revelation on the [Issues page](https://github.com/futurecore/revelation/issues).
 
 To contribute to Revelation itself, please fork this repository and raise a Pull Request, and if it is relevant to your changes please include unit tests.
-Translating Revelation will be relatively slow, so it is easiest to run and test the simulator un-translated, until your changes are stable, e.g.:
+Translating Revelation will be relatively slow, so it is easiest to run and test the simulator un-translated, until your changes are stable.
 
-```bash
-$ pypy revelation/sim.py revelation/test/c/hello.elf
-Loading program revelation/test/c/hello.elf on to core 0x808 (32, 08)
-Hello, world!
-Done! Total ticks simulated = 1951
-Core 0x808 (32, 08): STATUS=0x00000005, Instructions executed=1951
-```
+Details of how the Revelation code is structured, how the unit tests work and other internals are available in the [online documentation](https://readthedocs.org/projects/revelation/latest/contributing.html).
 
 To work with the code here you need a copy of Pydgin, which you can obtain a copy from the [Pydgin project page](https://github.com/cornell-brg/pydgin).
 Pydgin is a framework for writing functional simulators as [just in time interpreters](https://en.wikipedia.org/wiki/Just-in-time_compilation).
-You can read more about it in this paper:
+
+You can read more about Pydgin in this paper:
 
 > Derek Lockhart, Berkin Ilbeyi, and Christopher Batten. (2015) Pydgin: Generating Fast Instruction Set Simulators from Simple Architecture Descriptions with Meta-Tracing JIT Compilers. IEEE International Symposium on Performance Analysis of Systems and Software (ISPASS). Available at: http://csl.cornell.edu/~cbatten/pdfs/lockhart-pydgin-ispass2015.pdf
-
-
-### Running unit tests
-
-To run the Revelation unit tests, ensure that the required packages are installed:
-
-    $ pip install -r requirements.txt
-
-Then run the tests themselves:
-
-    $ py.test --cov-report term-missing --cov revelation revelation/test/
-
-Note that the tests may take some time to run, particularly those that load an ELF file.
 
 
 ## License
