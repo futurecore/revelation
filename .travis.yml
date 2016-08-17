@@ -19,7 +19,7 @@ install:
                                       --exclude 'pypy-pypy-*/pytest.py'
                                       --exclude 'pypy-pypy-*/pytest_cov.py'
 - cd $TRAVIS_BUILD_DIR
-- export PYTHONPATH=${PYTHONPATH}:${HOME}/pydgin/
+- export PYTHONPATH=${PYTHONPATH}:${HOME}/pydgin/:{HOME}/pypy/
 script:
 - py.test -n 4 -rxs --color=yes --cov-config .coveragerc --cov-report term-missing
   --cov=revelation revelation/test/
