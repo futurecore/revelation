@@ -14,9 +14,9 @@ install:
 - wget https://bitbucket.org/pypy/pypy/get/default.tar.gz
 - tar xf default.tar.gz --transform 's/pypy-pypy-[0-9a-f]\+/pypy/'
                                       --exclude 'pypy-pypy-*/pytest_cov.py'
-- mkdir {HOME}/rpythonlib
-- cd {HOME}/rpythonlib
-- ln -s {HOME}/pypy/rpython/ rpython
+- mkdir ${HOME}/rpythonlib
+- cd ${HOME}/rpythonlib
+- ln -s ${HOME}/pypy/rpython/ rpython
 - cd ${TRAVIS_BUILD_DIR}
 script:
 - PYTHONPATH=${PYTHONPATH}:${HOME}/rpythonlib/:${HOME}/pydgin/:. py.test -n 4 -rxs
@@ -28,12 +28,12 @@ script:
 - make html
 - make linkcheck
 - cd ..
-- PYTHONPATH=${HOME}/pydgin/:{HOME}/pypy/:. ${HOME}/pypy/rpython/bin/rpython --no-pdb --opt=jit revelation/sim.py
+- PYTHONPATH=${HOME}/pydgin/:${HOME}/pypy/:. ${HOME}/pypy/rpython/bin/rpython --no-pdb --opt=jit revelation/sim.py
 - if [ "${TRAVIS_PULL_REQUEST}" == "false" ] && [ "${TRAVIS_BRANCH}" == "master" ] ;
-    then PYTHONPATH=${HOME}/pydgin/:{HOME}/pypy/:. ${HOME}/pypy/rpython/bin/rpython --no-pdb --opt=jit revelation/sim.py --debug ;
+    then PYTHONPATH=${HOME}/pydgin/:${HOME}/pypy/:. ${HOME}/pypy/rpython/bin/rpython --no-pdb --opt=jit revelation/sim.py --debug ;
   fi
 - if [ "${TRAVIS_PULL_REQUEST}" == "false" ] && [ "${TRAVIS_BRANCH}" == "master" ] ;
-    then PYTHONPATH=${HOME}/pydgin/:{HOME}/pypy/:. ${HOME}/pypy/rpython/bin/rpython --no-pdb -O2 revelation/sim.py ;
+    then PYTHONPATH=${HOME}/pydgin/:${HOME}/pypy/:. ${HOME}/pypy/rpython/bin/rpython --no-pdb -O2 revelation/sim.py ;
   fi
 - mkdir bin
 - mv pydgin-revelation-* bin/
