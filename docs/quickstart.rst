@@ -137,6 +137,7 @@ There are a small number of unimplemented features in Revelation:
 - Work-groups and loading more than one binary
 - The ``DEBUGSTATUS`` and ``DEBUGCMD`` registers (you can read and write to these but they don't have any special effects)
 - The ``MESHCONFIG`` registers (you can read and write to these but they don't have any special effects)
+- The ``MEMPROTECT`` register (you can read and write to this but it doesn't have any special effect)
 - Event timers other than IALU and FPU valid instructions
 
 
