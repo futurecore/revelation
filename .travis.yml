@@ -12,7 +12,12 @@ install:
 - mv pydgin-master pydgin
 - cd ${HOME}
 - wget https://bitbucket.org/pypy/pypy/get/default.tar.gz
-- tar xf default.tar.gz --transform 's/pypy-pypy-[0-9a-f]\+/pypy/' --exclude 'pypy-pypy-*/pytest_cov.py'
+- tar xf default.tar.gz --transform 's/pypy-pypy-[0-9a-f]\+/pypy/'
+                                      --exclude 'pypy-pypy-*/pytest_cov.py'
+                                      --exclude 'pypy-pypy-*/py/*'
+                                      --exclude 'pypy-pypy-*/_pytest/*'
+                                      --exclude 'pypy-pypy-*/pytest.py'
+                                      --exclude 'pypy-pypy-*/pytest_cov.py'
 - cd $TRAVIS_BUILD_DIR
 - export PYTHONPATH=${PYTHONPATH}:${HOME}/pydgin/
 script:
