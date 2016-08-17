@@ -1,6 +1,3 @@
-import sys
-
-
 class Logger(object):
     """Simple logger which writes to a file.
     Always overwrites, never appends.
