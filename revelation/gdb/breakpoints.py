@@ -15,14 +15,15 @@ class BreakPointManager(object):
     def _get_global_address(self, address, coreid=0x808):
         """Remap any local addresses to global address.
         """
-        if (address >> 20) == 0x0:
+        if (address & 0xfff00000) == 0x0:
             return (coreid << 20) | address
         return address
 
-    def is_breakpoint_set(self, address):
-        return address in self.breakpoints
+    def is_breakpoint_set(self, address, coreid=0x808):
+        global_address = self._get_global_address(address, coreid)
+        return global_address in self.breakpoints
 
-    def set_breakpoint(self, address, coreid=0x080):
+    def set_breakpoint(self, address, coreid=0x808):
         """Set a breakpoint at a given address.
         1. Read 32 bit current instructions at address, save in dictionary.
         2. If current instruction is 16 bit, replace with bkpt16.
@@ -42,5 +43,8 @@ class BreakPointManager(object):
     def remove_breakpoint(self, address, coreid=0x808):
         """Remove a breakpoint at a given address."""
         global_address = self._get_global_address(address, coreid)
+        if global_address not in self.breakpoints:
+            return
         opcode, size = self.breakpoints[global_address]
         self.target.memory.write(global_address, size, opcode)
+        del self.breakpoints[global_address]
