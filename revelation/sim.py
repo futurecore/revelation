@@ -289,8 +289,10 @@ class Revelation(Sim):
                         zfill(str(f_col + col), 2)))
                 self.states[coreid] = State(self.memory, self.debug,
                                             logger=self.logger, coreid=coreid)
-        load_program(elf, self.memory, coreids, ext_base=self.ext_base,
-                     ext_size=self.ext_size)
+        code_blocks = load_program(elf, self.memory, coreids, ext_base=self.ext_base,
+                                   ext_size=self.ext_size)
+        for section in code_blocks:
+            self.memory.code_blocks.append(section)
         self.states[coreids[0]].set_first_core(True)
         if self.profile:
             timer = time.time()

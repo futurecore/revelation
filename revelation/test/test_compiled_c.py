@@ -55,8 +55,30 @@ elf_dir = os.path.join(os.path.dirname(os.path.abspath('__file__')),
      ('print_large_float.elf',  'd     = 1.84467440737095516e+19\n'
                                 'd - 1 = 1.84467440737095516e+19\n'),
      ('read_file.elf',          'Hello, world!\n'),
-     ('selfmod.elf',            'Hello\nWorld\n'),
-     ('selfmod2.elf',           'Hello\nWorld\n'),
+     ('selfmod.elf',            'Hello\n'
+                                'WARNING: self-modifying code @ 80800350\n'
+                                'WARNING: self-modifying code @ 80800354\n'
+                                'WARNING: self-modifying code @ 80800358\n'
+                                'WARNING: self-modifying code @ 8080035c\n'
+                                'WARNING: self-modifying code @ 80800360\n'
+                                'WARNING: self-modifying code @ 80800364\n'
+                                'WARNING: self-modifying code @ 80800368\n'
+                                'WARNING: self-modifying code @ 8080036c\n'
+                                'WARNING: self-modifying code @ 80800370\n'
+                                'WARNING: self-modifying code @ 80800374\n'
+                                'World\n'),
+     ('selfmod2.elf',           'Hello\n'
+                                'WARNING: self-modifying code @ 80800350\n'
+                                'WARNING: self-modifying code @ 80800354\n'
+                                'WARNING: self-modifying code @ 80800358\n'
+                                'WARNING: self-modifying code @ 8080035c\n'
+                                'WARNING: self-modifying code @ 80800360\n'
+                                'WARNING: self-modifying code @ 80800364\n'
+                                'WARNING: self-modifying code @ 80800368\n'
+                                'WARNING: self-modifying code @ 8080036c\n'
+                                'WARNING: self-modifying code @ 80800370\n'
+                                'WARNING: self-modifying code @ 80800374\n'
+                                'World\n'),
      ('setilat.elf',            'User interrupt set by ILATST.\n'),
      ('testset.elf',            'Before testset:\na: 0\tb: 1\n'
                                 'After testset:\na: 10\tb: 1\n'

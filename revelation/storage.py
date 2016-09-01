@@ -59,6 +59,7 @@ class Memory(object):
         self.addr_mask  = block_size - 1
         self.block_mask = 0xffffffff ^ self.addr_mask
         self.block_dict = {}
+        self.code_blocks = []
 
     def add_block(self, block_addr):
         self.block_dict[block_addr] = _BlockMemory(size=self.block_size)
@@ -118,6 +119,9 @@ class Memory(object):
         if is_local_address(start_addr):
             start_addr |= (from_core << 20)
         coreid_mask = start_addr & 0xfff00000
+        for start, end in self.code_blocks:
+            if start_addr >= start and (start_addr + num_bytes) <= end:
+                print 'WARNING: self-modifying code @', pad_hex(start_addr)
         if start_addr & 0xfffff == 0xf042c:  # ILATST
             ilat = self.read(coreid_mask | 0xf0428, 4) & 0x3ff
             ilat |= (value & ((2 << 10) - 1))
