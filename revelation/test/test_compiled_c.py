@@ -55,8 +55,30 @@ elf_dir = os.path.join(os.path.dirname(os.path.abspath('__file__')),
      ('print_large_float.elf',  'd     = 1.84467440737095516e+19\n'
                                 'd - 1 = 1.84467440737095516e+19\n'),
      ('read_file.elf',          'Hello, world!\n'),
-     ('selfmod.elf',            'Hello\nWorld\n'),
-     ('selfmod2.elf',           'Hello\nWorld\n'),
+     ('selfmod.elf',            'Hello\n'
+                                'WARNING: self-modifying code @ 80800350\n'
+                                'WARNING: self-modifying code @ 80800354\n'
+                                'WARNING: self-modifying code @ 80800358\n'
+                                'WARNING: self-modifying code @ 8080035c\n'
+                                'WARNING: self-modifying code @ 80800360\n'
+                                'WARNING: self-modifying code @ 80800364\n'
+                                'WARNING: self-modifying code @ 80800368\n'
+                                'WARNING: self-modifying code @ 8080036c\n'
+                                'WARNING: self-modifying code @ 80800370\n'
+                                'WARNING: self-modifying code @ 80800374\n'
+                                'World\n'),
+     ('selfmod2.elf',           'Hello\n'
+                                'WARNING: self-modifying code @ 80800350\n'
+                                'WARNING: self-modifying code @ 80800354\n'
+                                'WARNING: self-modifying code @ 80800358\n'
+                                'WARNING: self-modifying code @ 8080035c\n'
+                                'WARNING: self-modifying code @ 80800360\n'
+                                'WARNING: self-modifying code @ 80800364\n'
+                                'WARNING: self-modifying code @ 80800368\n'
+                                'WARNING: self-modifying code @ 8080036c\n'
+                                'WARNING: self-modifying code @ 80800370\n'
+                                'WARNING: self-modifying code @ 80800374\n'
+                                'World\n'),
      ('setilat.elf',            'User interrupt set by ILATST.\n'),
      ('testset.elf',            'Before testset:\na: 0\tb: 1\n'
                                 'After testset:\na: 10\tb: 1\n'
@@ -72,7 +94,7 @@ def test_compiled_c_with_output(elf_file, expected, capfd):
         revelation.init_state(elf, elf_filename, False, is_test=True)
         revelation.max_insts = 100000
         revelation.run()
-        assert not revelation.states[0].running
+        assert not revelation.states[0x808].running
         out, err = capfd.readouterr()
         assert err == ''
         expected_full = (('Loading program %s on to core 0x808 (32, 08)\n' % elf_filename)
@@ -95,8 +117,8 @@ def test_compiled_c_with_return(elf_file, expected):
         revelation.init_state(elf, elf_filename, False, is_test=True)
         revelation.max_insts = 10000
         revelation.run()
-        expected.check(revelation.states[0])
-        assert not revelation.states[0].running
+        expected.check(revelation.states[0x808])
+        assert not revelation.states[0x808].running
 
 
 @pytest.mark.parametrize('elf_file,expected', [('nothing.elf',   250),
@@ -114,4 +136,4 @@ def test_compiled_c(elf_file, expected):
         exit_code, ticks = revelation.run()
         assert expected == ticks
         assert EXIT_SUCCESS == exit_code
-        assert not revelation.states[0].running
+        assert not revelation.states[0x808].running

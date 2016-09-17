@@ -23,7 +23,7 @@ def test_elf_with_stdout(elf, expected, capfd):
     with open(elf_filename, 'rb') as elf:
         revelation.init_state(elf, elf_filename, False, is_test=True)
         revelation.run()
-        assert not revelation.states[0].running
+        assert not revelation.states[0x808].running
         out, err = capfd.readouterr()
         assert err == ''
         assert expected in out
@@ -84,7 +84,7 @@ def test_elf(elf, expected):
     with open(elf_filename, 'rb') as elf:
         revelation.init_state(elf, elf_filename, False, is_test=True)
         revelation.run()
-        expected.check(revelation.states[0])
+        expected.check(revelation.states[0x808])
 
 
 @pytest.mark.parametrize("elf,expected,memory",
@@ -98,7 +98,7 @@ def test_elf_writes_to_memory(elf, expected, memory):
     with open(elf_filename, 'rb') as elf:
         revelation.init_state(elf, elf_filename, False, is_test=True)
         revelation.run()
-        expected.check(revelation.states[0], memory)
+        expected.check(revelation.states[0x808], memory)
 
 
 @pytest.mark.parametrize("elf,expected",
@@ -174,7 +174,7 @@ def test_fp_elf(elf, expected):
     with open(elf_filename, 'rb') as elf:
         revelation.init_state(elf, elf_filename, False, is_test=True)
         revelation.run()
-        expected.fp_check(revelation.states[0])
+        expected.fp_check(revelation.states[0x808])
 
 
 @pytest.mark.parametrize("elf,expected",
@@ -189,9 +189,9 @@ def test_load(elf, expected):
     revelation = Revelation()
     with open(elf_filename, 'rb') as elf:
         revelation.init_state(elf, elf_filename, False, is_test=True)
-        revelation.states[0].mem.write(0x00100004, 4, 0xffffffff)
+        revelation.states[0x808].mem.write(0x00100004, 4, 0xffffffff)
         revelation.run()
-        expected.check(revelation.states[0])
+        expected.check(revelation.states[0x808])
 
 
 @pytest.mark.parametrize("elf,expected",
@@ -207,7 +207,7 @@ def test_store(elf, expected):
     with open(elf_filename, 'rb') as elf:
         revelation.init_state(elf, elf_filename, False, is_test=True)
         revelation.run()
-        expected.check(revelation.states[0], memory=[(0x00100004, 4, 0xffffffff)])
+        expected.check(revelation.states[0x808], memory=[(0x00100004, 4, 0xffffffff)])
 
 
 def test_elf_load_pm():
@@ -215,10 +215,10 @@ def test_elf_load_pm():
     revelation = Revelation()
     with open(elf_filename, 'rb') as elf:
         revelation.init_state(elf, elf_filename, False, is_test=True)
-        revelation.states[0].mem.write(0x80002, 4, 0xffffffff)
+        revelation.states[0x808].mem.write(0x80002, 4, 0xffffffff)
         revelation.run()
         expected = StateChecker(rf0=0xffffffff, rf1=0x100004, rf2=0x80002)
-        expected.check(revelation.states[0])
+        expected.check(revelation.states[0x808])
 
 
 def test_elf_store_pm():
@@ -230,7 +230,7 @@ def test_elf_store_pm():
         revelation.init_state(elf, elf_filename, False, is_test=True)
         revelation.run()
         expected = StateChecker(rf0=0xffffffff, rf1=0x00100004, rf2=4)
-        expected.check(revelation.states[0], memory=[(0x100000, 4, 0xffffffff)])
+        expected.check(revelation.states[0x808], memory=[(0x100000, 4, 0xffffffff)])
 
 
 def test_testset32():
@@ -238,10 +238,10 @@ def test_testset32():
     revelation = Revelation()
     with open(elf_filename, 'rb') as elf:
         revelation.init_state(elf, elf_filename, False, is_test=True)
-        revelation.states[0].mem.write(0x100004, 4, 0x0)
+        revelation.states[0x808].mem.write(0x100004, 4, 0x0)
         revelation.run()
         expected = StateChecker(AZ=1, rf0=0, rf1=0x100000, rf2=0x4)
-        expected.check(revelation.states[0], memory=[(0x100004, 4, 0xffff)])
+        expected.check(revelation.states[0x808], memory=[(0x100004, 4, 0xffff)])
 
 
 def test_testset32_fail(capfd):

@@ -42,59 +42,9 @@ def new_memory(logger):
     return Memory(block_size=2**20, logger=logger)
 
 
-def get_printable_location(pc, _, coreid, opcode):
+def get_printable_location(pc):
     """Printed in PYPYLOG while tracing."""
-    hex_pc = pad_hex(pc)
-    mnemonic, _ = decode(opcode)
-    return 'Core ID: 0x%x PC: %s Instruction: %s' % (coreid, hex_pc, mnemonic)
-
-
-def _pre_execute(state):
-    """Check whether or not we are in a hardware loop, and set registers
-    after the next instruction, as appropriate. See Section 7.9 of the
-    Epiphany Architecture Reference Rev. 14.03.11:
-        When the program counter (PC) matches the value in LE and the LC
-        is greater than zero, the PC gets set to the address in LS. The
-        LC register decrements automatically every time the program
-        scheduler completes one iteration of the code loop defined by LS
-        and LE.
-    """
-    if (state.GID and state.pc == state.rf[reg_map['LE']]):
-        state.rf[reg_map['LC']] -= 1
-        state.is_in_hardware_loop = True
-
-
-def _post_execute(state):
-    """Check hardware loop registers, and service interrupts if necessary.
-    See also _pre_execute().
-    """
-    if state.is_in_hardware_loop and state.rf[reg_map['LC']] > 0:
-        state.pc = state.rf[reg_map['LS']]
-        state.is_in_hardware_loop = False
-        return
-    # Service interrupts. See: http://blog.alexrp.com/revelation-notes/
-    if (state.rf[reg_map['ILAT']] > 0 and not (state.GID or
-           state.rf[reg_map['DEBUGSTATUS']] == 1)):
-        _service_interrupts(state)
-
-
-def _service_interrupts(state):
-    interrupt_level = state.get_latched_interrupt()
-    if interrupt_level == -1:  # No interrupt to process.
-        return
-    # If a pending interrupt is of a higher priority than the latched
-    # interrupt, carry on with the pending interrupt.
-    pending_interrupt = state.get_pending_interrupt()
-    if (pending_interrupt > -1 and interrupt_level > -1 and
-          interrupt_level > pending_interrupt):
-        return
-    # Service the latched interrupt.
-    state.rf[reg_map['IRET']] = state.pc
-    state.rf[reg_map['ILAT']] &= ~(1 << interrupt_level)
-    state.rf[reg_map['IPEND']] |= 1 << interrupt_level
-    state.GID = True  # Set global interrupt disabled bit.
-    state.pc = IVT[interrupt_level]
-    state.ACTIVE = 1  # Wake up IDLE cores.
+    return 'PC: %s' % pad_hex(pc)
 
 
 class Revelation(Sim):
@@ -106,17 +56,15 @@ class Revelation(Sim):
         self.jit_enabled = True
         if self.jit_enabled:
             self.jitdriver = JitDriver(
-                greens = ['pc', 'core', 'coreid', 'opcode'],
-                reds = ['tick_counter', 'halted_cores', 'idle_cores', 'sim',
-                        'state',],
+                greens = ['pc', ],
+                reds = ['core', 'tick_counter', 'coreids', 'sim', 'state',],
                 get_printable_location=get_printable_location)
         self.default_trace_limit = 400000
         self.max_insts = 0             # --max-insts.
         self.logger = None             # --debug output: self.logger.log().
         self.rows = 1                  # --rows, -r.
         self.cols = 1                  # --cols, -c.
-        self.states = []               # revelation.machine.State objects.
-        self.num_cores = 0
+        self.states = {}               # coreid -> revelation.machine.State.
         self.first_core = 0x808        # --first-core, -f.
         self.ext_base = 0x8e000000     # Base address of 'external' memory.
         self.ext_size = 32             # Size of 'external' memory in MB.
@@ -127,9 +75,6 @@ class Revelation(Sim):
         self.end_time = .0             # --time, -t option.
         self.profile = False  # Undocumented --profile option.
         self.timer = .0       # Undocumented --profile option.
-
-    def next_core(self, core):
-        return (core + 1) % (self.rows * self.cols)
 
     def get_entry_point(self):
         def entry_point(argv):
@@ -155,8 +100,8 @@ class Revelation(Sim):
                 print 'CLI parser took: %fs' % (timer - self.timer)
                 self.timer = timer
             self.init_state(elf_file, fname, False)
-            for state in self.states:
-                self.debug.set_state(state)
+            for coreid in self.states:
+                self.debug.set_state(self.states[coreid])
             elf_file.close()
             try:
                 exit_code, tick_counter = self.run()
@@ -175,45 +120,68 @@ class Revelation(Sim):
         """Fetch, decode, execute, service interrupts loop.
         Override Sim.run to provide multicore and close the logger on exit.
         """
-        core = 0  # Index to self.states list.
+        coreids = self.states.keys()
+        core = coreids[0]      # Key to self.states dictionary.
         state = self.states[core]  # revelation.machine.State object.
-        pc = state.fetch_pc()
-        coreid = state.coreid  # We save these values so that get_location can
-        opcode = 0             # print a more meaningful trace in the JIT log.
+        pc = state.fetch_pc()  # Program counter.
         tick_counter = 0       # Number of instructions executed by all cores.
-        halted_cores, idle_cores = [], []
         old_pc = 0
         self.start_time = time.time()
 
-        while len(halted_cores) < self.num_cores:
-            self.jitdriver.jit_merge_point(pc=state.fetch_pc(),
+        while True:
+            self.jitdriver.jit_merge_point(pc=pc,
                                            core=core,
-                                           coreid=coreid,
-                                           opcode=opcode,
                                            tick_counter=tick_counter,
-                                           halted_cores=halted_cores,
-                                           idle_cores=idle_cores,
+                                           coreids=coreids,
                                            sim=self,
                                            state=state,)
-            # Fetch PC, decode instruction and execute.
-            pc = state.fetch_pc()
-            old_pc = pc
-            opcode = state.mem.iread(pc, 4, from_core=coreid)
+            # Fetch next instruction.
+            opcode = state.mem.iread(pc, 4, from_core=state.coreid)
             try:
+                # Decode instruction.
                 mnemonic, function = decode(opcode)
                 instruction = Instruction(opcode, mnemonic)
+                # --debug
                 if (state.is_first_core and self.logger and
                       state.debug.enabled('trace')):
                     state.logger.log('%s %s %s %s' %
-                        (pad('%x' % state.fetch_pc(), 8, ' ', False),
+                        (pad('%x' % pc, 8, ' ', False),
                          pad_hex(opcode), pad(instruction.name, 12),
                          pad('%d' % state.num_insts, 8)))
-                _pre_execute(state)
+                # Check whether or not we are in a hardware loop, and set
+                # registers after the next instruction, as appropriate. See
+                # Section 7.9 of the Architecture Reference Rev. 14.03.11.
+                if (state.GID and state.pc == state.rf[reg_map['LE']]):
+                    state.rf[reg_map['LC']] -= 1
+                    state.is_in_hardware_loop = True
+                # Execute next instruction.
                 function(state, instruction)
+                # --debug
                 if (state.is_first_core and state.logger and
                       state.debug.enabled('trace')):
                     state.logger.log('\n')
-                _post_execute(state)
+                # Check hardware loop registers.
+                if state.is_in_hardware_loop and state.rf[reg_map['LC']] > 0:
+                    state.pc = state.rf[reg_map['LS']]
+                    state.is_in_hardware_loop = False
+                # Service interrupts.
+                if (state.rf[reg_map['ILAT']] > 0 and not (state.GID or
+                       state.rf[reg_map['DEBUGSTATUS']] == 1)):
+                    interrupt_level = state.get_latched_interrupt()
+                    if interrupt_level > -1:  # Interrupt to process.
+                        # If a pending interrupt is of a higher priority than
+                        # the latched interrupt, carry on with the pending
+                        # interrupt.
+                        pending_interrupt = state.get_pending_interrupt()
+                        if (pending_interrupt == -1 or
+                              (pending_interrupt > -1 and
+                              interrupt_level <= pending_interrupt)):
+                            state.rf[reg_map['IRET']] = state.pc
+                            state.rf[reg_map['ILAT']] &= ~(1 << interrupt_level)
+                            state.rf[reg_map['IPEND']] |= 1 << interrupt_level
+                            state.GID = True  # Set global interrupt disabled bit.
+                            state.pc = IVT[interrupt_level]
+                            state.ACTIVE = 1  # Wake up IDLE cores.
             except (FatalError, NotImplementedInstError) as error:
                 mnemonic, _ = decode(opcode)
                 print ('Exception in execution of %s (pc: 0x%s), aborting!' %
@@ -227,35 +195,40 @@ class Revelation(Sim):
             if self.max_insts != 0 and state.num_insts >= self.max_insts:
                 print 'Reached the max_insts (%d), exiting.' % self.max_insts
                 break
-            # Check whether state has halted or become idle.
+            # Check whether state has halted.
             if not state.running:
-                halted_cores.append(core)
-                if len(halted_cores) == self.num_cores:
+                if len(coreids) == 1:  # Last running core has halted.
                     break
-            elif not state.ACTIVE:
-                idle_cores.append(core)
+                old_core = core
+                core = coreids[(coreids.index(core) + 1) % len(coreids)]
+                state = self.states[core]
+                coreids.remove(old_core)
             # Switch cores after every instruction. TODO: Honour switch interval.
-            if self.num_cores > 1 and tick_counter % self.switch_interval == 0:
+            elif len(coreids) > 1 and tick_counter % self.switch_interval == 0:
                 while True:
-                    core = self.next_core(core)
-                    if not (core in halted_cores or core in idle_cores):
+                    core = coreids[(coreids.index(core) + 1) % len(coreids)]
+                    if self.states[core].ACTIVE == 1:
                         break
                     # Idle cores can be made active by interrupts.
-                    elif (core in idle_cores and
+                    elif (self.states[core].ACTIVE == 0 and
                             self.states[core].rf[reg_map['ILAT']] > 0):
-                        idle_cores.remove(core)
-                        _service_interrupts(self.states[core])
+                        interrupt_level = self.states[core].get_latched_interrupt()
+                        self.states[core].rf[reg_map['IRET']] = self.states[core].pc
+                        self.states[core].rf[reg_map['ILAT']] &= ~(1 << interrupt_level)
+                        self.states[core].rf[reg_map['IPEND']] |= 1 << interrupt_level
+                        self.states[core].GID = True  # Set global interrupt disabled bit.
+                        self.states[core].pc = IVT[interrupt_level]
+                        self.states[core].ACTIVE = 1  # Wake up IDLE cores.
                         break
                 state = self.states[core]
-                coreid = state.coreid
-            if state.fetch_pc() < old_pc:
-                self.jitdriver.can_enter_jit(pc=state.fetch_pc(),
+            # Move program counter to next instruction.
+            old_pc = pc
+            pc = state.fetch_pc()
+            if pc < old_pc:
+                self.jitdriver.can_enter_jit(pc=pc,
                                              core=core,
-                                             coreid=coreid,
-                                             opcode=opcode,
                                              tick_counter=tick_counter,
-                                             halted_cores=halted_cores,
-                                             idle_cores=idle_cores,
+                                             coreids=coreids,
                                              sim=self,
                                              state=state,)
         return EXIT_SUCCESS, tick_counter
@@ -266,12 +239,12 @@ class Revelation(Sim):
         """
         if ticks > -1:
             print 'Total ticks simulated = %s.' % format_thousands(ticks)
-        for state in self.states:
-            row, col = get_coords_from_coreid(state.coreid)
+        for coreid in self.states:
+            row, col = get_coords_from_coreid(coreid)
             print ('Core %s (%s, %s) STATUS: 0x%s, Instructions executed: %s' %
-                   (hex(state.coreid), zfill(str(row), 2), zfill(str(col), 2),
-                    pad_hex(state.rf[reg_map['STATUS']]),
-                    format_thousands(state.num_insts)))
+                   (hex(coreid), zfill(str(row), 2), zfill(str(col), 2),
+                    pad_hex(self.states[coreid].rf[reg_map['STATUS']]),
+                    format_thousands(self.states[coreid].num_insts)))
         if self.collect_times:
             execution_time = self.end_time - self.start_time
             print 'Total execution time: %fs.' % (execution_time)
@@ -314,12 +287,13 @@ class Revelation(Sim):
                 print ('Loading program %s on to core %s (%s, %s)' %
                        (filename, hex(coreid), zfill(str(f_row + row), 2),
                         zfill(str(f_col + col), 2)))
-                self.states.append(State(self.memory, self.debug,
-                                         logger=self.logger, coreid=coreid))
-        load_program(elf, self.memory, coreids, ext_base=self.ext_base,
-                     ext_size=self.ext_size)
-        self.states[0].set_first_core(True)
-        self.num_cores = len(self.states)
+                self.states[coreid] = State(self.memory, self.debug,
+                                            logger=self.logger, coreid=coreid)
+        code_blocks = load_program(elf, self.memory, coreids, ext_base=self.ext_base,
+                                   ext_size=self.ext_size)
+        for section in code_blocks:
+            self.memory.code_blocks.append(section)
+        self.states[coreids[0]].set_first_core(True)
         if self.profile:
             timer = time.time()
             print 'ELF file loader took: %fs' % (timer - self.timer)

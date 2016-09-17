@@ -44,7 +44,7 @@ def test_stat_syscall_layouts(elf_file, patterns, capfd):
         revelation.init_state(elf, elf_filename, False, is_test=True)
         revelation.max_insts = 45000
         revelation.run()
-        assert not revelation.states[0].running
+        assert not revelation.states[0x808].running
         out, err = capfd.readouterr()
         assert err == ''
         for pattern in patterns:
@@ -62,7 +62,7 @@ def test_open_close_syscall_layout(capfd):
         revelation.init_state(elf, elf_filename, False, is_test=True)
         revelation.max_insts = 7500
         revelation.run()
-        assert not revelation.states[0].running
+        assert not revelation.states[0x808].running
         out, err = capfd.readouterr()
         assert err == ''
         expected = ('open() successful.\nRead: 14 bytes.\nHello, world!\n'

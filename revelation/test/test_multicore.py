@@ -23,14 +23,14 @@ def test_two_cores_with_output(elf_file, expected, capfd):
         assert (revelation.rows == 1 and revelation.cols == 2 and
                 revelation.first_core == 0x808 and len(revelation.states) == 2)
         revelation.max_insts = 100000
-        assert True == revelation.states[0].is_first_core
-        assert True == revelation.states[0].rf.is_first_core
-        assert False == revelation.states[1].is_first_core
-        assert False == revelation.states[1].rf.is_first_core
-        assert 0x808 == revelation.states[0].mem.first_core
+        assert True == revelation.states[0x808].is_first_core
+        assert True == revelation.states[0x808].rf.is_first_core
+        assert False == revelation.states[0x809].is_first_core
+        assert False == revelation.states[0x809].rf.is_first_core
+        assert 0x808 == revelation.states[0x808].mem.first_core
         revelation.run()
-        assert not revelation.states[0].running
-        assert not revelation.states[1].running
+        assert not revelation.states[0x808].running
+        assert not revelation.states[0x809].running
         out, err = capfd.readouterr()
         assert err == ''
         expected_full = (('Loading program %s on to core 0x808 (32, 08)\n'

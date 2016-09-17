@@ -10,7 +10,7 @@ def load_program(elf, mem, coreids, alignment=0, ext_base=0x8e000000,
     pydgin.elf.elf_reader().
     """
     sections   = elf.get_sections()
-    entrypoint = -1
+    code_blocks = []
     for coreid in coreids:
         coreid_mask = coreid << 20
         for section in sections:
@@ -20,9 +20,10 @@ def load_program(elf, mem, coreids, alignment=0, ext_base=0x8e000000,
                 start_addr = section.addr
             for index, data in enumerate(section.data):
                 mem.write(start_addr + index, 1, ord(data), quiet=True)
-            if section.name == '.text':
-                entrypoint = intmask(section.addr)
+            if section.name == '.text' or section.name == 'NEW_LIB_RO':
+                entry_point = intmask(start_addr)
+                end_point = entry_point + len(section.data)
+                code_blocks.append((entry_point, end_point))
             if section.name == '.data':
                 mem.data_section = section.addr
-    assert entrypoint >= 0
-    return
+    return code_blocks
