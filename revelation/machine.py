@@ -61,7 +61,7 @@ class State(object):
 
     @property
     def pc(self):
-        return self.mem.iread(LOCAL_PC_ADDRESS, 4, from_core=self.coreid)
+        return self.mem.read(LOCAL_PC_ADDRESS, 4, from_core=self.coreid)
 
     @pc.setter
     def pc(self, value):
@@ -69,7 +69,7 @@ class State(object):
 
     def fetch_pc(self):
         # Override method from base class. Needed by Pydgin.
-        return self.mem.iread(LOCAL_PC_ADDRESS, 4, from_core=self.coreid)
+        return self.mem.read(LOCAL_PC_ADDRESS, 4, from_core=self.coreid)
 
     def get_pending_interrupt(self):
         ipend_highest_bit = -1

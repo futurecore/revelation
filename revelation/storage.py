@@ -29,7 +29,7 @@ class _BlockMemory(object):
             value = value | ord(self.data[start_addr + i])
         return value
 
-    def iread(self, start_addr, num_bytes):
+    def idempotent_read(self, start_addr, num_bytes):
         """This is instruction read, which is otherwise identical to read. The
         only difference is the elidable annotation, which we assume the
         instructions are not modified (no side effects, assumes the addresses
@@ -70,7 +70,7 @@ class Memory(object):
         block_mem = self.block_dict[block_addr]
         return block_mem
 
-    def iread(self, start_addr, num_bytes, from_core=0x808):
+    def idempotent_read(self, start_addr, num_bytes, from_core=0x808):
         if is_local_address(start_addr):
             start_addr |= (from_core << 20)
         end_addr   = start_addr + num_bytes - 1
@@ -82,15 +82,15 @@ class Memory(object):
         # for it.
         block_end_addr = self.block_mask & end_addr
         if block_addr == block_end_addr:
-            value = block_mem.iread(start_addr & self.addr_mask, num_bytes)
+            value = block_mem.idempotent_read(start_addr & self.addr_mask, num_bytes)
         else:
             num_bytes1 = min(self.block_size - (start_addr & self.addr_mask),
                              num_bytes)
             num_bytes2 = num_bytes - num_bytes1
             block_mem1 = block_mem
             block_mem2 = self.get_block_mem(block_end_addr)
-            value1 = block_mem1.iread(start_addr & self.addr_mask, num_bytes1)
-            value2 = block_mem2.iread(0, num_bytes2)
+            value1 = block_mem1.idempotent_read(start_addr & self.addr_mask, num_bytes1)
+            value2 = block_mem2.idempotent_read(0, num_bytes2)
             value = value1 | (value2 << (num_bytes1 * 8))
         return value
 
@@ -175,7 +175,7 @@ class MemoryMappedRegisterFile(object):
     def __getitem__(self, index):
         address, bitsize, _ = reg_memory_map[index]
         mask = (1 << bitsize) - 1
-        value = self.memory.iread(address, 4, from_core=self.coreid) & mask
+        value = self.memory.read(address, 4, from_core=self.coreid) & mask
         if (self.debug.enabled('rf') and self.logger and index < 64 and
               self.is_first_core):
             self.logger.log(' :: RD.RF[%s] = %s' % (pad('%d' % index, 2),

@@ -136,7 +136,7 @@ class Revelation(Sim):
                                            sim=self,
                                            state=state,)
             # Fetch next instruction.
-            opcode = state.mem.iread(pc, 4, from_core=state.coreid)
+            opcode = state.mem.idempotent_read(pc, 4, from_core=state.coreid)
             try:
                 # Decode instruction.
                 mnemonic, function = decode(opcode)
