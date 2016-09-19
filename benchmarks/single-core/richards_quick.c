@@ -375,7 +375,7 @@ void append(struct packet *pkt, struct packet *ptr)
 
 int main(void)
 {
-    int reps = 25;  /* FIXME: 500 */
+    int reps = 2;  /* FIXME: 500 */
     struct packet *wkq = 0;
     struct task *tasks[NUM_TASKS];
     struct packet *pkts[NUM_PKTS];
